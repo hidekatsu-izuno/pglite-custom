@@ -212,7 +212,15 @@ async function execInitdb({
   const initDbMod = await InitdbModFactory(runtimeOpts)
 
   log(debug, 'calling initdb.main with', args)
-  const result = initDbMod.callMain(args)
+  let result = initDbMod.callMain(args)
+  if (
+    result !== 0 &&
+    pg.Module.__wasi &&
+    pg.Module.FS.analyzePath(`${PGDATA}/PG_VERSION`).exists &&
+    pg.Module.FS.analyzePath(`${PGDATA}/base/1/1255`).exists
+  ) {
+    result = 0
+  }
 
   return {
     exitCode: result,

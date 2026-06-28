@@ -90,6 +90,15 @@ export async function loadTar(
 
 function readDirectory(FS: FS, path: string) {
   const files: TarFile[] = []
+  const toTarData = (data: Uint8Array | ArrayBuffer | string): Uint8Array => {
+    if (typeof data === 'string') {
+      return new TextEncoder().encode(data)
+    }
+    if (data instanceof ArrayBuffer) {
+      return new Uint8Array(data.slice(0))
+    }
+    return Uint8Array.from(data)
+  }
 
   const traverseDirectory = (currentPath: string) => {
     const entries = FS.readdir(currentPath)
@@ -100,7 +109,7 @@ function readDirectory(FS: FS, path: string) {
       const fullPath = currentPath + '/' + entry
       const stats = FS.stat(fullPath)
       const data = FS.isFile(stats.mode)
-        ? FS.readFile(fullPath, { encoding: 'binary' })
+        ? toTarData(FS.readFile(fullPath, { encoding: 'binary' }))
         : new Uint8Array(0)
       files.push({
         name: fullPath.substring(path.length), // remove the root path
