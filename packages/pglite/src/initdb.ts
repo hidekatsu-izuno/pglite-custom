@@ -87,6 +87,7 @@ async function execInitdb({
       for (let fd = 7; fd < 1024; fd++) {
         pg.Module._close?.(fd)
       }
+      pg.Module._pgl_chdir?.(pg.Module.stringToUTF8OnStack(PGDATA))
       reopenPgStreams()
     }
 
@@ -142,6 +143,11 @@ async function execInitdb({
               return initdb_stdin_fd
             } else {
               if (smode === 'w') {
+                if (pg.Module.__wasi) {
+                  const path = mod.stringToUTF8OnStack(pgstdinPath)
+                  const wmode = mod.stringToUTF8OnStack('w')
+                  initdb_stdout_fd = mod._fopen(path, wmode)
+                }
                 needToCallPGmain = true
                 return initdb_stdout_fd
               } else {
@@ -154,6 +160,11 @@ async function execInitdb({
 
           pclose_fn = mod.addFunction((stream: number) => {
             if (stream === initdb_stdin_fd || stream === initdb_stdout_fd) {
+              if (pg.Module.__wasi && stream === initdb_stdout_fd) {
+                mod._fflush(stream)
+                mod._fclose(stream)
+                initdb_stdout_fd = -1
+              }
               // if the last popen had mode w, execute now postgres' main()
               if (needToCallPGmain) {
                 needToCallPGmain = false
@@ -174,9 +185,13 @@ async function execInitdb({
             const rmode = mod.stringToUTF8OnStack('r')
             initdb_stdin_fd = mod._fopen(initdb_path, rmode)
 
-            const path = mod.stringToUTF8OnStack(pgstdinPath)
-            const wmode = mod.stringToUTF8OnStack('w')
-            initdb_stdout_fd = mod._fopen(path, wmode)
+            if (pg.Module.__wasi) {
+              initdb_stdout_fd = -1
+            } else {
+              const path = mod.stringToUTF8OnStack(pgstdinPath)
+              const wmode = mod.stringToUTF8OnStack('w')
+              initdb_stdout_fd = mod._fopen(path, wmode)
+            }
           }
         }
       },
