@@ -171,7 +171,6 @@ export class PGlite
   /**
    * Create a new PGlite instance
    * @param dataDir The directory to store the database files
-   *                Prefix with idb:// to use indexeddb filesystem in the browser
    *                Use memory:// to use in-memory filesystem
    * @param options PGlite options
    */
@@ -240,7 +239,6 @@ export class PGlite
    * (The main constructor does enable extensions, however due to the limitations
    * of Typescript, the extensions are not available on the instance interface)
    * @param dataDir The directory to store the database files
-   *                Prefix with idb:// to use indexeddb filesystem in the browser
    *                Use memory:// to use in-memory filesystem
    * @param options PGlite options
    * @returns A promise that resolves to the PGlite instance when it's ready.

@@ -71,12 +71,6 @@ await db.query("select 'Hello world' as message;")
 // -> { rows: [ { message: "Hello world" } ] }
 ```
 
-or to persist the database to indexedDB:
-
-```js
-const db = new PGlite('idb://my-pgdata')
-```
-
 ## Node/Bun/Deno
 
 Install into your project:

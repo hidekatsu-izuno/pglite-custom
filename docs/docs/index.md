@@ -64,12 +64,6 @@ Then for an in-memory Postgres:
 const db = new PGlite()
 ```
 
-or to persist the database to IndexedDB:
-
-```js
-const db = new PGlite('idb://my-pgdata')
-```
-
 ## Making a query
 
 There are two methods for querying the database, `.query` and `.exec`. The former supports parameters, while the latter supports multiple statements.
@@ -131,17 +125,9 @@ const ret = await db.query(
 
 - To learn more about [querying](./api.md#query) and [transactions](./api.md#transaction) along with the other methods and options available, you can read the main [PGlite API documentation](./api.md).
 
-- There is also a [live-query extension](./live-queries.md) that enables reactive queries to update a UI when the underlying database changes.
-
 - PGlite has a number of built-in [virtual file systems](./filesystems.md) to provide persistence for your database.
 
-- There are [framework hooks](./framework-hooks/react.md) to make working with PGlite within React and Vue much easier with less boilerplate.
-
 - For help configuring PGlite with your bundler, see the [bundler support](./bundler-support.md) page.
-
-- As PGlite only has a single exclusive connection to the database, we provide a [multi-tab worker](./multi-tab-worker.md) to enable sharing a PGlite instance between multiple browser tabs.
-
-- There is a [REPL component](./repl.md) that can be easily embedded into a web-app to aid in debugging and development, or as part of a database application itself.
 
 - We maintain a [list of ORMs and query builders](./orm-support.md) that support PGlite.
 

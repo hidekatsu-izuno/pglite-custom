@@ -1,3 +1,4 @@
 [submodule "postgres-pglite"]
 	path = postgres-pglite
-	url = ../postgres-pglite.git
+	url = https://github.com/electric-sql/postgres-pglite.git
+	branch = REL_18_3-pglite

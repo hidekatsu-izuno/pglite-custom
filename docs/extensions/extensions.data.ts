@@ -21,22 +21,6 @@ const baseExtensions: Extension[] = [
     npmjsUrl: 'https://www.npmjs.com/package/@electric-sql/pglite-pgvector',
   },
   {
-    name: 'live',
-    description: `
-      A reactive, or "live", query extension for PGlite that enables you to subscribe to a query 
-      and receive updated results when the underlying tables change.
-    `,
-    shortDescription: "A reactive, or 'live', query extension for PGlite.",
-    featured: true,
-    repo: 'https://github.com/electric-sql/pglite/tree/main/packages/pglite/src/live',
-    docs: '/docs/live-queries',
-    tags: ['pglite plugin'],
-    importPath: '@electric-sql/pglite/live',
-    importName: 'live',
-    core: true,
-    size: 21766,
-  },
-  {
     name: 'amcheck',
     description: `
       The amcheck module provides functions that allow you to verify the logical 

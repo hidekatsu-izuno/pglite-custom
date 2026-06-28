@@ -157,7 +157,7 @@ import ClientPgLite from 'knex-pglite'
 export const db = knex({
   client: ClientPgLite,
   dialect: 'postgres',
-  connection: { connectionString: 'idb://my-database' },
+  connection: { connectionString: 'memory://' },
 })
 ```
 
@@ -183,7 +183,7 @@ npm i @electric-sql/pglite orange-orm
 
 ```javascript
 import orange from 'orange-orm'
-const db = map.pglite('idb://my-db')
+const db = map.pglite('memory://')
 
 await db.query(`
   create table if not exists task (

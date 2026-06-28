@@ -55,8 +55,6 @@ The returned object has these properties - all are optional:
 - `close`<br>
   A function that will be called when the user calls `close()` on their PGlite instance; this is called before the database has been shut down.
 
-An example of a PGlite extension that augments the PGlite instance is the [live query extension](../docs/live-queries.md).
-
 ## Building Postgres Extensions
 
 In PGlite, every Postgres extension consists of two parts: a **backend** part, and a **frontend** part. The backend part is its core code. The frontend part is the `typescript/javascript` code that interacts with PGlite.
@@ -170,13 +168,6 @@ async function main() {
     '.cjs',
   ])
 }
-
-```
-
-To make it available in our online [REPL](https://pglite.dev/repl/), add the extension to `docs/repl/allExtensions.ts`:
-
-```
-export { myawesomeextension } from '@electric-sql/pglite/myawesomeextension
 
 ```
 
