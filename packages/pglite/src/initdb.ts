@@ -25,6 +25,7 @@ export interface PGliteForInitdb {
     HEAPU8: Uint8Array
     stringToUTF8OnStack(str: string): number
     _pgl_freopen(path: number, mode: number, fd: number): void
+    _close?(fd: number): number
     FS: any
     __wasi?: boolean
   }
@@ -81,6 +82,11 @@ async function execInitdb({
     log(debug, 'initdb: firstArg', firstArg)
     assert(firstArg === '/pglite/bin/postgres', `trying to execute ${firstArg}`)
 
+    if (pg.Module.__wasi) {
+      for (let fd = 7; fd < 1024; fd++) {
+        pg.Module._close?.(fd)
+      }
+    }
     pg.Module.HEAPU8.set(origHEAPU8)
     if (pg.Module.__wasi) {
       reopenPgStreams()
