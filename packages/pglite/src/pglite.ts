@@ -108,7 +108,7 @@ export class PGlite
   // These are the current ArrayBuffer that is being read or written to
   // during a query, such as COPY FROM or COPY TO.
   #queryReadBuffer?: ArrayBuffer
-  #queryWriteChunks?: Uint8Array[]
+  #queryWriteChunks?: BlobPart[]
 
   #notifyListeners = new Map<string, Set<(payload: string) => void>>()
   #globalNotifyListeners = new Set<(channel: string, payload: string) => void>()
