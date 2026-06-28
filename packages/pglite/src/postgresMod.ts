@@ -443,6 +443,9 @@ async function createWasiModule<T extends PostgresMod>(
 
   const malloc = exports.malloc as (size: number) => number
   const free = exports.free as (ptr: number) => void
+  const resetAfterProcExit = exports.pglite_reset_after_proc_exit as
+    | (() => void)
+    | undefined
   const callMain = (mainArgs: string[] = moduleOverrides.arguments ?? []) => {
     const argvWithProgram = [
       moduleOverrides.thisProgram ?? '/pglite/bin/postgres',
@@ -463,6 +466,7 @@ async function createWasiModule<T extends PostgresMod>(
     } finally {
       for (const ptr of argvPtrs) free(ptr)
       free(argv)
+      resetAfterProcExit?.()
     }
   }
 

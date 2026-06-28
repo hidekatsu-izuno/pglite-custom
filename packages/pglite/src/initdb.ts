@@ -72,9 +72,7 @@ async function execInitdb({
     log(debug, 'initdb: firstArg', firstArg)
     assert(firstArg === '/pglite/bin/postgres', `trying to execute ${firstArg}`)
 
-    if (!pg.Module.__wasi) {
-      pg.Module.HEAPU8.set(origHEAPU8)
-    }
+    pg.Module.HEAPU8.set(origHEAPU8)
 
     log(debug, 'executing pg main with', args)
     const result = pg.callMain(args)
