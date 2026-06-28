@@ -324,65 +324,18 @@ export class PGlite
       )
     }
 
-    // Get the fs bundle
-    // We don't await the loading of the fs bundle at this point as we can continue
-    // with other work.
-    // It's resolved value `fsBundleBuffer` is set and used in `getPreloadedPackage`
-    // which is called via `PostgresModFactory` after we have awaited
-    // `fsBundleBufferPromise` below.
-    const fsBundleUrl = new URL('../release/pglite.data', import.meta.url)
-    const fsBundleBufferPromise = options.fsBundle
-      ? options.fsBundle.arrayBuffer()
-      : pglUtils.getFsBundle(fsBundleUrl)
-    let fsBundleBuffer: ArrayBuffer
-    fsBundleBufferPromise.then((buffer) => {
-      fsBundleBuffer = buffer
-    })
-
-    const wasmMemory = new WebAssembly.Memory({
-      initial: options.initialMemory
-        ? options.initialMemory / (64 * 1024)
-        : 2048,
-      maximum: 32768,
-    })
-
-    let emscriptenOpts: Partial<PostgresMod> = {
+    let runtimeOpts: Partial<PostgresMod> = {
       thisProgram: POSTGRES_EXE_PATH,
       PGLITE_ENV: {},
       WASM_PREFIX: pglUtils.WASM_PREFIX,
       arguments: args,
-      noExitRuntime: true,
-      wasmMemory: wasmMemory,
-      // Provide a stdin that returns EOF to avoid browser prompt
-      stdin: () => null,
       print: (text: string) => {
         this.#print(text)
       },
       printErr: (text: string) => {
         this.#printErr(text)
       },
-      instantiateWasm: (imports, successCallback) => {
-        const moduleUrl = new URL('../release/pglite.wasm', import.meta.url)
-
-        pglUtils
-          .instantiateWasm(imports, moduleUrl, options.pgliteWasmModule)
-          .then(({ instance, module }) => {
-            // @ts-ignore wrong type in Emscripten typings
-            successCallback(instance, module)
-          })
-        return {}
-      },
-      getPreloadedPackage: (remotePackageName, remotePackageSize) => {
-        if (remotePackageName === 'pglite.data') {
-          if (fsBundleBuffer.byteLength !== remotePackageSize) {
-            throw new Error(
-              `Invalid FS bundle size: ${fsBundleBuffer.byteLength} !== ${remotePackageSize}`,
-            )
-          }
-          return fsBundleBuffer
-        }
-        throw new Error(`Unknown package: ${remotePackageName}`)
-      },
+      wasmModule: options.pgliteWasmModule,
       preRun: [
         (mod: PostgresMod) => {
           mod.onRuntimeInitialized = () => {
@@ -475,11 +428,11 @@ export class PGlite
       ],
     }
 
-    const { emscriptenOpts: amendedEmscriptenOpts } = await this.fs!.init(
+    const { emscriptenOpts: amendedRuntimeOpts } = await this.fs!.init(
       this,
-      emscriptenOpts,
+      runtimeOpts,
     )
-    emscriptenOpts = amendedEmscriptenOpts
+    runtimeOpts = amendedRuntimeOpts
 
     // # Setup extensions
     // This is the first step of loading PGlite extensions
@@ -496,9 +449,9 @@ export class PGlite
         extensionBundlePromises[extName] = loadExtensionBundle(ext)
       } else {
         // Extension with JS setup function
-        const extRet = await ext.setup(this, emscriptenOpts)
+        const extRet = await ext.setup(this, runtimeOpts)
         if (extRet.emscriptenOpts) {
-          emscriptenOpts = extRet.emscriptenOpts
+          runtimeOpts = extRet.emscriptenOpts
         }
         if (extRet.namespaceObj) {
           const instance = this as any
@@ -518,14 +471,10 @@ export class PGlite
         extSharedPreloadLibraries.push(...(extRet.sharedPreloadLibraries ?? []))
       }
     }
-    emscriptenOpts['pg_extensions'] = extensionBundlePromises
-
-    // Await the fs bundle - we do this just before calling PostgresModFactory
-    // as it needs the fs bundle to be ready.
-    await fsBundleBufferPromise
+    runtimeOpts['pg_extensions'] = extensionBundlePromises
 
     // Load the database engine
-    this.mod = await PostgresModFactory(emscriptenOpts)
+    this.mod = await PostgresModFactory(runtimeOpts)
 
     // Sync the filesystem from any previous store
     await this.fs!.initialSyncFs()

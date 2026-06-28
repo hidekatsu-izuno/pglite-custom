@@ -1,6 +1,5 @@
 import InitdbModFactory, { InitdbMod } from './initdbModFactory'
 import parse from './argsParser'
-import { pglUtils } from '@electric-sql/pglite-utils'
 
 function assert(condition: unknown, message?: string): asserts condition {
   if (!condition) {
@@ -9,7 +8,7 @@ function assert(condition: unknown, message?: string): asserts condition {
 }
 
 export const PG_ROOT = '/pglite'
-export const PGDATA = PG_ROOT + '/data'
+export const PGDATA = '/data'
 export const ICU_DATA_PATH = PG_ROOT + '/icu'
 export const INITDB_EXE_PATH = PG_ROOT + '/bin/initdb'
 export const POSTGRES_EXE_PATH = PG_ROOT + '/bin/postgres'
@@ -86,12 +85,10 @@ async function execInitdb({
 
   const origHEAPU8 = pg.Module.HEAPU8.slice()
 
-  const emscriptenOpts: Partial<InitdbMod> = {
+  const runtimeOpts: Partial<InitdbMod> = {
     arguments: args,
     noExitRuntime: false,
     thisProgram: INITDB_EXE_PATH,
-    // Provide a stdin that returns EOF to avoid browser prompt
-    stdin: () => null,
     print: (text) => {
       stdoutOutput += text
       log(debug, 'initdbout', text)
@@ -100,25 +97,17 @@ async function execInitdb({
       stderrOutput += text
       log(debug, 'initdberr', text)
     },
-    instantiateWasm: (imports, successCallback) => {
-      const moduleUrl = new URL('../release/initdb.wasm', import.meta.url)
-      pglUtils
-        .instantiateWasm(imports, moduleUrl, wasmModule)
-        .then(({ instance, module }) => {
-          // @ts-ignore wrong type in Emscripten typings
-          successCallback(instance, module)
-        })
-      return {}
-    },
+    __wasiRoot: pg.Module.FS.__root,
+    wasmModule,
     preRun: [
-      (mod: InitdbMod) => {
+      (mod: any) => {
         mod.ENV.PGDATA = PGDATA
         mod.ENV.HOME = '/home/postgres'
         mod.ENV.USER = 'postgres'
         mod.ENV.LOGNAME = 'postgres'
         mod.ENV.ICU_DATA = ICU_DATA_PATH
       },
-      (mod: InitdbMod) => {
+      (mod: any) => {
         mod.onRuntimeInitialized = () => {
           system_fn = mod.addFunction((cmd_ptr: number) => {
             postgresArgs = getArgs(mod.UTF8ToString(cmd_ptr))
@@ -182,7 +171,7 @@ async function execInitdb({
           }
         }
       },
-      (mod: InitdbMod) => {
+      (mod: any) => {
         mod.FS.mkdir(PG_ROOT)
         mod.FS.mount(
           mod.PROXYFS,
@@ -196,7 +185,7 @@ async function execInitdb({
     ],
   }
 
-  const initDbMod = await InitdbModFactory(emscriptenOpts)
+  const initDbMod = await InitdbModFactory(runtimeOpts)
 
   log(debug, 'calling initdb.main with', args)
   const result = initDbMod.callMain(args)
@@ -240,6 +229,8 @@ export async function initdb({
     pg,
     debug,
     args: [
+      '-D',
+      PGDATA,
       '--allow-group-access',
       '--encoding',
       'UTF8',
