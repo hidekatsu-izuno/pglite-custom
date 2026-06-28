@@ -328,6 +328,7 @@ async function createWasiModule<T extends PostgresMod>(
   const os = await import('os')
   const fs = await import('fs')
   const path = await import('path')
+  const nodeCrypto = await import('node:crypto')
   const { WASI } = (await import('node:wasi')) as any
   const root =
     typeof (moduleOverrides as any).__wasiRoot === 'string'
@@ -387,7 +388,10 @@ async function createWasiModule<T extends PostgresMod>(
 
   const callbacks = new Map<number, CallableFunction>()
   let nextCallback = 1
-  const runtimeRefs: { table?: WebAssembly.Table } = {}
+  const runtimeRefs: {
+    table?: WebAssembly.Table
+    memory?: WebAssembly.Memory
+  } = {}
   let socketRead = 0
   let socketWrite = 0
   let systemFn = 0
@@ -400,6 +404,24 @@ async function createWasiModule<T extends PostgresMod>(
     }
     return runtimeRefs.table
   }
+  const fillRandom = (ptr: number, length: number) => {
+    if (!runtimeRefs.memory) {
+      return -1
+    }
+    const heap = new Uint8Array(runtimeRefs.memory.buffer)
+    const random = globalThis.crypto?.getRandomValues
+    if (random) {
+      for (let offset = 0; offset < length; offset += 65536) {
+        random.call(
+          globalThis.crypto,
+          heap.subarray(ptr + offset, ptr + Math.min(length, offset + 65536)),
+        )
+      }
+    } else {
+      nodeCrypto.randomFillSync(heap.subarray(ptr, ptr + length))
+    }
+    return 0
+  }
   const envImports = makeEnvImports(getTable)
 
   const imports: WebAssembly.Imports = {
@@ -411,6 +433,7 @@ async function createWasiModule<T extends PostgresMod>(
       },
     },
     pglite: {
+      random: fillRandom,
       socket_read: (ptr: number, maxLength: number) =>
         socketRead ? (callbacks.get(socketRead)?.(ptr, maxLength) ?? 0) : 0,
       socket_write: (ptr: number, length: number) =>
@@ -438,6 +461,7 @@ async function createWasiModule<T extends PostgresMod>(
     exports: initializeExports,
   })
   const memory = exports.memory as WebAssembly.Memory
+  runtimeRefs.memory = memory
   runtimeRefs.table = exports.__indirect_function_table as WebAssembly.Table
   const { UTF8ToString, writeString } = makeStringReaders(memory)
 
