@@ -67,12 +67,24 @@ async function execInitdb({
   let stderrOutput: string = ''
   let stdoutOutput: string = ''
 
+  const reopenPgStreams = () => {
+    const pglite_stdin_path = pg.Module.stringToUTF8OnStack(pgstdinPath)
+    const rmode = pg.Module.stringToUTF8OnStack('r')
+    pg.Module._pgl_freopen(pglite_stdin_path, rmode, 0)
+    const pglite_stdout_path = pg.Module.stringToUTF8OnStack(pgstdoutPath)
+    const wmode = pg.Module.stringToUTF8OnStack('w')
+    pg.Module._pgl_freopen(pglite_stdout_path, wmode, 1)
+  }
+
   const callPgMain = (args: string[]) => {
     const firstArg = args.shift()
     log(debug, 'initdb: firstArg', firstArg)
     assert(firstArg === '/pglite/bin/postgres', `trying to execute ${firstArg}`)
 
     pg.Module.HEAPU8.set(origHEAPU8)
+    if (pg.Module.__wasi) {
+      reopenPgStreams()
+    }
 
     log(debug, 'executing pg main with', args)
     const result = pg.callMain(args)
@@ -151,15 +163,7 @@ async function execInitdb({
 
           mod._pgl_set_pclose_fn(pclose_fn)
 
-          {
-            const pglite_stdin_path = pg.Module.stringToUTF8OnStack(pgstdinPath)
-            const rmode = pg.Module.stringToUTF8OnStack('r')
-            pg.Module._pgl_freopen(pglite_stdin_path, rmode, 0)
-            const pglite_stdout_path =
-              pg.Module.stringToUTF8OnStack(pgstdoutPath)
-            const wmode = pg.Module.stringToUTF8OnStack('w')
-            pg.Module._pgl_freopen(pglite_stdout_path, wmode, 1)
-          }
+          reopenPgStreams()
 
           {
             const initdb_path = mod.stringToUTF8OnStack(pgstdoutPath)
