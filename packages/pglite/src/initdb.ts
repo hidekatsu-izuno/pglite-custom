@@ -82,13 +82,11 @@ async function execInitdb({
     log(debug, 'initdb: firstArg', firstArg)
     assert(firstArg === '/pglite/bin/postgres', `trying to execute ${firstArg}`)
 
+    pg.Module.HEAPU8.set(origHEAPU8)
     if (pg.Module.__wasi) {
       for (let fd = 7; fd < 1024; fd++) {
         pg.Module._close?.(fd)
       }
-    }
-    pg.Module.HEAPU8.set(origHEAPU8)
-    if (pg.Module.__wasi) {
       reopenPgStreams()
     }
 
