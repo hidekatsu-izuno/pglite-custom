@@ -13,10 +13,6 @@ export default defineConfig({
       // Ignore links to our example pages
       return url.toLowerCase().startsWith('./examples')
     },
-    (url) => {
-      // Ignore links to the benchmark runners
-      return url.toLowerCase().startsWith('./benchmark/')
-    },
   ],
   head: [
     [
@@ -79,7 +75,6 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'About', link: '/docs/about' },
       { text: 'Docs', link: '/docs/' },
-      { text: 'REPL', link: '/repl/' },
       { text: 'Electric', link: 'https://www.electric.ax' },
       {
         text: 'GitHub',
@@ -103,24 +98,9 @@ export default defineConfig({
         items: [
           { text: 'Getting Started', link: '/docs/' },
           { text: 'PGlite API', link: '/docs/api' },
-          { text: 'Live Queries', link: '/docs/live-queries' },
           { text: 'Filesystems', link: '/docs/filesystems' },
-          {
-            text: 'Framework Hooks',
-            link: '/react',
-            base: '/docs/framework-hooks',
-            collapsed: false,
-            items: [
-              { text: 'React', link: '/react' },
-              { text: 'Vue', link: '/vue' },
-            ],
-          },
           { text: 'Bundler Support', link: '/docs/bundler-support' },
-          { text: 'Multi-tab Worker', link: '/docs/multi-tab-worker' },
-          { text: 'REPL Component', link: '/docs/repl' },
           { text: 'ORMs & Query Builders', link: '/docs/orm-support' },
-          { text: 'Sync using Postgres Sync', link: '/docs/sync' },
-          { text: 'PGlite Socket', link: '/docs/pglite-socket' },
           {
             text: 'PGlite tools',
             link: '/pglite-tools',
@@ -147,7 +127,6 @@ export default defineConfig({
         text: 'Reference',
         items: [
           { text: 'Examples', link: '/examples.md' },
-          { text: 'Benchmarks', link: '/benchmarks.md' },
           { text: 'Debugging', link: '/debugging.md' },
         ],
       },

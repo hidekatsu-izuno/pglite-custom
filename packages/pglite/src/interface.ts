@@ -6,7 +6,7 @@ import type { Filesystem } from './fs/base.js'
 import type { DumpTarCompressionOptions } from './fs/tarUtils.js'
 import type { Parser, Serializer } from './types.js'
 
-export type FilesystemType = 'nodefs' | 'idbfs' | 'memoryfs'
+export type FilesystemType = 'nodefs' | 'memoryfs'
 
 export type DebugLevel = 0 | 1 | 2 | 3 | 4 | 5
 

@@ -33,8 +33,6 @@ Path to the directory for storing the Postgres database. You can provide a URI s
 
 - `file://` or unprefixed<br />
   File system storage, available in Node and Bun.
-- `idb://`<br />
-  [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) storage, available in the browser.
 - `memory://`<br />
   In-memory ephemeral storage, available in all platforms.
 
@@ -45,7 +43,7 @@ Path to the directory for storing the Postgres database. You can provide a URI s
 - `debug?: 1-5`<br />
   the Postgres debug level. Logs are sent to the console.
 - `relaxedDurability?: boolean`<br />
-  Under relaxed durability mode, PGlite will not wait for flushes to storage to complete after each query before returning results. This is particularly useful when using the IndexedDB file system.
+  Under relaxed durability mode, PGlite will not wait for flushes to storage to complete after each query before returning results.
 - `fs?: Filesystem`<br />
   The alternative to providing a dataDir with a filesystem prefix is to initialise a `Filesystem` yourself and provide it here. See [Filesystems](./filesystems.md)
 - `loadDataDir?: Blob | File`<br />
@@ -123,23 +121,19 @@ Path to the directory for storing the Postgres database. You can provide a URI s
 
 PGlite and Postgres extensions are loaded into a PGLite instance on start, and can include both a WASM build of a Postgres extension and/or a PGlite client plugin.
 
-The `options.extensions` parameter is an object of `namespace: extension` parings. The namespace is used to expose the PGlite client plugin included in the extension. An example of this is the [live queries](./live-queries.md) extension.
+The `options.extensions` parameter is an object of `namespace: extension` parings. The namespace is used to expose the PGlite client plugin included in the extension.
 
 ```ts
 import { PGlite } from '@electric-sql/pglite'
-import { live } from '@electric-sql/pglite/live'
 import { vector } from '@electric-sql/pglite-pgvector'
 
 const pg = await PGlite.create({
   extensions: {
-    live, // Live query extension, is a PGlite client plugin
     vector, // Postgres pgvector extension
   },
 })
 
-// The `live` namespace is added by the use of the
-// `live` key in the `extensions` object.
-pg.live.query('...')
+// Extension namespaces are added by the keys in the `extensions` object.
 ```
 
 For information on how to develop a PGlite extension see [Extension Development](../extensions/development.md).
@@ -337,34 +331,6 @@ This can then be used in combination with the [`loadDataDir`](#options) option w
 The datadir dump may not be compatible with other Postgres versions; it is only designed for importing back into PGlite.
 
 :::
-
-### execProtocol
-
-`execProtocol(message: Uint8Array, options?: ExecProtocolOptions): Promise<Array<[BackendMessage, Uint8Array]>>`
-
-Execute a Postgres wire protocol message, returning an array of tuples, one for each wire protocol result message, consisting of:
-
-1. The passed message object - see [pg-protocol](https://github.com/brianc/node-postgres/tree/master/packages/pg-protocol)
-2. The raw `Uint8Array` for that message.
-
-This API is safe to use alongside the other PGlite query APIs as it handles error, transactions and notifications.
-
-### execProtocolRaw
-
-`execProtocolRaw(message: Uint8Array, options?: ExecProtocolOptions): Promise<Uint8Array>`
-
-Execute a Postgres wire protocol message, returning the unparsed result `Uint8Array`, this includes all wire protocol result messages emitted as a result of your message and will require external passing. This is the lowest level API exposed by PGlite and can be used to interact with a PGlite database using existing Postgres clients. It is likely that you will want to use something such as [pg-gateway](https://github.com/supabase-community/pg-gateway) that uses this internally to expose the database on a TCP socket.
-
-::: warning WARNING
-
-`execProtocolRaw` bypasses PGlite's protocol wrappers that manage error/notice messages,
-transactions, and notification listeners. Only use if you need to bypass these wrappers and don't intend to use the above features. [`execProtocol`](#execprotocol) is a safer alternative.
-
-:::
-
-`execProtocolRawStream(message: Uint8Array, options: ExecProtocolOptionsStream): void`
-Same as `execProtocolRaw` but returns raw messages in the `options.onRawData` callback as they arrive from the backend. This is particularly useful when expecting large sets of data.
-See a usage example in the `pglite-socket` project, where the server uses this method to pass the results to the client socket as they arrive.
 
 ### describeQuery
 

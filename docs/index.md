@@ -5,7 +5,7 @@ layout: home
 hero:
   name: 'PGlite'
   text: 'Embeddable Postgres'
-  tagline: 'Run a full Postgres database locally in WASM with reactivity and live sync.'
+  tagline: 'Run a full Postgres database locally in WASM.'
   actions:
     - theme: brand
       text: Get Started
@@ -22,21 +22,15 @@ features:
     details: A complete WASM build of Postgres that's under 3MB Gzipped.
   - title: Extendable
     details: Dynamic extension loading mechanism, including support for pgvector and PostGIS.
-  - title: Reactive
-    details: Built in support for data loading, synchronisation and live query primitives.
+  - title: Local
+    details: Built in support for local data loading and Postgres extensions.
 ---
 
 <script setup>
 import { onMounted } from 'vue'
-import { defineClientComponent } from 'vitepress'
-import { VPHomeHero } from 'vitepress/theme'
 import { data as initialStarCount } from './count.data.ts'
 import { data as initialDownloadCount } from './downloadCount.data.ts'
 import { starCount, downloadCount } from './components/starCount.ts'
-
-const Repl = defineClientComponent(() => {
-  return import('./components/Repl.vue')
-})
 
 function toShortDecimal(x) {
   return x.toLocaleString('en-US', {
@@ -192,18 +186,10 @@ onMounted(async () => {
 
 <style scoped>
 
-  .try-it-now,
   .postgres-new {
     margin-top: 3rem;
     display: flex;
     flex-direction: column;
-  }
-
-  .try-it-now .repl {
-    display: block;
-    width: 100%;
-    margin-bottom: 1rem;
-    height: 350px;
   }
 
   .info {
@@ -240,22 +226,14 @@ onMounted(async () => {
       display: flex;
     }
 
-    .try-it-now,
     .postgres-new {
-      width: 50%;
-    }
-
-    .try-it-now {
-      padding-left: 1rem;
+      width: 100%;
     }
 
     .postgres-new {
-      padding-right: 1rem;
-    }
-
-    .try-it-now .repl {
-      height: auto;
-      aspect-ratio: 1616 / 1080;
+      max-width: 808px;
+      margin-left: auto;
+      margin-right: auto;
     }
   }
 </style>
@@ -277,20 +255,5 @@ onMounted(async () => {
     </video>
     <a class="link-btn" href="https://database.build">
       What would you like to create?</a>
-  </div>
-  <div class="try-it-now">
-    <div class="info">
-      <h3>Try PGlite Now</h3>
-      <p>
-        This is a full PGlite Postgres running in your browser.
-        <br class="hide-xs" />
-        It even includes <a href="/extensions/#pgvector">pgvector</a>!
-      </p>
-    </div>
-    <ClientOnly>
-      <Repl class="repl" />
-    </ClientOnly>
-    <a class="link-btn" href="/repl">
-      Try more extensions in the playground</a>
   </div>
 </div>

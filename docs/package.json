@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@electric-sql/pglite": "workspace:*",
-    "@electric-sql/pglite-repl": "workspace:*",
     "@electric-sql/pglite-postgis": "workspace:*",
     "@electric-sql/pglite-pgvector": "workspace:*",
     "@electric-sql/pglite-age": "workspace:*",
