@@ -360,7 +360,7 @@ async function createWasiModule<T extends PostgresMod>(
 
   const FS = await createNodeFs(root)
   const ENV = {
-    PGDATA: 'data',
+    PGDATA: '/data',
     HOME: '/home/postgres',
     USER: 'postgres',
     LOGNAME: 'postgres',
@@ -443,12 +443,10 @@ async function createWasiModule<T extends PostgresMod>(
 
   const malloc = exports.malloc as (size: number) => number
   const free = exports.free as (ptr: number) => void
-  const toWasiArg = (arg: string) =>
-    arg === '/data' ? 'data' : arg.startsWith('/data/') ? arg.slice(1) : arg
   const callMain = (mainArgs: string[] = moduleOverrides.arguments ?? []) => {
     const argvWithProgram = [
       moduleOverrides.thisProgram ?? '/pglite/bin/postgres',
-      ...mainArgs.map(toWasiArg),
+      ...mainArgs,
     ]
     const argvPtrs = argvWithProgram.map((arg) => writeString(arg, malloc))
     const argv = malloc((argvPtrs.length + 1) * 4)
@@ -478,6 +476,7 @@ async function createWasiModule<T extends PostgresMod>(
   const mod = Object.assign({}, wrappedExports, moduleOverrides, {
     ENV,
     FS,
+    __wasi: true,
     PGLITE_ENV: moduleOverrides.PGLITE_ENV ?? {},
     PROXYFS: {},
     WASM_PREFIX: pglUtils.WASM_PREFIX,

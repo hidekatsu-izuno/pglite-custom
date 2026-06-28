@@ -26,6 +26,7 @@ export interface PGliteForInitdb {
     stringToUTF8OnStack(str: string): number
     _pgl_freopen(path: number, mode: number, fd: number): void
     FS: any
+    __wasi?: boolean
   }
   callMain(args: string[]): number
 }
@@ -71,7 +72,9 @@ async function execInitdb({
     log(debug, 'initdb: firstArg', firstArg)
     assert(firstArg === '/pglite/bin/postgres', `trying to execute ${firstArg}`)
 
-    pg.Module.HEAPU8.set(origHEAPU8)
+    if (!pg.Module.__wasi) {
+      pg.Module.HEAPU8.set(origHEAPU8)
+    }
 
     log(debug, 'executing pg main with', args)
     const result = pg.callMain(args)
@@ -101,7 +104,7 @@ async function execInitdb({
     wasmModule,
     preRun: [
       (mod: any) => {
-        mod.ENV.PGDATA = 'data'
+        mod.ENV.PGDATA = PGDATA
         mod.ENV.HOME = '/home/postgres'
         mod.ENV.USER = 'postgres'
         mod.ENV.LOGNAME = 'postgres'
