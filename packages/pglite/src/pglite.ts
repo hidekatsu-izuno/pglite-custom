@@ -407,7 +407,7 @@ export class PGlite
           mod.ENV.HOME = '/home/postgres'
           mod.ENV.USER = 'postgres'
           mod.ENV.LOGNAME = 'postgres'
-          mod.ENV.PGDATA = PGDATA
+          mod.ENV.PGDATA = 'data'
           mod.ENV.PGUSER = options.username ?? 'postgres'
           mod.ENV.PGDATABASE = options.database ?? 'postgres'
           mod.ENV.LANG = mod.ENV.LC_COLLATE = mod.ENV.LC_CTYPE = 'en_US.UTF-8'

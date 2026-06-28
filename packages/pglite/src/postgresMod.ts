@@ -111,6 +111,14 @@ class ErrnoError extends Error {
   }
 }
 
+class ExitStatus extends Error {
+  readonly name = 'ExitStatus'
+
+  constructor(readonly status: number) {
+    super(`Program terminated with exit(${status})`)
+  }
+}
+
 async function createNodeFs(root: string): Promise<FS> {
   const fs = await import('fs')
   const path = await import('path')
@@ -352,7 +360,7 @@ async function createWasiModule<T extends PostgresMod>(
 
   const FS = await createNodeFs(root)
   const ENV = {
-    PGDATA: '/data',
+    PGDATA: 'data',
     HOME: '/home/postgres',
     USER: 'postgres',
     LOGNAME: 'postgres',
@@ -372,6 +380,7 @@ async function createWasiModule<T extends PostgresMod>(
       '/': root,
       '/pglite': pgRoot,
       '/home': homeRoot,
+      '/data': dataRoot,
     },
     returnOnExit: true,
   })
@@ -395,7 +404,12 @@ async function createWasiModule<T extends PostgresMod>(
 
   const imports: WebAssembly.Imports = {
     env: envImports,
-    wasi_snapshot_preview1: wasi.wasiImport,
+    wasi_snapshot_preview1: {
+      ...wasi.wasiImport,
+      proc_exit: (code: number) => {
+        throw new ExitStatus(code)
+      },
+    },
     pglite: {
       socket_read: (ptr: number, maxLength: number) =>
         socketRead ? (callbacks.get(socketRead)?.(ptr, maxLength) ?? 0) : 0,
@@ -429,10 +443,12 @@ async function createWasiModule<T extends PostgresMod>(
 
   const malloc = exports.malloc as (size: number) => number
   const free = exports.free as (ptr: number) => void
+  const toWasiArg = (arg: string) =>
+    arg === '/data' ? 'data' : arg.startsWith('/data/') ? arg.slice(1) : arg
   const callMain = (mainArgs: string[] = moduleOverrides.arguments ?? []) => {
     const argvWithProgram = [
       moduleOverrides.thisProgram ?? '/pglite/bin/postgres',
-      ...mainArgs,
+      ...mainArgs.map(toWasiArg),
     ]
     const argvPtrs = argvWithProgram.map((arg) => writeString(arg, malloc))
     const argv = malloc((argvPtrs.length + 1) * 4)
@@ -441,6 +457,11 @@ async function createWasiModule<T extends PostgresMod>(
     view.setUint32(argv + argvPtrs.length * 4, 0, true)
     try {
       return exports.__main_argc_argv(argvPtrs.length, argv)
+    } catch (err) {
+      if (err instanceof ExitStatus) {
+        return err.status
+      }
+      throw err
     } finally {
       for (const ptr of argvPtrs) free(ptr)
       free(argv)
@@ -457,8 +478,6 @@ async function createWasiModule<T extends PostgresMod>(
   const mod = Object.assign({}, wrappedExports, moduleOverrides, {
     ENV,
     FS,
-    HEAP8: new Int8Array(memory.buffer),
-    HEAPU8: new Uint8Array(memory.buffer),
     PGLITE_ENV: moduleOverrides.PGLITE_ENV ?? {},
     PROXYFS: {},
     WASM_PREFIX: pglUtils.WASM_PREFIX,
@@ -491,6 +510,14 @@ async function createWasiModule<T extends PostgresMod>(
     _pgl_proc_exit: (code: number) => code,
     _emscripten_force_exit: () => {},
   }) as PostgresMod
+  Object.defineProperties(mod, {
+    HEAP8: {
+      get: () => new Int8Array(memory.buffer),
+    },
+    HEAPU8: {
+      get: () => new Uint8Array(memory.buffer),
+    },
+  })
 
   moduleOverrides.preInit?.forEach((fn) => fn(mod))
   moduleOverrides.preRun?.forEach((fn) => fn(mod))

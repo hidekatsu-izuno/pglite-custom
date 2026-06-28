@@ -46,6 +46,9 @@ export const copyFiles = async (srcDir: string, destDir: string) => {
     if (stat.isFile()) {
       await fs.copyFile(srcFile, destFile)
       console.log(`Copied ${srcFile} to ${destFile}`)
+    } else if (stat.isDirectory()) {
+      await fs.cp(srcFile, destFile, { recursive: true })
+      console.log(`Copied ${srcFile} to ${destFile}`)
     }
   }
 }

@@ -101,7 +101,7 @@ async function execInitdb({
     wasmModule,
     preRun: [
       (mod: any) => {
-        mod.ENV.PGDATA = PGDATA
+        mod.ENV.PGDATA = 'data'
         mod.ENV.HOME = '/home/postgres'
         mod.ENV.USER = 'postgres'
         mod.ENV.LOGNAME = 'postgres'
