@@ -6,16 +6,6 @@ import fs from 'fs'
 const thisFile = fileURLToPath(new URL(import.meta.url))
 const root = path.dirname(thisFile)
 
-const replaceAssertPlugin = {
-  name: 'replace-assert',
-  setup(build: any) {
-    // Resolve `assert` to a blank file
-    build.onResolve({ filter: /^assert$/ }, (_args: any) => {
-      return { path: path.join(root, 'src', 'polyfills', 'blank.ts') }
-    })
-  },
-}
-
 const entryPoints = [
   'src/index.ts',
   'src/fs/nodefs.ts',
@@ -43,7 +33,6 @@ export default defineConfig([
     },
     clean: true,
     external: ['../release/pglite.js', '../release/pglite.cjs'],
-    esbuildPlugins: [replaceAssertPlugin],
     minify: minify,
     shims: true, // Convert import.meta.url to a shim for CJS
     format: ['esm', 'cjs'],
