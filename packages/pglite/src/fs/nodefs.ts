@@ -20,6 +20,7 @@ export class NodeFS extends EmscriptenBuiltinFilesystem {
     this.pg = pg
     const options: Partial<PostgresMod> = {
       ...opts,
+      __wasiDataRoot: this.rootDir,
       preRun: [
         ...(opts.preRun || []),
         (mod: any) => {

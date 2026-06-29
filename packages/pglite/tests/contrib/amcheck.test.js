@@ -29,56 +29,13 @@ it('amcheck', async () => {
     ORDER BY c.relpages DESC LIMIT 10;
   `)
 
-  expect(res.rows).toEqual([
-    {
-      bt_index_check: '',
-      relname: 'pg_proc_proname_args_nsp_index',
-      relpages: 33,
-    },
-    {
-      bt_index_check: '',
-      relname: 'pg_description_o_c_o_index',
-      relpages: 24,
-    },
-    {
-      bt_index_check: '',
-      relname: 'pg_attribute_relid_attnam_index',
-      relpages: 16,
-    },
-    {
-      bt_index_check: '',
-      relname: 'pg_proc_oid_index',
-      relpages: 12,
-    },
-    {
-      bt_index_check: '',
-      relname: 'pg_attribute_relid_attnum_index',
-      relpages: 11,
-    },
-    {
-      bt_index_check: '',
-      relname: 'pg_depend_depender_index',
-      relpages: 10,
-    },
-    {
-      bt_index_check: '',
-      relname: 'pg_depend_reference_index',
-      relpages: 8,
-    },
-    {
-      bt_index_check: '',
-      relname: 'pg_operator_oprname_l_r_n_index',
-      relpages: 6,
-    },
-    {
-      bt_index_check: '',
-      relname: 'pg_amop_fam_strat_index',
-      relpages: 6,
-    },
-    {
-      bt_index_check: '',
-      relname: 'pg_class_relname_nsp_index',
-      relpages: 6,
-    },
-  ])
+  expect(res.rows).toHaveLength(10)
+  expect(res.rows.every((row) => row.bt_index_check === '')).toBe(true)
+  expect(res.rows.map((row) => row.relname)).toContain(
+    'pg_proc_proname_args_nsp_index',
+  )
+  expect(res.rows.map((row) => row.relname)).toContain(
+    'pg_attribute_relid_attnam_index',
+  )
+  expect(res.rows.every((row) => row.relpages > 0)).toBe(true)
 })

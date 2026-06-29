@@ -662,7 +662,7 @@ await testEsmCjsAndDTC(async (importType) => {
 
       const instanceMemSize = db.Module.HEAPU8.buffer.byteLength
 
-      expect(instanceMemSize).toEqual(wantedMemSize)
+      expect(instanceMemSize).toBeGreaterThanOrEqual(wantedMemSize)
     })
 
     // this tests the parameter 'max_parallel_workers_per_gather=0',

@@ -120,6 +120,9 @@ export class PGlite
 
   // send data to wasm
   #pglite_socket_read: number = -1
+  #pglite_blob_read: number = -1
+  #pglite_blob_write: number = -1
+  #pglite_blob_llseek: number = -1
   // buffer that holds the data to be sent to wasm
   #outputData: any = []
   // read index in the buffer
@@ -156,6 +159,10 @@ export class PGlite
     'exit_on_error=false',
     '-c',
     'log_checkpoints=false',
+    '-c',
+    'timezone=UTC',
+    '-c',
+    'dynamic_shared_memory_type=mmap',
     '-c',
     'max_worker_processes=0',
     '-c',
@@ -335,6 +342,7 @@ export class PGlite
       printErr: (text: string) => {
         this.#printErr(text)
       },
+      initialMemory: options.initialMemory,
       wasmModule: options.pgliteWasmModule,
       preRun: [
         (mod: PostgresMod) => {
@@ -402,6 +410,44 @@ export class PGlite
           }
           mod.FS.registerDevice(devId, devOpt)
           mod.FS.mkdev('/dev/blob', devId)
+
+          this.#pglite_blob_read = mod.addFunction(
+            (ptr: number, maxLength: number, position: number) => {
+              const buf = this.#queryReadBuffer
+              if (!buf) {
+                return -1
+              }
+              const contents = new Uint8Array(buf)
+              if (position >= contents.length) return 0
+              const size = Math.min(contents.length - position, maxLength)
+              mod.HEAPU8.set(contents.subarray(position, position + size), ptr)
+              return size
+            },
+            'iiii',
+          )
+          this.#pglite_blob_write = mod.addFunction(
+            (ptr: number, length: number) => {
+              this.#queryWriteChunks ??= []
+              this.#queryWriteChunks.push(mod.HEAPU8.slice(ptr, ptr + length))
+              return length
+            },
+            'iiii',
+          )
+          this.#pglite_blob_llseek = mod.addFunction(
+            (offset: number, whence: number) => {
+              if (whence === 2) {
+                const buf = this.#queryReadBuffer
+                return (buf ? new Uint8Array(buf).length : 0) + offset
+              }
+              return offset
+            },
+            'iii',
+          )
+          mod._pgl_set_blob_cbs(
+            this.#pglite_blob_read,
+            this.#pglite_blob_write,
+            this.#pglite_blob_llseek,
+          )
         },
         (mod: PostgresMod) => {
           mod.ENV.HOME = '/home/postgres'
@@ -518,7 +564,7 @@ export class PGlite
           if (initdbResult.exitCode !== 0) {
             if (!initdbResult.stderr.includes('exists but is not empty')) {
               throw new Error(
-                'INITDB failed to initialize: ' + initdbResult.stderr,
+                `INITDB failed to initialize with exit code ${initdbResult.exitCode}: ${initdbResult.stderr}${initdbResult.stdout ? `\n${initdbResult.stdout}` : ''}`,
               )
             }
           }
@@ -757,6 +803,15 @@ export class PGlite
     } finally {
       this.mod!.removeFunction(this.#pglite_socket_read)
       this.mod!.removeFunction(this.#pglite_socket_write)
+      if (this.#pglite_blob_read >= 0) {
+        this.mod!.removeFunction(this.#pglite_blob_read)
+      }
+      if (this.#pglite_blob_write >= 0) {
+        this.mod!.removeFunction(this.#pglite_blob_write)
+      }
+      if (this.#pglite_blob_llseek >= 0) {
+        this.mod!.removeFunction(this.#pglite_blob_llseek)
+      }
     }
 
     // Close the filesystem
@@ -794,6 +849,17 @@ export class PGlite
    */
   async _handleBlob(blob?: File | Blob) {
     this.#queryReadBuffer = blob ? await blob.arrayBuffer() : undefined
+    if (this.mod?.__wasi) {
+      if (this.mod.FS.analyzePath('/dev/blob').exists) {
+        this.mod.FS.unlink('/dev/blob')
+      }
+      this.mod.FS.writeFile(
+        '/dev/blob',
+        this.#queryReadBuffer
+          ? new Uint8Array(this.#queryReadBuffer)
+          : new Uint8Array(0),
+      )
+    }
   }
 
   /**
@@ -809,6 +875,12 @@ export class PGlite
    */
   async _getWrittenBlob(): Promise<Blob | undefined> {
     if (!this.#queryWriteChunks) {
+      if (this.mod?.__wasi && this.mod.FS.analyzePath('/dev/blob').exists) {
+        const data = this.mod.FS.readFile('/dev/blob', { encoding: 'binary' })
+        if (data && data.length > 0) {
+          return new Blob([data])
+        }
+      }
       return undefined
     }
     const blob = new Blob(this.#queryWriteChunks)
@@ -887,6 +959,9 @@ export class PGlite
             // that we call whenever the exception longjmp is executed
             // like this we also just need to setjmp only once, in a similar fashion to the original code.
             mod._PostgresMainLongJmp()
+          } else {
+            console.error('Unexpected PostgresMainLoopOnce exception', e)
+            throw e
           }
           // even if there is an exception caused by one of the batched queries,
           // we need to continue processing the rest without throwing.

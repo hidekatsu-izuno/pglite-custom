@@ -65,6 +65,7 @@ async function execInitdb({
 
   let initdb_stdin_fd = -1
   let initdb_stdout_fd = -1
+  let pg_locale_a_fd = -1
   let stderrOutput: string = ''
   let stdoutOutput: string = ''
 
@@ -77,31 +78,63 @@ async function execInitdb({
     pg.Module._pgl_freopen(pglite_stdout_path, wmode, 1)
   }
 
+  const toWaitStatus = (exitCode: number) => exitCode << 8
+
+  const copyFile = (fromFs: any, toFs: any, path: string) => {
+    const data = fromFs.readFile(path)
+    toFs.writeFile(path, data)
+  }
+
+  const getWasiExitCode = (err: unknown): number | undefined => {
+    if (typeof err !== 'symbol' || String(err) !== 'Symbol(kExitCode)') {
+      return undefined
+    }
+    const wasi = pg.Module.__wasi
+    if (typeof wasi !== 'object' || wasi === null) {
+      return undefined
+    }
+    const exitCodeSymbol = Object.getOwnPropertySymbols(wasi).find(
+      (symbol) => String(symbol) === 'Symbol(kExitCode)',
+    )
+    if (!exitCodeSymbol) {
+      return undefined
+    }
+    const exitCode = (wasi as Record<symbol, unknown>)[exitCodeSymbol]
+    return typeof exitCode === 'number' ? exitCode : undefined
+  }
+
   const callPgMain = (args: string[]) => {
     const firstArg = args.shift()
-    log(debug, 'initdb: firstArg', firstArg)
+    log(debug, 'firstArg', firstArg)
     assert(firstArg === '/pglite/bin/postgres', `trying to execute ${firstArg}`)
 
-    pg.Module.HEAPU8.set(origHEAPU8)
+    if (origHEAPU8) {
+      pg.Module.HEAPU8.set(origHEAPU8)
+    }
     if (pg.Module.__wasi) {
-      for (let fd = 7; fd < 1024; fd++) {
-        pg.Module._close?.(fd)
-      }
       pg.Module._pgl_chdir?.(pg.Module.stringToUTF8OnStack(PGDATA))
       reopenPgStreams()
     }
 
     log(debug, 'executing pg main with', args)
-    const result = pg.callMain(args)
-
-    log(debug, result)
+    let result: number
+    try {
+      result = pg.callMain(args)
+    } catch (err) {
+      const wasiExitCode = getWasiExitCode(err)
+      if (wasiExitCode === undefined) {
+        throw err
+      }
+      result = wasiExitCode
+    }
+    log(debug, 'pg main result', result)
 
     postgresArgs = []
 
     return result
   }
 
-  const origHEAPU8 = pg.Module.HEAPU8.slice()
+  let origHEAPU8: Uint8Array | undefined
 
   const runtimeOpts: Partial<InitdbMod> = {
     arguments: args,
@@ -126,72 +159,122 @@ async function execInitdb({
         mod.ENV.ICU_DATA = ICU_DATA_PATH
       },
       (mod: any) => {
-        mod.onRuntimeInitialized = () => {
-          system_fn = mod.addFunction((cmd_ptr: number) => {
-            postgresArgs = getArgs(mod.UTF8ToString(cmd_ptr))
-            return callPgMain(postgresArgs)
-          }, 'pi')
+        system_fn = mod.addFunction((cmd_ptr: number) => {
+          postgresArgs = getArgs(mod.UTF8ToString(cmd_ptr))
+          log(debug, 'system', postgresArgs)
+          return toWaitStatus(callPgMain(postgresArgs))
+        }, 'pi')
 
-          mod._pgl_set_system_fn(system_fn)
+        mod._pgl_set_system_fn(system_fn)
 
-          popen_fn = mod.addFunction((cmd_ptr: number, mode: number) => {
-            const smode = mod.UTF8ToString(mode)
-            postgresArgs = getArgs(mod.UTF8ToString(cmd_ptr))
+        popen_fn = mod.addFunction((cmd_ptr: number, mode: number) => {
+          const smode = mod.UTF8ToString(mode)
+          postgresArgs = getArgs(mod.UTF8ToString(cmd_ptr))
+          log(debug, 'popen', smode, postgresArgs)
 
-            if (smode === 'r') {
-              pgMainResult = callPgMain(postgresArgs)
-              return initdb_stdin_fd
-            } else {
-              if (smode === 'w') {
-                if (pg.Module.__wasi) {
-                  const path = mod.stringToUTF8OnStack(pgstdinPath)
-                  const wmode = mod.stringToUTF8OnStack('w')
-                  initdb_stdout_fd = mod._fopen(path, wmode)
-                }
-                needToCallPGmain = true
-                return initdb_stdout_fd
-              } else {
-                throw `Unexpected popen mode value ${smode}`
-              }
-            }
-          }, 'ppi')
-
-          mod._pgl_set_popen_fn(popen_fn)
-
-          pclose_fn = mod.addFunction((stream: number) => {
-            if (stream === initdb_stdin_fd || stream === initdb_stdout_fd) {
-              if (pg.Module.__wasi && stream === initdb_stdout_fd) {
-                mod._fflush(stream)
-                mod._fclose(stream)
-                initdb_stdout_fd = -1
-              }
-              // if the last popen had mode w, execute now postgres' main()
-              if (needToCallPGmain) {
-                needToCallPGmain = false
-                pgMainResult = callPgMain(postgresArgs)
-              }
-              return pgMainResult
-            } else {
-              return mod._pclose(stream)
-            }
-          }, 'pi')
-
-          mod._pgl_set_pclose_fn(pclose_fn)
-
-          reopenPgStreams()
-
-          {
-            const initdb_path = mod.stringToUTF8OnStack(pgstdoutPath)
-            const rmode = mod.stringToUTF8OnStack('r')
-            initdb_stdin_fd = mod._fopen(initdb_path, rmode)
-
+          if (smode === 'r') {
+            pgMainResult = callPgMain(postgresArgs)
             if (pg.Module.__wasi) {
-              initdb_stdout_fd = -1
-            } else {
-              const path = mod.stringToUTF8OnStack(pgstdinPath)
-              const wmode = mod.stringToUTF8OnStack('w')
-              initdb_stdout_fd = mod._fopen(path, wmode)
+              copyFile(pg.Module.FS, mod.FS, pgstdoutPath)
+              if (initdb_stdin_fd !== -1) {
+                mod._fclose(initdb_stdin_fd)
+              }
+              const path = mod.stringToUTF8OnStack(pgstdoutPath)
+              const rmode = mod.stringToUTF8OnStack('r')
+              initdb_stdin_fd = mod._fopen(path, rmode)
             }
+            return initdb_stdin_fd
+          } else {
+            if (smode === 'w') {
+              if (pg.Module.__wasi) {
+                const path = mod.stringToUTF8OnStack(pgstdinPath)
+                const wmode = mod.stringToUTF8OnStack('w')
+                initdb_stdout_fd = mod._fopen(path, wmode)
+              }
+              needToCallPGmain = true
+              return initdb_stdout_fd
+            } else {
+              throw `Unexpected popen mode value ${smode}`
+            }
+          }
+        }, 'ppi')
+
+        mod._pgl_set_popen_fn(popen_fn)
+
+        pclose_fn = mod.addFunction((stream: number) => {
+          log(debug, 'pclose', stream, {
+            initdb_stdin_fd,
+            initdb_stdout_fd,
+          })
+          if (stream === initdb_stdin_fd || stream === initdb_stdout_fd) {
+            if (pg.Module.__wasi && stream === initdb_stdout_fd) {
+              mod._fflush(stream)
+              mod._fclose(stream)
+              copyFile(mod.FS, pg.Module.FS, pgstdinPath)
+              initdb_stdout_fd = -1
+            }
+            // if the last popen had mode w, execute now postgres' main()
+            if (needToCallPGmain) {
+              needToCallPGmain = false
+              pgMainResult = callPgMain(postgresArgs)
+            }
+            return toWaitStatus(pgMainResult)
+          } else {
+            return mod._pclose(stream)
+          }
+        }, 'pi')
+
+        mod._pgl_set_pclose_fn(pclose_fn)
+
+        if (pg.Module.__wasi) {
+          const pgPopenFn = pg.Module.addFunction(
+            (cmdPtr: number, modePtr: number) => {
+              const command = pg.Module.UTF8ToString(cmdPtr)
+              const smode = pg.Module.UTF8ToString(modePtr)
+              if (command === 'locale -a' && smode === 'r') {
+                const localePath = '/pglite/locale-a'
+                pg.Module.FS.writeFile(localePath, 'C\nC.UTF-8\nPOSIX\n')
+                const path = pg.Module.stringToUTF8OnStack(localePath)
+                const rmode = pg.Module.stringToUTF8OnStack('r')
+                pg_locale_a_fd = pg.Module._fopen(path, rmode)
+                return pg_locale_a_fd
+              }
+              return 0
+            },
+            'ppi',
+          )
+          const pgPcloseFn = pg.Module.addFunction((stream: number) => {
+            if (stream === pg_locale_a_fd) {
+              pg_locale_a_fd = -1
+              return pg.Module._fclose(stream)
+            }
+            return -1
+          }, 'pi')
+          pg.Module._pgl_set_popen_fn(pgPopenFn)
+          pg.Module._pgl_set_pclose_fn(pgPcloseFn)
+        }
+
+        if (pg.Module.__wasi) {
+          pg.Module.FS.writeFile(pgstdinPath, new Uint8Array())
+          pg.Module.FS.writeFile(pgstdoutPath, new Uint8Array())
+        }
+        reopenPgStreams()
+
+        {
+          const initdb_path = mod.stringToUTF8OnStack(pgstdoutPath)
+          const rmode = mod.stringToUTF8OnStack('r')
+          initdb_stdin_fd = mod._fopen(initdb_path, rmode)
+
+          if (pg.Module.__wasi) {
+            initdb_stdout_fd = -1
+          } else {
+            const path = mod.stringToUTF8OnStack(pgstdinPath)
+            const wmode = mod.stringToUTF8OnStack('w')
+            initdb_stdout_fd = mod._fopen(path, wmode)
+          }
+
+          if (pg.Module.__wasi) {
+            origHEAPU8 = pg.Module.HEAPU8.slice()
           }
         }
       },
@@ -212,15 +295,7 @@ async function execInitdb({
   const initDbMod = await InitdbModFactory(runtimeOpts)
 
   log(debug, 'calling initdb.main with', args)
-  let result = initDbMod.callMain(args)
-  if (
-    result !== 0 &&
-    pg.Module.__wasi &&
-    pg.Module.FS.analyzePath(`${PGDATA}/PG_VERSION`).exists &&
-    pg.Module.FS.analyzePath(`${PGDATA}/base/1/1255`).exists
-  ) {
-    result = 0
-  }
+  const result = initDbMod.callMain(args)
 
   return {
     exitCode: result,

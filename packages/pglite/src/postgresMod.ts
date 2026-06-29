@@ -13,6 +13,8 @@ type RuntimeModule = {
   printErr?: (text: string) => void
   onRuntimeInitialized?: () => void
   pg_extensions?: Record<string, Promise<Blob | null>>
+  initialMemory?: number
+  __wasiDataRoot?: string
 }
 
 type AnalyzePath = {
@@ -72,6 +74,11 @@ export interface PostgresMod extends RuntimeModule {
   _pgl_set_system_fn: (system_fn: number) => void
   _pgl_set_popen_fn: (popen_fn: number) => void
   _pgl_set_pclose_fn: (pclose_fn: number) => void
+  _pgl_set_blob_cbs: (
+    read_cb: number,
+    write_cb: number,
+    llseek_cb: number,
+  ) => void
   _pgl_set_rw_cbs: (read_cb: number, write_cb: number) => void
   _pgl_set_pipe_fn: (pipe_fn: number) => number
   _pgl_freopen: (filepath: number, mode: number, stream: number) => number
@@ -119,6 +126,36 @@ class ExitStatus extends Error {
     super(`Program terminated with exit(${status})`)
   }
 }
+
+function isExitStatus(err: unknown): err is { status: number } {
+  return (
+    err instanceof ExitStatus ||
+    (typeof err === 'object' &&
+      err !== null &&
+      (err as { name?: unknown }).name === 'ExitStatus' &&
+      typeof (err as { status?: unknown }).status === 'number')
+  )
+}
+
+function getWasiExitCode(wasi: unknown, err: unknown): number | undefined {
+  if (typeof err !== 'symbol' || String(err) !== 'Symbol(kExitCode)') {
+    return undefined
+  }
+  if (typeof wasi !== 'object' || wasi === null) {
+    return undefined
+  }
+  const exitCodeSymbol = Object.getOwnPropertySymbols(wasi).find(
+    (symbol) => String(symbol) === 'Symbol(kExitCode)',
+  )
+  if (!exitCodeSymbol) {
+    return undefined
+  }
+  const exitCode = (wasi as Record<symbol, unknown>)[exitCodeSymbol]
+  return typeof exitCode === 'number' ? exitCode : undefined
+}
+
+const PGLITE_EXIT_ALIVE = 99
+const POSTGRES_MAIN_LONGJMP = 100
 
 async function createNodeFs(root: string): Promise<FS> {
   const fs = await import('fs')
@@ -294,28 +331,40 @@ function makeEnvImports(getTable: () => WebAssembly.Table) {
   }
   const stub = () => 0
 
-  return new Proxy(
-    {
-      __wasm_setjmp: stub,
-      __wasm_setjmp_test: stub,
-      __wasm_longjmp: (_env: number, value: number) => {
-        throw { name: 'ExitStatus', status: value }
-      },
-      emscripten_longjmp: (_env: number, value: number) => {
-        throw { name: 'ExitStatus', status: value }
-      },
-      getTempRet0: stub,
-      setTempRet0: stub,
-    } as Record<string, CallableFunction>,
-    {
-      get(target, prop: string) {
-        if (prop in target) return target[prop]
-        if (prop.startsWith('invoke_v')) return invokeVoid
-        if (prop.startsWith('invoke_')) return invoke
-        return stub
-      },
+  const imports: Record<string, CallableFunction | object> = {
+    __wasm_setjmp: stub,
+    __wasm_setjmp_test: stub,
+    __wasm_longjmp: (_env: number, _value: number) => {
+      throw { name: 'ExitStatus', status: POSTGRES_MAIN_LONGJMP }
     },
-  )
+    emscripten_longjmp: (_env: number, _value: number) => {
+      throw { name: 'ExitStatus', status: POSTGRES_MAIN_LONGJMP }
+    },
+    getTempRet0: stub,
+    setTempRet0: stub,
+  }
+  const WasmTag = (WebAssembly as any).Tag
+  if (typeof WasmTag === 'function') {
+    imports.__c_longjmp = new WasmTag({ parameters: ['i32'], results: [] })
+  }
+
+  return new Proxy(imports, {
+    get(target, prop: string) {
+      if (prop in target) return target[prop]
+      if (prop.startsWith('invoke_v')) return invokeVoid
+      if (prop.startsWith('invoke_')) return invoke
+      return stub
+    },
+  })
+}
+
+function createWasmMemory(initialMemory?: number) {
+  const pageSize = 64 * 1024
+  const initial = initialMemory ? Math.ceil(initialMemory / pageSize) : 2048
+  return new WebAssembly.Memory({
+    initial,
+    maximum: 32768,
+  })
 }
 
 async function createWasiModule<T extends PostgresMod>(
@@ -330,6 +379,7 @@ async function createWasiModule<T extends PostgresMod>(
   const fs = await import('fs')
   const path = await import('path')
   const nodeCrypto = await import('node:crypto')
+  const { fileURLToPath } = await import('url')
   const { WASI } = (await import('node:wasi')) as any
   const root =
     typeof (moduleOverrides as any).__wasiRoot === 'string'
@@ -337,26 +387,69 @@ async function createWasiModule<T extends PostgresMod>(
       : fs.mkdtempSync(path.join(os.tmpdir(), 'pglite-wasi-'))
   const pgRoot = path.join(root, 'pglite')
   const homeRoot = path.join(root, 'home')
-  const dataRoot = path.join(root, 'data')
+  const dataRoot =
+    typeof (moduleOverrides as any).__wasiDataRoot === 'string'
+      ? (moduleOverrides as any).__wasiDataRoot
+      : path.join(root, 'data')
   fs.mkdirSync(pgRoot, { recursive: true })
   fs.mkdirSync(homeRoot, { recursive: true })
   fs.mkdirSync(dataRoot, { recursive: true })
+  fs.mkdirSync(path.join(pgRoot, 'bin'), { recursive: true })
+  fs.mkdirSync(path.join(homeRoot, 'postgres'), { recursive: true })
 
-  const installShare = path.join(pgRoot, 'share')
-  if (!fs.existsSync(installShare)) {
+  const writeStaticFile = (filePath: string, content: string) => {
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, content)
+    }
+  }
+
+  const staticEmpty = 'PGlite is the best!\n'
+  writeStaticFile(path.join(pgRoot, 'bin', 'initdb'), staticEmpty)
+  writeStaticFile(path.join(pgRoot, 'bin', 'pg_dump'), staticEmpty)
+  writeStaticFile(path.join(pgRoot, 'bin', 'postgres'), staticEmpty)
+  writeStaticFile(path.join(pgRoot, 'pgstdin'), staticEmpty)
+  writeStaticFile(path.join(pgRoot, 'pgstdout'), staticEmpty)
+  writeStaticFile(path.join(pgRoot, 'password'), 'password\n')
+  writeStaticFile(
+    path.join(homeRoot, 'postgres', '.pgpass'),
+    [
+      '# PGlite pgpass file',
+      'localhost:5432:postgres:password:md532e12f215ba27cb750c9e093ce4b5127',
+      'localhost:5432:postgres:postgres:md53175bce1d3201d16594cebf9d7eb3f9d',
+      'localhost:5432:postgres:login:md5d5745f9425eceb269f9fe01d0bef06ff',
+      '',
+    ].join('\n'),
+  )
+
+  const copyInstallDir = (name: string) => {
+    const installPath = path.join(pgRoot, name)
+    if (fs.existsSync(installPath)) {
+      return
+    }
     const candidates: string[] = []
     if (moduleUrl.protocol === 'file:') {
-      const { fileURLToPath } = await import('url')
-      candidates.push(
-        path.join(path.dirname(fileURLToPath(moduleUrl)), 'share'),
-      )
+      candidates.push(path.join(path.dirname(fileURLToPath(moduleUrl)), name))
     }
     candidates.push(
-      path.resolve('postgres-pglite/pglite/out/wasi-install/pglite/share'),
+      path.resolve('postgres-pglite/pglite/out/wasi-install/pglite', name),
     )
-    const sourceShare = candidates.find((candidate) => fs.existsSync(candidate))
-    if (sourceShare) {
-      fs.cpSync(sourceShare, installShare, { recursive: true })
+    const sourcePath = candidates.find((candidate) => fs.existsSync(candidate))
+    if (sourcePath) {
+      fs.cpSync(sourcePath, installPath, { recursive: true })
+    }
+  }
+  copyInstallDir('share')
+  copyInstallDir('lib')
+  const installIcu = path.join(pgRoot, 'icu')
+  if (!fs.existsSync(installIcu)) {
+    const candidates: string[] = []
+    if (moduleUrl.protocol === 'file:') {
+      candidates.push(path.join(path.dirname(fileURLToPath(moduleUrl)), 'icu'))
+    }
+    candidates.push(path.resolve('.bin/pglite-wasi/libs/share/icu/76.1'))
+    const sourceIcu = candidates.find((candidate) => fs.existsSync(candidate))
+    if (sourceIcu) {
+      fs.cpSync(sourceIcu, installIcu, { recursive: true })
     }
   }
 
@@ -398,6 +491,9 @@ async function createWasiModule<T extends PostgresMod>(
   let systemFn = 0
   let popenFn = 0
   let pcloseFn = 0
+  let blobRead = 0
+  let blobWrite = 0
+  let blobLlseek = 0
 
   const getTable = () => {
     if (!runtimeRefs.table) {
@@ -424,9 +520,12 @@ async function createWasiModule<T extends PostgresMod>(
     return 0
   }
   const envImports = makeEnvImports(getTable)
+  const wasmMemory = createWasmMemory(moduleOverrides.initialMemory)
 
   const imports: WebAssembly.Imports = {
-    env: envImports,
+    env: Object.assign(envImports as WebAssembly.ModuleImports, {
+      memory: wasmMemory,
+    }),
     wasi_snapshot_preview1: {
       ...wasi.wasiImport,
       proc_exit: (code: number) => {
@@ -447,6 +546,16 @@ async function createWasiModule<T extends PostgresMod>(
         popenFn ? (callbacks.get(popenFn)?.(cmdPtr, modePtr) ?? 0) : 0,
       pclose: (stream: number) =>
         pcloseFn ? (callbacks.get(pcloseFn)?.(stream) ?? 0) : 0,
+      blob_read: (ptr: number, maxLength: number, position: number) =>
+        blobRead
+          ? (callbacks.get(blobRead)?.(ptr, maxLength, position) ?? 0)
+          : 0,
+      blob_write: (ptr: number, length: number, position: number) =>
+        blobWrite
+          ? (callbacks.get(blobWrite)?.(ptr, length, position) ?? length)
+          : length,
+      blob_llseek: (offset: number, whence: number) =>
+        blobLlseek ? (callbacks.get(blobLlseek)?.(offset, whence) ?? -1) : -1,
     },
   }
 
@@ -456,12 +565,15 @@ async function createWasiModule<T extends PostgresMod>(
   )
   const instance = await WebAssembly.instantiate(wasmModule, imports)
   const exports = instance.exports as Record<string, any>
+  exports.__wasm_init_memory?.()
   const initializeExports = { ...exports }
   delete initializeExports._start
+  delete initializeExports.__wasm_init_memory
   wasi.initialize({
     exports: initializeExports,
   })
-  const memory = exports.memory as WebAssembly.Memory
+  const memory =
+    (exports.memory as WebAssembly.Memory | undefined) ?? wasmMemory
   runtimeRefs.memory = memory
   runtimeRefs.table = exports.__indirect_function_table as WebAssembly.Table
   const { UTF8ToString, writeString } = makeStringReaders(memory)
@@ -481,17 +593,30 @@ async function createWasiModule<T extends PostgresMod>(
     const view = new DataView(memory.buffer)
     argvPtrs.forEach((ptr, i) => view.setUint32(argv + i * 4, ptr, true))
     view.setUint32(argv + argvPtrs.length * 4, 0, true)
+    let exitStatus: number | undefined
+    const main = exports.__main_argc_argv
     try {
-      return exports.__main_argc_argv(argvPtrs.length, argv)
+      return main(argvWithProgram.length, argv)
     } catch (err) {
-      if (err instanceof ExitStatus) {
+      if (isExitStatus(err)) {
+        exitStatus = err.status
         return err.status
+      }
+      const wasiExitCode = getWasiExitCode(wasi, err)
+      if (wasiExitCode !== undefined) {
+        exitStatus = wasiExitCode
+        return wasiExitCode
       }
       throw err
     } finally {
       for (const ptr of argvPtrs) free(ptr)
       free(argv)
-      resetAfterProcExit?.()
+      if (
+        exitStatus !== PGLITE_EXIT_ALIVE &&
+        exitStatus !== POSTGRES_MAIN_LONGJMP
+      ) {
+        resetAfterProcExit?.()
+      }
     }
   }
 
@@ -533,6 +658,11 @@ async function createWasiModule<T extends PostgresMod>(
     },
     _pgl_set_pclose_fn: (fn: number) => {
       pcloseFn = fn
+    },
+    _pgl_set_blob_cbs: (readCb: number, writeCb: number, llseekCb: number) => {
+      blobRead = readCb
+      blobWrite = writeCb
+      blobLlseek = llseekCb
     },
     _pgl_set_pipe_fn: () => 0,
     _pgl_proc_exit: (code: number) => code,
