@@ -45,6 +45,14 @@ function log(debug?: number, ...args: any[]) {
   }
 }
 
+function getHostTimeZone(): string | undefined {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone
+  } catch {
+    return undefined
+  }
+}
+
 async function execInitdb({
   pg,
   debug,
@@ -135,9 +143,11 @@ async function execInitdb({
   }
 
   let origHEAPU8: Uint8Array | undefined
+  const hostTimeZone = getHostTimeZone()
 
   const runtimeOpts: Partial<InitdbMod> = {
     arguments: args,
+    ENV: hostTimeZone ? { TZ: hostTimeZone } : undefined,
     noExitRuntime: false,
     thisProgram: INITDB_EXE_PATH,
     print: (text) => {

@@ -40,6 +40,14 @@ import {
 
 import { pglUtils } from '@electric-sql/pglite-utils'
 
+function getHostTimeZone(): string | undefined {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone
+  } catch {
+    return undefined
+  }
+}
+
 class CurrentQuery {
   results: BackendMessage[] = []
   throwOnError: boolean = false
@@ -159,8 +167,6 @@ export class PGlite
     'exit_on_error=false',
     '-c',
     'log_checkpoints=false',
-    '-c',
-    'timezone=UTC',
     '-c',
     'dynamic_shared_memory_type=mmap',
     '-c',
@@ -457,8 +463,11 @@ export class PGlite
           mod.ENV.PGUSER = options.username ?? 'postgres'
           mod.ENV.PGDATABASE = options.database ?? 'postgres'
           mod.ENV.LANG = mod.ENV.LC_COLLATE = mod.ENV.LC_CTYPE = 'en_US.UTF-8'
-          mod.ENV.TZ = 'UTC'
-          mod.ENV.PGTZ = 'UTC'
+          const hostTimeZone = getHostTimeZone()
+          if (hostTimeZone) {
+            mod.ENV.TZ = hostTimeZone
+            mod.ENV.PGTZ = hostTimeZone
+          }
           mod.ENV.PGCLIENTENCODING = 'UTF8'
           mod.ENV.ICU_DATA = ICU_DATA_PATH
 
