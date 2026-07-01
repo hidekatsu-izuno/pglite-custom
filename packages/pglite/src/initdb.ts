@@ -341,6 +341,38 @@ function getArgs(cmd: string) {
   return a
 }
 
+function hasOption(args: string[] | undefined, option: string) {
+  return !!args?.some((arg) => arg === option || arg.startsWith(`${option}=`))
+}
+
+function getOptionValue(args: string[] | undefined, option: string) {
+  if (!args) {
+    return undefined
+  }
+  let value: string | undefined
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i]
+    if (arg.startsWith(`${option}=`)) {
+      value = arg.substring(option.length + 1)
+    }
+    if (arg === option) {
+      value = args[i + 1]?.startsWith('-') ? undefined : args[i + 1]
+    }
+  }
+  return value
+}
+
+function getHostIcuLocaleArgs(args: string[] | undefined): string[] {
+  if (getOptionValue(args, '--locale-provider') !== 'icu') {
+    return []
+  }
+  if (hasOption(args, '--icu-locale')) {
+    return []
+  }
+  const hostLocale = getHostLocale()
+  return hostLocale ? [`--icu-locale=${hostLocale}`] : []
+}
+
 /**
  * Execute initdb
  */
@@ -350,7 +382,6 @@ export async function initdb({
   args,
   wasmModule,
 }: InitdbOptions): Promise<ExecResult> {
-  const hostLocale = getHostLocale()
   const execResult = await execInitdb({
     pg,
     debug,
@@ -361,8 +392,8 @@ export async function initdb({
       '--encoding',
       'UTF8',
       '--locale=C.UTF-8',
-      '--locale-provider=icu',
-      ...(hostLocale ? [`--icu-locale=${hostLocale}`] : []),
+      '--locale-provider=libc',
+      ...getHostIcuLocaleArgs(args),
       '--auth=trust',
       ...(args ?? []),
     ],
