@@ -367,6 +367,121 @@ function createWasmMemory(initialMemory?: number) {
   })
 }
 
+type DylinkMetadata = {
+  memorySize: number
+  memoryAlign: number
+  tableSize: number
+  tableAlign: number
+  neededDynlibs: string[]
+  weakImports: Set<string>
+}
+
+function getDylinkMetadata(module: WebAssembly.Module): DylinkMetadata {
+  let section = WebAssembly.Module.customSections(module, 'dylink.0')[0]
+  let legacy = false
+  if (!section) {
+    section = WebAssembly.Module.customSections(module, 'dylink')[0]
+    legacy = true
+  }
+  if (!section) {
+    throw new Error('dynamic library has no dylink section')
+  }
+
+  const data = new Uint8Array(section)
+  let offset = 0
+  const getU8 = () => data[offset++]
+  const getLEB = () => {
+    let ret = 0
+    let mul = 1
+    for (;;) {
+      const byte = data[offset++]
+      ret += (byte & 0x7f) * mul
+      mul *= 0x80
+      if ((byte & 0x80) === 0) return ret
+    }
+  }
+  const decoder = new TextDecoder()
+  const getString = () => {
+    const length = getLEB()
+    const value = decoder.decode(data.subarray(offset, offset + length))
+    offset += length
+    return value
+  }
+
+  const metadata: DylinkMetadata = {
+    memorySize: 0,
+    memoryAlign: 0,
+    tableSize: 0,
+    tableAlign: 0,
+    neededDynlibs: [],
+    weakImports: new Set(),
+  }
+
+  if (legacy) {
+    metadata.memorySize = getLEB()
+    metadata.memoryAlign = getLEB()
+    metadata.tableSize = getLEB()
+    metadata.tableAlign = getLEB()
+    const neededCount = getLEB()
+    for (let i = 0; i < neededCount; i++) {
+      metadata.neededDynlibs.push(getString())
+    }
+    return metadata
+  }
+
+  const WASM_DYLINK_MEM_INFO = 1
+  const WASM_DYLINK_NEEDED = 2
+  const WASM_DYLINK_IMPORT_INFO = 4
+  const WASM_SYMBOL_BINDING_MASK = 3
+  const WASM_SYMBOL_BINDING_WEAK = 1
+
+  while (offset < data.length) {
+    const subsectionType = getU8()
+    const subsectionSize = getLEB()
+    const subsectionEnd = offset + subsectionSize
+    if (subsectionType === WASM_DYLINK_MEM_INFO) {
+      metadata.memorySize = getLEB()
+      metadata.memoryAlign = getLEB()
+      metadata.tableSize = getLEB()
+      metadata.tableAlign = getLEB()
+    } else if (subsectionType === WASM_DYLINK_NEEDED) {
+      const neededCount = getLEB()
+      for (let i = 0; i < neededCount; i++) {
+        metadata.neededDynlibs.push(getString())
+      }
+    } else if (subsectionType === WASM_DYLINK_IMPORT_INFO) {
+      const importCount = getLEB()
+      for (let i = 0; i < importCount; i++) {
+        getString()
+        const symbol = getString()
+        const flags = getLEB()
+        if ((flags & WASM_SYMBOL_BINDING_MASK) === WASM_SYMBOL_BINDING_WEAK) {
+          metadata.weakImports.add(symbol)
+        }
+      }
+    }
+    offset = subsectionEnd
+  }
+
+  return metadata
+}
+
+function alignMemory(size: number, alignment: number) {
+  return Math.ceil(size / alignment) * alignment
+}
+
+function alignDynamicMemoryBase(ptr: number, alignment: number) {
+  return alignMemory(Math.max(ptr, 1), alignment)
+}
+
+function ensureWasmMemorySize(memory: WebAssembly.Memory, size: number) {
+  const pageSize = 64 * 1024
+  const missing = size - memory.buffer.byteLength
+  if (missing > 0) {
+    memory.grow(Math.ceil(missing / pageSize))
+  }
+}
+
 async function createWasiModule<T extends PostgresMod>(
   moduleOverrides: Partial<T> = {},
   moduleUrl: URL,
@@ -494,6 +609,27 @@ async function createWasiModule<T extends PostgresMod>(
   let blobRead = 0
   let blobWrite = 0
   let blobLlseek = 0
+  let wasmExports: Record<string, any> = {}
+  let malloc: (size: number) => number = () => 0
+  let free: (ptr: number) => void = () => {}
+  let writeString: (
+    s: string,
+    malloc: (size: number) => number,
+  ) => number = () => 0
+  const loadedLibsByName = new Map<string, Record<string, any>>()
+  const loadedLibsByHandle = new Map<number, Record<string, any>>()
+  const providedDynamicLibraries = new Set([
+    'libc.so',
+    'libwasi-emulated-getpid.so',
+    'libwasi-emulated-mman.so',
+    'libwasi-emulated-process-clocks.so',
+    'libwasi-emulated-signal.so',
+  ])
+  const GOT = new Map<string, WebAssembly.Global>()
+  const functionIndexes = new WeakMap<CallableFunction, number>()
+  let nextDynamicHandle = 1
+  let dlErrorPtr = 0
+  let dlLastError = ''
 
   const getTable = () => {
     if (!runtimeRefs.table) {
@@ -519,12 +655,259 @@ async function createWasiModule<T extends PostgresMod>(
     }
     return 0
   }
+  const setDlError = (message: string) => {
+    dlLastError = message
+    if (dlErrorPtr) {
+      free(dlErrorPtr)
+    }
+    dlErrorPtr = writeString(message, malloc)
+  }
+  const clearDlError = () => {
+    dlLastError = ''
+    if (dlErrorPtr) {
+      free(dlErrorPtr)
+      dlErrorPtr = 0
+    }
+  }
+  const findFunctionIndex = (fn: CallableFunction, grow = true) => {
+    const cached = functionIndexes.get(fn)
+    if (cached !== undefined) return cached
+    const table = getTable()
+    for (let i = 0; i < table.length; i++) {
+      if (table.get(i) === fn) {
+        functionIndexes.set(fn, i)
+        return i
+      }
+    }
+    if (!grow) return 0
+    const index = table.length
+    table.grow(1)
+    table.set(index, fn)
+    functionIndexes.set(fn, index)
+    return index
+  }
+  const getExportValue = (value: unknown) =>
+    value instanceof WebAssembly.Global ? value.value : value
+  const getDynamicExport = (exports: Record<string, any>, name: string) => {
+    if (name in exports) return exports[name]
+    if (name === 'Pg_magic_func' || name === '_PG_init') {
+      const renamed = Object.keys(exports).find((key) => key.endsWith(name))
+      if (renamed) return exports[renamed]
+    }
+    return undefined
+  }
+  const relocateDynamicExports = (
+    exports: Record<string, any>,
+    memoryBase: number,
+  ) => {
+    const relocated: Record<string, any> = {}
+    for (const [name, value] of Object.entries(exports)) {
+      const unwrapped = getExportValue(value)
+      relocated[name] =
+        typeof unwrapped === 'number' ? unwrapped + memoryBase : unwrapped
+    }
+    return relocated
+  }
+  const setGOT = (
+    name: string,
+    value: unknown,
+    replace = false,
+    growTable = true,
+  ) => {
+    if (name.startsWith('__em_js__')) return
+    let got = GOT.get(name)
+    if (!got) {
+      got = new WebAssembly.Global({ value: 'i32', mutable: true }, 0)
+      GOT.set(name, got)
+    }
+    if (!replace && got.value !== 0) return
+    const unwrapped = getExportValue(value)
+    if (typeof unwrapped === 'function') {
+      got.value = findFunctionIndex(unwrapped as CallableFunction, growTable)
+    } else if (typeof unwrapped === 'number') {
+      got.value = unwrapped
+    }
+  }
+  const mergeSymbols = (
+    symbols: Record<string, any>,
+    replace = false,
+    growTable = true,
+  ) => {
+    for (const [name, value] of Object.entries(symbols)) {
+      setGOT(name, value, replace, growTable)
+    }
+  }
+  const resolveSymbol = (
+    name: string,
+    localScope?: Record<string, any>,
+  ): unknown => {
+    if (name in wasmExports) return wasmExports[name]
+    if (localScope && name in localScope) return localScope[name]
+    for (const loaded of loadedLibsByHandle.values()) {
+      if (name in loaded) return loaded[name]
+    }
+    return undefined
+  }
+  const instantiateDynamicLibrary = (
+    libName: string,
+    bytes: Uint8Array,
+    localScope?: Record<string, any>,
+  ) => {
+    const module = new WebAssembly.Module(bytes)
+    const metadata = getDylinkMetadata(module)
+    const memoryAlignment = Math.pow(2, metadata.memoryAlign)
+    const memoryBase = metadata.memorySize
+      ? alignDynamicMemoryBase(
+          malloc(metadata.memorySize + memoryAlignment + 1),
+          memoryAlignment || 1,
+        )
+      : 0
+    if (memoryBase && runtimeRefs.memory) {
+      ensureWasmMemorySize(runtimeRefs.memory, memoryBase + metadata.memorySize)
+      new Uint8Array(runtimeRefs.memory.buffer).fill(
+        0,
+        memoryBase,
+        memoryBase + metadata.memorySize,
+      )
+    }
+    const tableBase = metadata.tableSize ? getTable().length : 0
+    const tableGrowthNeeded = tableBase + metadata.tableSize - getTable().length
+    if (tableGrowthNeeded > 0) {
+      getTable().grow(tableGrowthNeeded)
+    }
+    const stackPointer =
+      wasmExports.__stack_pointer instanceof WebAssembly.Global
+        ? wasmExports.__stack_pointer
+        : new WebAssembly.Global(
+            { value: 'i32', mutable: true },
+            Number(wasmExports.emscripten_stack_get_current?.() ?? 0),
+          )
+    let moduleExports: Record<string, any> = {}
+    const stubs: Record<string, CallableFunction> = {}
+    const env = new Proxy({} as Record<string, any>, {
+      get(_target, prop: string) {
+        if (prop === 'memory') return runtimeRefs.memory
+        if (prop === '__indirect_function_table') return getTable()
+        if (prop === '__memory_base') return memoryBase
+        if (prop === '__table_base') return tableBase
+        if (prop === '__stack_pointer') return stackPointer
+        if (prop in wasmExports) return wasmExports[prop]
+        if (prop in moduleExports) return moduleExports[prop]
+        if (localScope && prop in localScope) return localScope[prop]
+        if (!(prop in stubs)) {
+          stubs[prop] = (...args: unknown[]) => {
+            const resolved = resolveSymbol(prop, localScope)
+            if (typeof resolved === 'function') {
+              return (resolved as CallableFunction)(...args)
+            }
+            throw new Error(`unresolved dynamic symbol: ${prop}`)
+          }
+        }
+        return stubs[prop]
+      },
+    })
+    const gotHandler = {
+      get(_target: Record<string, WebAssembly.Global>, prop: string) {
+        let got = GOT.get(prop)
+        if (!got) {
+          got = new WebAssembly.Global({ value: 'i32', mutable: true }, 0)
+          GOT.set(prop, got)
+        }
+        return got
+      },
+    }
+    const instance = new WebAssembly.Instance(module, {
+      env,
+      wasi_snapshot_preview1: env,
+      'GOT.mem': new Proxy({}, gotHandler),
+      'GOT.func': new Proxy({}, gotHandler),
+    })
+    moduleExports = relocateDynamicExports(
+      instance.exports as Record<string, any>,
+      memoryBase,
+    )
+    mergeSymbols(moduleExports)
+    for (const needed of metadata.neededDynlibs) {
+      if (
+        !loadedLibsByName.has(needed) &&
+        !providedDynamicLibraries.has(needed)
+      ) {
+        throw new Error(
+          `${libName} needs unsupported dynamic library ${needed}`,
+        )
+      }
+    }
+    for (const [name, got] of GOT) {
+      if (got.value !== 0 || metadata.weakImports.has(name)) continue
+      const resolved = resolveSymbol(name, localScope)
+      if (resolved !== undefined) {
+        setGOT(name, resolved, true, true)
+      } else {
+        throw new Error(`unresolved dynamic symbol: ${name}`)
+      }
+    }
+    moduleExports.__wasm_apply_data_relocs?.()
+    moduleExports.__wasm_call_ctors?.()
+    return moduleExports
+  }
+  const dlopen = (filePtr: number, _mode: number) => {
+    try {
+      const fileName = path.posix.normalize(UTF8ToString(filePtr))
+      const loaded = loadedLibsByName.get(fileName)
+      if (loaded) {
+        const handle = nextDynamicHandle++
+        loadedLibsByHandle.set(handle, loaded)
+        clearDlError()
+        return handle
+      }
+      const bytes = FS.readFile(fileName, { encoding: 'binary' }) as Uint8Array
+      const localScope: Record<string, any> = {}
+      const libExports = instantiateDynamicLibrary(fileName, bytes, localScope)
+      const handle = nextDynamicHandle++
+      loadedLibsByName.set(fileName, libExports)
+      loadedLibsByHandle.set(handle, libExports)
+      clearDlError()
+      return handle
+    } catch (err) {
+      setDlError(err instanceof Error ? err.message : String(err))
+      return 0
+    }
+  }
+  const dlsym = (handle: number, symbolPtr: number) => {
+    const symbol = UTF8ToString(symbolPtr)
+    const libExports = loadedLibsByHandle.get(handle)
+    if (!libExports) {
+      setDlError(`unknown dynamic library handle: ${handle}`)
+      return 0
+    }
+    const value = getDynamicExport(libExports, symbol)
+    if (value === undefined) {
+      setDlError(`dynamic library symbol not found: ${symbol}`)
+      return 0
+    }
+    const unwrapped = getExportValue(value)
+    clearDlError()
+    if (typeof unwrapped === 'function') {
+      return findFunctionIndex(unwrapped as CallableFunction)
+    }
+    return typeof unwrapped === 'number' ? unwrapped : 0
+  }
   const envImports = makeEnvImports(getTable)
   const wasmMemory = createWasmMemory(moduleOverrides.initialMemory)
 
   const imports: WebAssembly.Imports = {
     env: Object.assign(envImports as WebAssembly.ModuleImports, {
       memory: wasmMemory,
+      dlopen,
+      dlsym,
+      dlclose: (handle: number) => {
+        loadedLibsByHandle.delete(handle)
+        clearDlError()
+        return 0
+      },
+      dlerror: () => {
+        return dlLastError ? dlErrorPtr : 0
+      },
     }),
     wasi_snapshot_preview1: {
       ...wasi.wasiImport,
@@ -565,6 +948,7 @@ async function createWasiModule<T extends PostgresMod>(
   )
   const instance = await WebAssembly.instantiate(wasmModule, imports)
   const exports = instance.exports as Record<string, any>
+  wasmExports = exports
   exports.__wasm_init_memory?.()
   const initializeExports = { ...exports }
   delete initializeExports._start
@@ -576,10 +960,13 @@ async function createWasiModule<T extends PostgresMod>(
     (exports.memory as WebAssembly.Memory | undefined) ?? wasmMemory
   runtimeRefs.memory = memory
   runtimeRefs.table = exports.__indirect_function_table as WebAssembly.Table
-  const { UTF8ToString, writeString } = makeStringReaders(memory)
+  mergeSymbols(wasmExports, false, false)
+  const stringReaders = makeStringReaders(memory)
+  const UTF8ToString = stringReaders.UTF8ToString
+  writeString = stringReaders.writeString
 
-  const malloc = exports.malloc as (size: number) => number
-  const free = exports.free as (ptr: number) => void
+  malloc = exports.malloc as (size: number) => number
+  free = exports.free as (ptr: number) => void
   const resetAfterProcExit = exports.pglite_reset_after_proc_exit as
     | (() => void)
     | undefined
