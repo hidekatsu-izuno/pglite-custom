@@ -53,6 +53,14 @@ function getHostTimeZone(): string | undefined {
   }
 }
 
+function getHostLocale(): string | undefined {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().locale
+  } catch {
+    return undefined
+  }
+}
+
 async function execInitdb({
   pg,
   debug,
@@ -342,6 +350,7 @@ export async function initdb({
   args,
   wasmModule,
 }: InitdbOptions): Promise<ExecResult> {
+  const hostLocale = getHostLocale()
   const execResult = await execInitdb({
     pg,
     debug,
@@ -352,7 +361,8 @@ export async function initdb({
       '--encoding',
       'UTF8',
       '--locale=C.UTF-8',
-      '--locale-provider=libc',
+      '--locale-provider=icu',
+      ...(hostLocale ? [`--icu-locale=${hostLocale}`] : []),
       '--auth=trust',
       ...(args ?? []),
     ],
