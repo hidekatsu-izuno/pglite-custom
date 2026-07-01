@@ -323,6 +323,13 @@ function makeStringReaders(memory: WebAssembly.Memory) {
   return { UTF8ToString, writeString }
 }
 
+function makeLongjmpTag() {
+  const WasmTag = (WebAssembly as any).Tag
+  return typeof WasmTag === 'function'
+    ? new WasmTag({ parameters: ['i32'], results: [] })
+    : undefined
+}
+
 function makeEnvImports(getTable: () => WebAssembly.Table) {
   const invoke = (index: number, ...args: unknown[]) =>
     (getTable().get(index) as CallableFunction)(...args)
@@ -343,9 +350,9 @@ function makeEnvImports(getTable: () => WebAssembly.Table) {
     getTempRet0: stub,
     setTempRet0: stub,
   }
-  const WasmTag = (WebAssembly as any).Tag
-  if (typeof WasmTag === 'function') {
-    imports.__c_longjmp = new WasmTag({ parameters: ['i32'], results: [] })
+  const cLongjmpTag = makeLongjmpTag()
+  if (cLongjmpTag) {
+    imports.__c_longjmp = cLongjmpTag
   }
 
   return new Proxy(imports, {
@@ -356,6 +363,15 @@ function makeEnvImports(getTable: () => WebAssembly.Table) {
       return stub
     },
   })
+}
+
+function isRuntimeProvidedImport(name: string) {
+  return (
+    name === '__dynamic_cast' ||
+    name === '__resumeException' ||
+    name.startsWith('__cxa_') ||
+    name.startsWith('_Z')
+  )
 }
 
 function createWasmMemory(initialMemory?: number) {
@@ -481,6 +497,8 @@ function ensureWasmMemorySize(memory: WebAssembly.Memory, size: number) {
     memory.grow(Math.ceil(missing / pageSize))
   }
 }
+
+const DYNAMIC_LIBRARY_STACK_SIZE = 64 * 1024
 
 async function createWasiModule<T extends PostgresMod>(
   moduleOverrides: Partial<T> = {},
@@ -619,7 +637,10 @@ async function createWasiModule<T extends PostgresMod>(
   const loadedLibsByName = new Map<string, Record<string, any>>()
   const loadedLibsByHandle = new Map<number, Record<string, any>>()
   const providedDynamicLibraries = new Set([
+    'libc++.so',
+    'libc++abi.so',
     'libc.so',
+    'libdl.so',
     'libwasi-emulated-getpid.so',
     'libwasi-emulated-mman.so',
     'libwasi-emulated-process-clocks.so',
@@ -630,6 +651,7 @@ async function createWasiModule<T extends PostgresMod>(
   let nextDynamicHandle = 1
   let dlErrorPtr = 0
   let dlLastError = ''
+  const cLongjmpTag = makeLongjmpTag()
 
   const getTable = () => {
     if (!runtimeRefs.table) {
@@ -682,7 +704,14 @@ async function createWasiModule<T extends PostgresMod>(
     if (!grow) return 0
     const index = table.length
     table.grow(1)
-    table.set(index, fn)
+    try {
+      table.set(index, fn)
+    } catch (err) {
+      if (err instanceof TypeError) {
+        return 0
+      }
+      throw err
+    }
     functionIndexes.set(fn, index)
     return index
   }
@@ -746,6 +775,9 @@ async function createWasiModule<T extends PostgresMod>(
     for (const loaded of loadedLibsByHandle.values()) {
       if (name in loaded) return loaded[name]
     }
+    if (isRuntimeProvidedImport(name)) {
+      return (envImports as Record<string, unknown>)[name]
+    }
     return undefined
   }
   const instantiateDynamicLibrary = (
@@ -775,13 +807,20 @@ async function createWasiModule<T extends PostgresMod>(
     if (tableGrowthNeeded > 0) {
       getTable().grow(tableGrowthNeeded)
     }
-    const stackPointer =
-      wasmExports.__stack_pointer instanceof WebAssembly.Global
-        ? wasmExports.__stack_pointer
-        : new WebAssembly.Global(
-            { value: 'i32', mutable: true },
-            Number(wasmExports.emscripten_stack_get_current?.() ?? 0),
-          )
+    const stackMemoryBase = alignDynamicMemoryBase(
+      malloc(DYNAMIC_LIBRARY_STACK_SIZE + 16),
+      16,
+    )
+    if (runtimeRefs.memory) {
+      ensureWasmMemorySize(
+        runtimeRefs.memory,
+        stackMemoryBase + DYNAMIC_LIBRARY_STACK_SIZE,
+      )
+    }
+    const stackPointer = new WebAssembly.Global(
+      { value: 'i32', mutable: true },
+      stackMemoryBase + DYNAMIC_LIBRARY_STACK_SIZE,
+    )
     let moduleExports: Record<string, any> = {}
     const stubs: Record<string, CallableFunction> = {}
     const env = new Proxy({} as Record<string, any>, {
@@ -791,9 +830,13 @@ async function createWasiModule<T extends PostgresMod>(
         if (prop === '__memory_base') return memoryBase
         if (prop === '__table_base') return tableBase
         if (prop === '__stack_pointer') return stackPointer
+        if (prop === '__c_longjmp' && cLongjmpTag) return cLongjmpTag
         if (prop in wasmExports) return wasmExports[prop]
         if (prop in moduleExports) return moduleExports[prop]
         if (localScope && prop in localScope) return localScope[prop]
+        if (isRuntimeProvidedImport(prop)) {
+          return (envImports as Record<string, unknown>)[prop]
+        }
         if (!(prop in stubs)) {
           stubs[prop] = (...args: unknown[]) => {
             const resolved = resolveSymbol(prop, localScope)
