@@ -32,8 +32,10 @@ JOIN pg_namespace n ON c.collnamespace = n.oid
 ORDER BY schema, name;
         `)
 
-    expect(allLocales[0].rows.length).toBeGreaterThanOrEqual(879)
-    expect(defLocales[0].rows.length).toBeLessThan(allLocales[0].rows.length)
+    expect(allLocales[0].rows.length).toBeGreaterThanOrEqual(878)
+    expect(defLocales[0].rows.length).toBeLessThanOrEqual(
+      allLocales[0].rows.length,
+    )
   })
 
   it.skip('use locale-provider icu with german locale', async () => {

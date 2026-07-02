@@ -330,9 +330,53 @@ function makeLongjmpTag() {
     : undefined
 }
 
+const cLongjmpTag = makeLongjmpTag()
+
+export function isPostgresLongjmpException(e: unknown): boolean {
+  const WasmException = (WebAssembly as any).Exception
+  return Boolean(
+    cLongjmpTag &&
+      typeof WasmException === 'function' &&
+      e instanceof WasmException &&
+      typeof (e as any).is === 'function' &&
+      (e as any).is(cLongjmpTag),
+  )
+}
+
+export function isPostgresMainLongjmpExit(e: unknown): boolean {
+  if (isPostgresLongjmpException(e)) return true
+  if (typeof e !== 'object' || e === null) return false
+
+  const exit = e as {
+    name?: unknown
+    status?: unknown
+    code?: unknown
+    message?: unknown
+  }
+  if (exit.status === POSTGRES_MAIN_LONGJMP) return true
+  if (exit.code === POSTGRES_MAIN_LONGJMP) return true
+
+  return (
+    exit.name === 'ExitStatus' &&
+    typeof exit.message === 'string' &&
+    exit.message.includes(`exit(${POSTGRES_MAIN_LONGJMP})`)
+  )
+}
+
 function makeEnvImports(getTable: () => WebAssembly.Table) {
-  const invoke = (index: number, ...args: unknown[]) =>
-    (getTable().get(index) as CallableFunction)(...args)
+  const handleWasmException = (e: unknown): never => {
+    if (isPostgresMainLongjmpExit(e)) {
+      throw { name: 'ExitStatus', status: POSTGRES_MAIN_LONGJMP }
+    }
+    throw e
+  }
+  const invoke = (index: number, ...args: unknown[]) => {
+    try {
+      return (getTable().get(index) as CallableFunction)(...args)
+    } catch (e) {
+      handleWasmException(e)
+    }
+  }
   const invokeVoid = (index: number, ...args: unknown[]) => {
     invoke(index, ...args)
   }
@@ -344,13 +388,14 @@ function makeEnvImports(getTable: () => WebAssembly.Table) {
     __wasm_longjmp: (_env: number, _value: number) => {
       throw { name: 'ExitStatus', status: POSTGRES_MAIN_LONGJMP }
     },
+    __cxa_thread_atexit_impl: stub,
+    pthread_atfork: stub,
     emscripten_longjmp: (_env: number, _value: number) => {
       throw { name: 'ExitStatus', status: POSTGRES_MAIN_LONGJMP }
     },
     getTempRet0: stub,
     setTempRet0: stub,
   }
-  const cLongjmpTag = makeLongjmpTag()
   if (cLongjmpTag) {
     imports.__c_longjmp = cLongjmpTag
   }
@@ -367,10 +412,13 @@ function makeEnvImports(getTable: () => WebAssembly.Table) {
 
 function isRuntimeProvidedImport(name: string) {
   return (
-    name === '__dynamic_cast' ||
     name === '__resumeException' ||
-    name.startsWith('__cxa_') ||
-    name.startsWith('_Z')
+    name === '__cxa_thread_atexit_impl' ||
+    name === 'pthread_atfork' ||
+    name === '__wasm_longjmp' ||
+    name === '__wasm_setjmp' ||
+    name === '__wasm_setjmp_test' ||
+    name === '__c_longjmp'
   )
 }
 
@@ -651,8 +699,6 @@ async function createWasiModule<T extends PostgresMod>(
   let nextDynamicHandle = 1
   let dlErrorPtr = 0
   let dlLastError = ''
-  const cLongjmpTag = makeLongjmpTag()
-
   const getTable = () => {
     if (!runtimeRefs.table) {
       throw new Error('WASI table is not initialized')
@@ -677,6 +723,16 @@ async function createWasiModule<T extends PostgresMod>(
     }
     return 0
   }
+  const randomUint32 = () => {
+    const value = new Uint32Array(1)
+    const random = globalThis.crypto?.getRandomValues
+    if (random) {
+      random.call(globalThis.crypto, value)
+    } else {
+      nodeCrypto.randomFillSync(new Uint8Array(value.buffer))
+    }
+    return value[0] | 0
+  }
   const setDlError = (message: string) => {
     dlLastError = message
     if (dlErrorPtr) {
@@ -691,7 +747,11 @@ async function createWasiModule<T extends PostgresMod>(
       dlErrorPtr = 0
     }
   }
-  const findFunctionIndex = (fn: CallableFunction, grow = true) => {
+  const findFunctionIndex = (
+    fn: CallableFunction,
+    grow = true,
+    name = fn.name,
+  ) => {
     const cached = functionIndexes.get(fn)
     if (cached !== undefined) return cached
     const table = getTable()
@@ -708,6 +768,9 @@ async function createWasiModule<T extends PostgresMod>(
       table.set(index, fn)
     } catch (err) {
       if (err instanceof TypeError) {
+        if ((globalThis as any).process?.env?.PGLITE_DEBUG_DYLINK) {
+          console.warn('pglite: unable to add JS function to wasm table', name)
+        }
         return 0
       }
       throw err
@@ -752,7 +815,11 @@ async function createWasiModule<T extends PostgresMod>(
     if (!replace && got.value !== 0) return
     const unwrapped = getExportValue(value)
     if (typeof unwrapped === 'function') {
-      got.value = findFunctionIndex(unwrapped as CallableFunction, growTable)
+      got.value = findFunctionIndex(
+        unwrapped as CallableFunction,
+        growTable,
+        name,
+      )
     } else if (typeof unwrapped === 'number') {
       got.value = unwrapped
     }
@@ -770,8 +837,8 @@ async function createWasiModule<T extends PostgresMod>(
     name: string,
     localScope?: Record<string, any>,
   ): unknown => {
-    if (name in wasmExports) return wasmExports[name]
     if (localScope && name in localScope) return localScope[name]
+    if (name in wasmExports) return wasmExports[name]
     for (const loaded of loadedLibsByHandle.values()) {
       if (name in loaded) return loaded[name]
     }
@@ -785,6 +852,7 @@ async function createWasiModule<T extends PostgresMod>(
     bytes: Uint8Array,
     localScope?: Record<string, any>,
   ) => {
+    localScope ??= {}
     const module = new WebAssembly.Module(bytes)
     const metadata = getDylinkMetadata(module)
     const memoryAlignment = Math.pow(2, metadata.memoryAlign)
@@ -822,6 +890,9 @@ async function createWasiModule<T extends PostgresMod>(
       stackMemoryBase + DYNAMIC_LIBRARY_STACK_SIZE,
     )
     let moduleExports: Record<string, any> = {}
+    const moduleExportNames = new Set(
+      WebAssembly.Module.exports(module).map((exportDesc) => exportDesc.name),
+    )
     const stubs: Record<string, CallableFunction> = {}
     const env = new Proxy({} as Record<string, any>, {
       get(_target, prop: string) {
@@ -831,11 +902,14 @@ async function createWasiModule<T extends PostgresMod>(
         if (prop === '__table_base') return tableBase
         if (prop === '__stack_pointer') return stackPointer
         if (prop === '__c_longjmp' && cLongjmpTag) return cLongjmpTag
-        if (prop in wasmExports) return wasmExports[prop]
+        if (prop === 'arc4random') return randomUint32
         if (prop in moduleExports) return moduleExports[prop]
         if (localScope && prop in localScope) return localScope[prop]
         if (isRuntimeProvidedImport(prop)) {
           return (envImports as Record<string, unknown>)[prop]
+        }
+        if (!moduleExportNames.has(prop) && prop in wasmExports) {
+          return wasmExports[prop]
         }
         if (!(prop in stubs)) {
           stubs[prop] = (...args: unknown[]) => {
@@ -869,7 +943,8 @@ async function createWasiModule<T extends PostgresMod>(
       instance.exports as Record<string, any>,
       memoryBase,
     )
-    mergeSymbols(moduleExports)
+    Object.assign(localScope, moduleExports)
+    mergeSymbols(moduleExports, true)
     for (const needed of metadata.neededDynlibs) {
       if (
         !loadedLibsByName.has(needed) &&
@@ -881,15 +956,32 @@ async function createWasiModule<T extends PostgresMod>(
       }
     }
     for (const [name, got] of GOT) {
-      if (got.value !== 0 || metadata.weakImports.has(name)) continue
+      if (got.value !== 0) continue
       const resolved = resolveSymbol(name, localScope)
       if (resolved !== undefined) {
         setGOT(name, resolved, true, true)
+      } else if (metadata.weakImports.has(name)) {
+        continue
       } else {
         throw new Error(`unresolved dynamic symbol: ${name}`)
       }
     }
+    if ((globalThis as any).process?.env?.PGLITE_DEBUG_DYLINK) {
+      const unresolvedWeak = [...GOT.entries()]
+        .filter(
+          ([name, got]) => got.value === 0 && metadata.weakImports.has(name),
+        )
+        .map(([name]) => name)
+      if (unresolvedWeak.length) {
+        console.warn(
+          'pglite: unresolved weak dynamic symbols',
+          libName,
+          unresolvedWeak,
+        )
+      }
+    }
     moduleExports.__wasm_apply_data_relocs?.()
+    moduleExports._initialize?.()
     moduleExports.__wasm_call_ctors?.()
     return moduleExports
   }
@@ -931,16 +1023,18 @@ async function createWasiModule<T extends PostgresMod>(
     const unwrapped = getExportValue(value)
     clearDlError()
     if (typeof unwrapped === 'function') {
-      return findFunctionIndex(unwrapped as CallableFunction)
+      return findFunctionIndex(unwrapped as CallableFunction, true, symbol)
     }
     return typeof unwrapped === 'number' ? unwrapped : 0
   }
   const envImports = makeEnvImports(getTable)
   const wasmMemory = createWasmMemory(moduleOverrides.initialMemory)
 
+  const wasiImports = wasi.wasiImport as Record<string, CallableFunction>
   const imports: WebAssembly.Imports = {
     env: Object.assign(envImports as WebAssembly.ModuleImports, {
       memory: wasmMemory,
+      arc4random: randomUint32,
       dlopen,
       dlsym,
       dlclose: (handle: number) => {
@@ -953,7 +1047,13 @@ async function createWasiModule<T extends PostgresMod>(
       },
     }),
     wasi_snapshot_preview1: {
-      ...wasi.wasiImport,
+      ...wasiImports,
+      fd_close: (fd: number) => {
+        if (fd >= 0 && fd <= 2) {
+          return 0
+        }
+        return wasiImports.fd_close(fd)
+      },
       proc_exit: (code: number) => {
         throw new ExitStatus(code)
       },

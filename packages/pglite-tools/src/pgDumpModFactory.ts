@@ -32,6 +32,15 @@ export interface PgDumpMod
   onExit: (status: number) => void
   print: (test: string) => void
   printErr: (text: string) => void
+  instantiateWasm: (
+    imports: WebAssembly.Imports,
+    receiveInstance: (
+      instance: WebAssembly.Instance,
+      module: WebAssembly.Module,
+    ) => void,
+  ) => WebAssembly.Exports | Record<string, never> | void
+  locateFile: (path: string, prefix: string) => string
+  wasmBinary: ArrayBuffer | Uint8Array
   callMain: (args?: string[]) => number
 }
 

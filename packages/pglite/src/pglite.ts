@@ -18,7 +18,10 @@ import type {
   PGliteOptions,
   Transaction,
 } from './interface.js'
-import PostgresModFactory, { type PostgresMod } from './postgresMod.js'
+import PostgresModFactory, {
+  isPostgresMainLongjmpExit,
+  type PostgresMod,
+} from './postgresMod.js'
 
 // Importing the source as the built version is not ESM compatible
 import { Parser as ProtocolParser, serialize } from '@electric-sql/pg-protocol'
@@ -83,8 +86,6 @@ export class PGlite
   protected mod?: PostgresMod
 
   // we handle Postgres' main longjmp manually, by intercepting it and exiting with this error code
-  // keep in sync with pglitec.c->POSTGRES_MAIN_LONGJMP
-  private readonly POSTGRES_MAIN_LONGJMP = 100
   #onData: ((bytes: Uint8Array) => number) | undefined
 
   get ENV(): any {
@@ -960,13 +961,18 @@ export class PGlite
           mod._PostgresMainLoopOnce()
         } catch (e: any) {
           // we catch here only the "known" exceptions
-          if (e.status === this.POSTGRES_MAIN_LONGJMP) {
+          if (isPostgresMainLongjmpExit(e)) {
             // this is the siglongjmp call that a Database exception has occured
             // the original Postgres code makes a longjmp into main, handles the exception,
             // then re-enters the processing loop
             // to keep original code changes to a minimum, we extract the exception handling to a separate function
             // that we call whenever the exception longjmp is executed
             // like this we also just need to setjmp only once, in a similar fashion to the original code.
+            mod._PostgresMainLongJmp()
+          } else if (
+            typeof (WebAssembly as any).Exception === 'function' &&
+            e instanceof (WebAssembly as any).Exception
+          ) {
             mod._PostgresMainLongJmp()
           } else {
             console.error('Unexpected PostgresMainLoopOnce exception', e)

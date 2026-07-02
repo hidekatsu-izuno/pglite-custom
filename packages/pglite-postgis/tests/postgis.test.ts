@@ -329,15 +329,15 @@ WITH src AS (
   SELECT ST_SummaryStats(rast,1) AS s1, ST_SummaryStats(rast,2) AS s2, ST_SummaryStats(rast,3) AS s3 FROM gdal_test
 ),
 roundtrip AS (
-  SELECT (ST_SummaryStats(ST_FromGDALRaster(ST_AsGDALRaster(rast,'PNG')),1)).* AS r1,
-         (ST_SummaryStats(ST_FromGDALRaster(ST_AsGDALRaster(rast,'PNG')),2)).* AS r2,
-         (ST_SummaryStats(ST_FromGDALRaster(ST_AsGDALRaster(rast,'PNG')),3)).* AS r3
+  SELECT ST_SummaryStats(ST_FromGDALRaster(ST_AsGDALRaster(rast,'PNG')),1) AS r1,
+         ST_SummaryStats(ST_FromGDALRaster(ST_AsGDALRaster(rast,'PNG')),2) AS r2,
+         ST_SummaryStats(ST_FromGDALRaster(ST_AsGDALRaster(rast,'PNG')),3) AS r3
   FROM gdal_test
 )
 SELECT
-  abs(src.s1.mean - roundtrip.r1.mean) < 1e-6 AS band1_mean_equal,
-  abs(src.s2.mean - roundtrip.r2.mean) < 1e-6 AS band2_mean_equal,
-  abs(src.s3.mean - roundtrip.r3.mean) < 1e-6 AS band3_mean_equal
+  abs((src.s1).mean - (roundtrip.r1).mean) < 1e-6 AS band1_mean_equal,
+  abs((src.s2).mean - (roundtrip.r2).mean) < 1e-6 AS band2_mean_equal,
+  abs((src.s3).mean - (roundtrip.r3).mean) < 1e-6 AS band3_mean_equal
 FROM src, roundtrip;
 `)
   })
