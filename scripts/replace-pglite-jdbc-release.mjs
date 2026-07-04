@@ -1,0 +1,97 @@
+#!/usr/bin/env node
+
+import { cp, mkdir, readdir, rm, stat } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { dirname, relative, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const scriptDir = dirname(fileURLToPath(import.meta.url))
+const repoRoot = resolve(scriptDir, '..')
+
+const args = parseArgs(process.argv.slice(2))
+const jdbcDir = resolve(args['jdbc-dir'] ?? resolve(repoRoot, '../pglite-jdbc'))
+const sourceDir = resolve(args.source ?? resolve(repoRoot, 'packages/pglite/release'))
+const targetDir = resolve(
+  args.target ??
+    resolve(
+      jdbcDir,
+      'src/main/resources/io/github/hidekatsu_izuno/pglite_jdbc/pglite/release',
+    ),
+)
+const dryRun = Boolean(args['dry-run'])
+
+await assertDirectory(sourceDir, 'source release directory')
+await replaceWholeRelease()
+
+async function replaceWholeRelease() {
+  const sourceFiles = await listFiles(sourceDir)
+  const removed = existsSync(targetDir) ? await listFiles(targetDir) : []
+
+  if (!dryRun) {
+    await rm(targetDir, { recursive: true, force: true })
+    await mkdir(dirname(targetDir), { recursive: true })
+    await cp(sourceDir, targetDir, { recursive: true })
+  }
+
+  printSummary({
+    copied: sourceFiles,
+    removed,
+  })
+}
+
+async function assertDirectory(dir, label) {
+  let stats
+  try {
+    stats = await stat(dir)
+  } catch {
+    throw new Error(`${label} does not exist: ${dir}`)
+  }
+  if (!stats.isDirectory()) {
+    throw new Error(`${label} is not a directory: ${dir}`)
+  }
+}
+
+async function listFiles(dir, base = dir) {
+  const entries = await readdir(dir, { withFileTypes: true })
+  const files = []
+  for (const entry of entries) {
+    const fullPath = resolve(dir, entry.name)
+    if (entry.isDirectory()) {
+      files.push(...(await listFiles(fullPath, base)))
+    } else if (entry.isFile()) {
+      files.push(relative(base, fullPath))
+    }
+  }
+  return files.sort()
+}
+
+function printSummary({ copied, removed }) {
+  console.log(`source: ${sourceDir}`)
+  console.log(`target: ${targetDir}`)
+  console.log(`mode: replace${dryRun ? ' dry-run' : ''}`)
+  console.log(`copied: ${copied.length}`)
+  if (removed.length > 0) {
+    console.log(`removed before copy: ${removed.length}`)
+  }
+}
+
+function parseArgs(argv) {
+  const parsed = {}
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i]
+    if (!arg.startsWith('--')) {
+      throw new Error(`unexpected argument: ${arg}`)
+    }
+    const name = arg.slice(2)
+    if (name === 'dry-run') {
+      parsed[name] = true
+      continue
+    }
+    const value = argv[++i]
+    if (!value || value.startsWith('--')) {
+      throw new Error(`missing value for --${name}`)
+    }
+    parsed[name] = value
+  }
+  return parsed
+}
