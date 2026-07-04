@@ -663,6 +663,8 @@ async function createWasiModule<T extends PostgresMod>(
     moduleOverrides.thisProgram ?? '/pglite/bin/postgres',
     ...(moduleOverrides.arguments ?? []),
   ]
+  const debugOutput = args.includes('-d')
+  const devNullFd = debugOutput ? undefined : fs.openSync(os.devNull, 'w')
   const wasi = new WASI({
     version: 'preview1',
     args,
@@ -673,6 +675,12 @@ async function createWasiModule<T extends PostgresMod>(
       '/home': homeRoot,
       '/data': dataRoot,
     },
+    ...(devNullFd === undefined
+      ? {}
+      : {
+          stdout: devNullFd,
+          stderr: devNullFd,
+        }),
     returnOnExit: true,
   })
 

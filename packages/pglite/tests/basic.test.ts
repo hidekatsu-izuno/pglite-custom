@@ -767,7 +767,7 @@ await testEsmCjsAndDTC(async (importType) => {
 
     it('PGlite version', async () => {
       const version = await db.query<{ version: string }>(`select version();`)
-      const re = /\PGlite \d+\.\d+\.\d+\b/
+      const re = /PostgreSQL \d+\.\d+(\.\d+)? \(PGlite\b/
       expect(re.test(version.rows[0].version)).toBeTruthy()
     })
 
