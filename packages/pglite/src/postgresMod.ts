@@ -290,14 +290,29 @@ async function createNodeFs(root: string): Promise<FS> {
   return api
 }
 
+// Compiling the ~18MB Postgres module is expensive, and a single fresh init
+// used to compile it twice (once for the live instance and once for the
+// throwaway initdb instance). Cache the compiled module per URL so it is only
+// compiled once per process and reused for any further instances.
+const compiledModuleCache = new Map<string, Promise<WebAssembly.Module>>()
+
 async function readWasm(moduleUrl: URL, module?: WebAssembly.Module) {
   if (module) return module
-  if (pglUtils.IN_NODE) {
-    const fs = await import('fs/promises')
-    return WebAssembly.compile(await fs.readFile(moduleUrl))
-  }
-  const response = await fetch(moduleUrl)
-  return WebAssembly.compileStreaming(response)
+  const cacheKey = moduleUrl.toString()
+  const cached = compiledModuleCache.get(cacheKey)
+  if (cached) return cached
+  const compilePromise = (async () => {
+    if (pglUtils.IN_NODE) {
+      const fs = await import('fs/promises')
+      return WebAssembly.compile(await fs.readFile(moduleUrl))
+    }
+    const response = await fetch(moduleUrl)
+    return WebAssembly.compileStreaming(response)
+  })()
+  // Don't cache failed compilations so a later attempt can retry.
+  compilePromise.catch(() => compiledModuleCache.delete(cacheKey))
+  compiledModuleCache.set(cacheKey, compilePromise)
+  return compilePromise
 }
 
 function makeStringReaders(memory: WebAssembly.Memory) {

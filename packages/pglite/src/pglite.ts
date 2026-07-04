@@ -556,16 +556,13 @@ export class PGlite
         } else {
           this.#log('pglite: no db in filesystem, running initdb')
 
-          const pgInitDbOpts = { ...options }
-          pgInitDbOpts.noInitDb = true
-          pgInitDbOpts.dataDir = undefined
-          pgInitDbOpts.extensions = undefined
-          pgInitDbOpts.loadDataDir = undefined
-          const pg_initDb = await PGlite.create(pgInitDbOpts)
-
-          // Initialize the database
+          // Initialize the database directly on this instance. initdb drives
+          // the bootstrap backend on this very Postgres module (isolated by a
+          // heap snapshot that is restored afterwards) and writes the cluster
+          // straight into PGDATA, avoiding a second Postgres instance and a
+          // tarball dump/load round-trip.
           const initdbResult = await initdb({
-            pg: pg_initDb,
+            pg: this,
             debug: options.debug,
             wasmModule: options.initdbWasmModule,
             args: options.initDbStartParams,
@@ -578,10 +575,6 @@ export class PGlite
               )
             }
           }
-
-          const pgdatatar = await pg_initDb.dumpDataDir('none')
-          pg_initDb.close()
-          await loadTar(this.mod.FS, pgdatatar, PGDATA)
 
           // Sync any changes back to the persisted store (if there is one)
           // TODO: only sync here if initdb did init db.

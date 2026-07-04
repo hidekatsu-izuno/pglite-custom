@@ -167,6 +167,11 @@ async function execInitdb({
       log(debug, 'initdberr', text)
     },
     __wasiRoot: pg.Module.FS.__root,
+    // Align the initdb module's PGDATA with the Postgres module it drives so
+    // the cluster is written straight into the live instance's data directory
+    // (works for both memory:// and file:// backed instances).
+    __wasiDataRoot: (pg.Module as unknown as { __wasiDataRoot?: string })
+      .__wasiDataRoot,
     wasmModule,
     preRun: [
       (mod: any) => {
@@ -315,6 +320,15 @@ async function execInitdb({
   log(debug, 'calling initdb.main with', args)
   const result = initDbMod.callMain(args)
 
+  // Restore the Postgres module to the pristine state captured before
+  // bootstrap. Because the system/popen/pclose callback pointers live in the
+  // linear memory (C globals), this both cleans up the heap dirtied by the
+  // bootstrap backends and reverts the callbacks initdb overrode, so the same
+  // module can be reused directly as the live backend.
+  if (pg.Module.__wasi && origHEAPU8) {
+    pg.Module.HEAPU8.set(origHEAPU8)
+  }
+
   return {
     exitCode: result,
     stderr: stderrOutput,
@@ -395,6 +409,10 @@ export async function initdb({
       '--locale-provider=libc',
       ...getHostIcuLocaleArgs(args),
       '--auth=trust',
+      // The data directory lives in the in-memory WASI filesystem and is
+      // immediately dumped to a tarball afterwards, so fsync'ing it to "disk"
+      // only adds a full directory-tree walk with no durability benefit.
+      '--no-sync',
       ...(args ?? []),
     ],
     wasmModule,
