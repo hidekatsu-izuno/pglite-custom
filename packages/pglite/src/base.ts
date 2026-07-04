@@ -29,6 +29,8 @@ import {
 } from '@electric-sql/pg-protocol/messages'
 import { makePGliteError } from './errors.js'
 
+const LARGE_QUERY_SIMPLE_PROTOCOL_THRESHOLD = 64 * 1024 * 1024
+
 export abstract class BasePGlite
   implements Pick<PGliteInterface, 'query' | 'sql' | 'exec' | 'transaction'>
 {
@@ -256,6 +258,15 @@ export abstract class BasePGlite
     params: any[] = [],
     options?: QueryOptions,
   ): Promise<Results<T>> {
+    if (
+      params.length === 0 &&
+      !options?.paramTypes?.length &&
+      query.length >= LARGE_QUERY_SIMPLE_PROTOCOL_THRESHOLD
+    ) {
+      const results = await this.#runExec(query, options)
+      return results[0] as Results<T>
+    }
+
     return await this._runExclusiveQuery(async () => {
       // We need to parse, bind and execute a query with parameters
       this.#log('runQuery', query, params, options)
