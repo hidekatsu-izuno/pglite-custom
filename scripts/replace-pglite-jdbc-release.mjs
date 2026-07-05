@@ -4,6 +4,7 @@ import { cp, mkdir, readdir, rm, stat } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { spawn } from 'node:child_process'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(scriptDir, '..')
@@ -26,17 +27,39 @@ await replaceWholeRelease()
 async function replaceWholeRelease() {
   const sourceFiles = await listFiles(sourceDir)
   const removed = existsSync(targetDir) ? await listFiles(targetDir) : []
+  const archives = sourceFiles.filter((file) => file.endsWith('.tar.gz'))
+  const copiedFiles = sourceFiles.filter((file) => !file.endsWith('.tar.gz'))
 
   if (!dryRun) {
     await rm(targetDir, { recursive: true, force: true })
     await mkdir(dirname(targetDir), { recursive: true })
-    await cp(sourceDir, targetDir, { recursive: true })
+    for (const relPath of copiedFiles) {
+      await copyReleaseFile(relPath)
+    }
+    for (const relPath of archives) {
+      await extractReleaseArchive(relPath)
+    }
   }
 
   printSummary({
-    copied: sourceFiles,
+    copied: copiedFiles,
+    extracted: archives,
     removed,
   })
+}
+
+async function copyReleaseFile(relPath) {
+  const sourcePath = resolve(sourceDir, relPath)
+  const targetPath = resolve(targetDir, relPath)
+  await mkdir(dirname(targetPath), { recursive: true })
+  await cp(sourcePath, targetPath)
+}
+
+async function extractReleaseArchive(relPath) {
+  const sourcePath = resolve(sourceDir, relPath)
+  const archiveTargetDir = resolve(targetDir, relPath)
+  await mkdir(archiveTargetDir, { recursive: true })
+  await run('tar', ['-xzf', sourcePath, '-C', archiveTargetDir])
 }
 
 async function assertDirectory(dir, label) {
@@ -65,11 +88,12 @@ async function listFiles(dir, base = dir) {
   return files.sort()
 }
 
-function printSummary({ copied, removed }) {
+function printSummary({ copied, extracted, removed }) {
   console.log(`source: ${sourceDir}`)
   console.log(`target: ${targetDir}`)
   console.log(`mode: replace${dryRun ? ' dry-run' : ''}`)
   console.log(`copied: ${copied.length}`)
+  console.log(`extracted archives: ${extracted.length}`)
   if (removed.length > 0) {
     console.log(`removed before copy: ${removed.length}`)
   }
@@ -94,4 +118,29 @@ function parseArgs(argv) {
     parsed[name] = value
   }
   return parsed
+}
+
+function run(command, commandArgs) {
+  return new Promise((resolvePromise, reject) => {
+    const child = spawn(command, commandArgs, {
+      stdio: ['ignore', 'ignore', 'pipe'],
+    })
+    let stderr = ''
+    child.stderr.setEncoding('utf8')
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk
+    })
+    child.on('error', reject)
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolvePromise()
+      } else {
+        reject(
+          new Error(
+            `${command} ${commandArgs.join(' ')} exited with ${code}\n${stderr}`,
+          ),
+        )
+      }
+    })
+  })
 }
