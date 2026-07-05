@@ -1023,7 +1023,11 @@ async function createWasiModule<T extends PostgresMod>(
         encoding: 'binary',
       }) as Uint8Array
       const localScope: Record<string, any> = {}
-      const libExports = instantiateDynamicLibrary(wasmFileName, bytes, localScope)
+      const libExports = instantiateDynamicLibrary(
+        wasmFileName,
+        bytes,
+        localScope,
+      )
       const handle = nextDynamicHandle++
       loadedLibsByName.set(fileName, libExports)
       loadedLibsByName.set(wasmFileName, libExports)
