@@ -1018,11 +1018,15 @@ async function createWasiModule<T extends PostgresMod>(
         clearDlError()
         return handle
       }
-      const bytes = FS.readFile(fileName, { encoding: 'binary' }) as Uint8Array
+      const wasmFileName = dynamicLibraryFileName(fileName)
+      const bytes = FS.readFile(wasmFileName, {
+        encoding: 'binary',
+      }) as Uint8Array
       const localScope: Record<string, any> = {}
-      const libExports = instantiateDynamicLibrary(fileName, bytes, localScope)
+      const libExports = instantiateDynamicLibrary(wasmFileName, bytes, localScope)
       const handle = nextDynamicHandle++
       loadedLibsByName.set(fileName, libExports)
+      loadedLibsByName.set(wasmFileName, libExports)
       loadedLibsByHandle.set(handle, libExports)
       clearDlError()
       return handle
@@ -1030,6 +1034,18 @@ async function createWasiModule<T extends PostgresMod>(
       setDlError(err instanceof Error ? err.message : String(err))
       return 0
     }
+  }
+  const dynamicLibraryFileName = (fileName: string) => {
+    if (FS.analyzePath(fileName).exists) {
+      return fileName
+    }
+    if (fileName.endsWith('.so')) {
+      const wasmFileName = `${fileName}.wasm`
+      if (FS.analyzePath(wasmFileName).exists) {
+        return wasmFileName
+      }
+    }
+    return fileName
   }
   const dlsym = (handle: number, symbolPtr: number) => {
     const symbol = UTF8ToString(symbolPtr)

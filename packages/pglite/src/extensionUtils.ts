@@ -80,7 +80,7 @@ function loadExtension(
   log: (...args: any[]) => void,
 ): Promise<void>[] {
   const soPreloadPromises: Promise<void>[] = []
-  // sort is a hack to make PostGIS work. we need to preload postgis-3.so BEFORE postgis_topology-3.so
+  // sort is a hack to make PostGIS work. we need to load postgis-3 before postgis_topology-3.
   const data = tinyTar
     .untar(bytes)
     .sort((a, b) => (a.name > b.name ? 1 : a.name < b.name ? -1 : 0))
