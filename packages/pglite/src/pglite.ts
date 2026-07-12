@@ -310,20 +310,6 @@ export class PGlite
       ...(this.debug ? ['-d', this.debug.toString()] : []),
     ]
 
-    if (!options.pgliteWasmModule) {
-      // Start the wasm download in the background so it's ready when we need it
-      pglUtils.startArtifactDownload(
-        new URL('../release/pglite.wasm', import.meta.url),
-      )
-    }
-
-    if (!options.initdbWasmModule) {
-      // Start the wasm download in the background so it's ready when we need it
-      pglUtils.startArtifactDownload(
-        new URL('../release/initdb.wasm', import.meta.url),
-      )
-    }
-
     // Get the fs bundle
     // We don't await the loading of the fs bundle at this point as we can continue
     // with other work.
@@ -353,7 +339,7 @@ export class PGlite
       arguments: args,
       noExitRuntime: true,
       wasmMemory: wasmMemory,
-      // Provide a stdin that returns EOF to avoid browser prompt
+      // Provide EOF on stdin because PGlite runs non-interactively
       stdin: () => null,
       print: (text: string) => {
         this.#print(text)
@@ -361,17 +347,7 @@ export class PGlite
       printErr: (text: string) => {
         this.#printErr(text)
       },
-      instantiateWasm: (imports, successCallback) => {
-        const moduleUrl = new URL('../release/pglite.wasm', import.meta.url)
-
-        pglUtils
-          .instantiateWasm(imports, moduleUrl, options.pgliteWasmModule)
-          .then(({ instance, module }) => {
-            // @ts-ignore wrong type in Emscripten typings
-            successCallback(instance, module)
-          })
-        return {}
-      },
+      wasmModule: options.pgliteWasmModule,
       getPreloadedPackage: (remotePackageName, remotePackageSize) => {
         if (remotePackageName === 'pglite.data') {
           if (fsBundleBuffer.byteLength !== remotePackageSize) {

@@ -1,9 +1,18 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { readFileSync } from 'node:fs'
 import * as fs from 'node:fs'
 import * as crypto from 'node:crypto'
+import {
+  PATH,
+  UTF8ArrayToString,
+  instantiateNodeWasm,
+  intArrayFromString,
+  lengthBytesUTF8,
+  readAsync,
+  readBinary,
+  stringToUTF8Array,
+} from './emscriptenCommon.js'
 
 export interface InitdbMod {
   [key: string]: any
@@ -66,16 +75,6 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   var out = Module['print'] || console.log.bind(console)
   var err = Module['printErr'] || console.error.bind(console)
   var wasmBinary = Module['wasmModule'] || Module['wasmBinary']
-  var readBinary = (filename) => {
-    const file =
-      filename instanceof URL ? filename : new URL(filename, import.meta.url)
-    return new Uint8Array(readFileSync(file))
-  }
-  var readAsync = async (filename, binary = true) => {
-    const file =
-      filename instanceof URL ? filename : new URL(filename, import.meta.url)
-    return readFileSync(file, binary ? undefined : 'utf8')
-  }
   var wasmMemory
   var ABORT = false
   var EXITSTATUS
@@ -203,22 +202,6 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     throw e
   }
   var wasmBinaryFile = new URL('../release/initdb.wasm', import.meta.url)
-  var getBinarySync = (file) => wasmBinary || readBinary(file)
-  var getWasmBinary = async (file) => getBinarySync(file)
-  var instantiateArrayBuffer = async (binaryFile, imports) => {
-    try {
-      const binary = await getWasmBinary(binaryFile)
-      const result = await WebAssembly.instantiate(binary, imports)
-      return result instanceof WebAssembly.Instance
-        ? { instance: result, module: binary }
-        : result
-    } catch (reason) {
-      err(`failed to prepare wasm: ${reason}`)
-      abort(reason)
-    }
-  }
-  var instantiateAsync = (binary, binaryFile, imports) =>
-    instantiateArrayBuffer(binaryFile, imports)
   function getWasmImports() {
     return {
       env: wasmImports,
@@ -244,7 +227,15 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
     var info = getWasmImports()
     try {
-      var result = await instantiateAsync(wasmBinary, wasmBinaryFile, info)
+      var result = await instantiateNodeWasm(
+        wasmBinary,
+        wasmBinaryFile,
+        info,
+        (reason) => {
+          err(`failed to prepare wasm: ${reason}`)
+          return abort(reason)
+        },
+      )
       receiveInstantiationResult(result)
       return result
     } catch (e) {
@@ -281,43 +272,6 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     while (callbacks.length > 0) {
       callbacks.shift()(Module)
     }
-  }
-  var UTF8Decoder =
-    typeof TextDecoder != 'undefined' ? new TextDecoder() : undefined
-  var UTF8ArrayToString = (heapOrArray, idx = 0, maxBytesToRead = NaN) => {
-    var endIdx = idx + maxBytesToRead
-    var endPtr = idx
-    while (heapOrArray[endPtr] && !(endPtr >= endIdx)) ++endPtr
-    if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
-      return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr))
-    }
-    var str = ''
-    while (idx < endPtr) {
-      var u0 = heapOrArray[idx++]
-      if (!(u0 & 128)) {
-        str += String.fromCharCode(u0)
-        continue
-      }
-      var u1 = heapOrArray[idx++] & 63
-      if ((u0 & 224) == 192) {
-        str += String.fromCharCode(((u0 & 31) << 6) | u1)
-        continue
-      }
-      var u2 = heapOrArray[idx++] & 63
-      if ((u0 & 240) == 224) {
-        u0 = ((u0 & 15) << 12) | (u1 << 6) | u2
-      } else {
-        u0 =
-          ((u0 & 7) << 18) | (u1 << 12) | (u2 << 6) | (heapOrArray[idx++] & 63)
-      }
-      if (u0 < 65536) {
-        str += String.fromCharCode(u0)
-      } else {
-        var ch = u0 - 65536
-        str += String.fromCharCode(55296 | (ch >> 10), 56320 | (ch & 1023))
-      }
-    }
-    return str
   }
   var currentModuleWeakSymbols = new Set()
   var ___heap_base = 205888
@@ -587,72 +541,6 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     { value: 'i32', mutable: true },
     205888,
   )
-  var PATH = {
-    isAbs: (path) => path.charAt(0) === '/',
-    splitPath: (filename) => {
-      var splitPathRe =
-        /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/
-      return splitPathRe.exec(filename).slice(1)
-    },
-    normalizeArray: (parts, allowAboveRoot) => {
-      var up = 0
-      for (var i = parts.length - 1; i >= 0; i--) {
-        var last = parts[i]
-        if (last === '.') {
-          parts.splice(i, 1)
-        } else if (last === '..') {
-          parts.splice(i, 1)
-          up++
-        } else if (up) {
-          parts.splice(i, 1)
-          up--
-        }
-      }
-      if (allowAboveRoot) {
-        for (; up; up--) {
-          parts.unshift('..')
-        }
-      }
-      return parts
-    },
-    normalize: (path) => {
-      var isAbsolute = PATH.isAbs(path),
-        trailingSlash = path.substr(-1) === '/'
-      path = PATH.normalizeArray(
-        path.split('/').filter((p) => !!p),
-        !isAbsolute,
-      ).join('/')
-      if (!path && !isAbsolute) {
-        path = '.'
-      }
-      if (path && trailingSlash) {
-        path += '/'
-      }
-      return (isAbsolute ? '/' : '') + path
-    },
-    dirname: (path) => {
-      var result = PATH.splitPath(path),
-        root = result[0],
-        dir = result[1]
-      if (!root && !dir) {
-        return '.'
-      }
-      if (dir) {
-        dir = dir.substr(0, dir.length - 1)
-      }
-      return root + dir
-    },
-    basename: (path) => {
-      if (path === '/') return '/'
-      path = PATH.normalize(path)
-      path = path.replace(/\/$/, '')
-      var lastSlash = path.lastIndexOf('/')
-      if (lastSlash === -1) return path
-      return path.substr(lastSlash + 1)
-    },
-    join: (...paths) => PATH.normalize(paths.join('/')),
-    join2: (l, r) => PATH.normalize(l + '/' + r),
-  }
   var initRandomFill = () => {
     if (
       typeof crypto == 'object' &&
@@ -727,63 +615,6 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     },
   }
   var FS_stdin_getChar_buffer = []
-  var lengthBytesUTF8 = (str) => {
-    var len = 0
-    for (var i = 0; i < str.length; ++i) {
-      var c = str.charCodeAt(i)
-      if (c <= 127) {
-        len++
-      } else if (c <= 2047) {
-        len += 2
-      } else if (c >= 55296 && c <= 57343) {
-        len += 4
-        ++i
-      } else {
-        len += 3
-      }
-    }
-    return len
-  }
-  var stringToUTF8Array = (str, heap, outIdx, maxBytesToWrite) => {
-    if (!(maxBytesToWrite > 0)) return 0
-    var startIdx = outIdx
-    var endIdx = outIdx + maxBytesToWrite - 1
-    for (var i = 0; i < str.length; ++i) {
-      var u = str.charCodeAt(i)
-      if (u >= 55296 && u <= 57343) {
-        var u1 = str.charCodeAt(++i)
-        u = (65536 + ((u & 1023) << 10)) | (u1 & 1023)
-      }
-      if (u <= 127) {
-        if (outIdx >= endIdx) break
-        heap[outIdx++] = u
-      } else if (u <= 2047) {
-        if (outIdx + 1 >= endIdx) break
-        heap[outIdx++] = 192 | (u >> 6)
-        heap[outIdx++] = 128 | (u & 63)
-      } else if (u <= 65535) {
-        if (outIdx + 2 >= endIdx) break
-        heap[outIdx++] = 224 | (u >> 12)
-        heap[outIdx++] = 128 | ((u >> 6) & 63)
-        heap[outIdx++] = 128 | (u & 63)
-      } else {
-        if (outIdx + 3 >= endIdx) break
-        heap[outIdx++] = 240 | (u >> 18)
-        heap[outIdx++] = 128 | ((u >> 12) & 63)
-        heap[outIdx++] = 128 | ((u >> 6) & 63)
-        heap[outIdx++] = 128 | (u & 63)
-      }
-    }
-    heap[outIdx] = 0
-    return outIdx - startIdx
-  }
-  function intArrayFromString(stringy, dontAddNull, length) {
-    var len = length > 0 ? length : lengthBytesUTF8(stringy) + 1
-    var u8array = new Array(len)
-    var numBytesWritten = stringToUTF8Array(stringy, u8array, 0, u8array.length)
-    if (dontAddNull) u8array.length = numBytesWritten
-    return u8array
-  }
   var FS_stdin_getChar = () => {
     if (!FS_stdin_getChar_buffer.length) {
       var result = null

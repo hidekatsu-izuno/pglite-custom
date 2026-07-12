@@ -32,17 +32,8 @@ export default defineConfig([
       resolve: true,
     },
     clean: true,
-    external: ['../release/pglite.js', '../release/pglite.cjs'],
     minify: minify,
     shims: true, // Convert import.meta.url to a shim for CJS
     format: ['esm', 'cjs'],
-  },
-  {
-    // Convert the Emscripten ESM bundle to a CJS bundle
-    entry: ['release/pglite.js'],
-    format: ['cjs'],
-    minify: minify,
-    shims: true, // Convert import.meta.url to a shim for CJS
-    keepNames: true,
   },
 ])
