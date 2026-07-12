@@ -244,9 +244,7 @@ jobs:
           path: ./packages/pglite-pgvector/dist
 
       - name: Install dependencies
-        run: |
-          pnpm install --frozen-lockfile
-          pnpm exec playwright install --with-deps
+        run: pnpm install --frozen-lockfile
 
       - name: Build dependencies
         run: pnpm --filter "pglite^..." build
@@ -256,10 +254,6 @@ jobs:
 
       - name: Build
         run: pnpm build
-
-      - name: Test web integrations
-        # retry on failure as web tests can be flaky
-        run: pnpm test:web || pnpm test:web || pnpm test:web
 
       - name: Test Deno
         run: pnpm test:deno
@@ -579,9 +573,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build REPL and benchmark packages needed for examples
-        run: pnpm --filter "@electric-sql/pglite-react" --filter "@electric-sql/pglite-repl" --filter "benchmark"  build
-
       - name: Download PGlite web build artifacts
         uses: actions/download-artifact@v8
         with:
@@ -601,10 +592,9 @@ jobs:
           PGLITE: ${{ github.workspace }}/packages/pglite
         working-directory: ${{ github.workspace }}
         run: |
-            mkdir -p /tmp/web/examples/ /tmp/web/dist /tmp/web/benchmark
+            mkdir -p /tmp/web/examples/ /tmp/web/dist
             cp -r ${PGLITE}/dist/* /tmp/web/dist/
             cp -r ${PGLITE}/examples/* /tmp/web/examples/
-            cp -r ${{ github.workspace }}/packages/benchmark/dist/* /tmp/web/benchmark/
             rm -rf /tmp/web/examples/pglite-tools
             cp -r /tmp/pglite-tools /tmp/web/examples/
 
