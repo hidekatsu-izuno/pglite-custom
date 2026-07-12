@@ -50,18 +50,18 @@ type InitdbFactory = (
 ) => Promise<InitdbMod>
 
 const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
-  var moduleRtn
-  var Module = moduleArg
-  var readyPromiseResolve, readyPromiseReject
-  var readyPromise = new Promise((resolve, reject) => {
+  let moduleRtn
+  const Module = moduleArg
+  let readyPromiseResolve, readyPromiseReject
+  const readyPromise = new Promise((resolve, reject) => {
     readyPromiseResolve = resolve
     readyPromiseReject = reject
   })
-  var ENVIRONMENT_IS_NODE = true
-  var moduleOverrides = Object.assign({}, Module)
-  var arguments_ = []
-  var thisProgram = './this.program'
-  var quit_ = (status, toThrow) => {
+  const ENVIRONMENT_IS_NODE = true
+  let moduleOverrides = Object.assign({}, Module)
+  let arguments_ = []
+  let thisProgram = './this.program'
+  const quit_ = (status, toThrow) => {
     throw toThrow
   }
   Object.assign(Module, moduleOverrides)
@@ -72,18 +72,18 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     thisProgram = process.argv[1].replace(/\\/g, '/')
   }
   arguments_ = process.argv.slice(2)
-  var out = Module['print'] || console.log.bind(console)
-  var err = Module['printErr'] || console.error.bind(console)
-  var wasmBinary = Module['wasmModule'] || Module['wasmBinary']
-  var wasmMemory
-  var ABORT = false
-  var EXITSTATUS
+  const out = Module['print'] || console.log.bind(console)
+  const err = Module['printErr'] || console.error.bind(console)
+  const wasmBinary = Module['wasmModule'] || Module['wasmBinary']
+  let wasmMemory
+  let ABORT = false
+  let EXITSTATUS
   function assert(condition, text) {
     if (!condition) {
       abort(text)
     }
   }
-  var HEAP8,
+  let HEAP8,
     HEAPU8,
     HEAP16,
     HEAPU16,
@@ -94,7 +94,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     HEAPU64,
     HEAPF64
   function updateMemoryViews() {
-    var b = wasmMemory.buffer
+    const b = wasmMemory.buffer
     Module['HEAP8'] = HEAP8 = new Int8Array(b)
     Module['HEAP16'] = HEAP16 = new Int16Array(b)
     Module['HEAPU8'] = HEAPU8 = new Uint8Array(b)
@@ -109,21 +109,21 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   if (Module['wasmMemory']) {
     wasmMemory = Module['wasmMemory']
   } else {
-    var INITIAL_MEMORY = Module['INITIAL_MEMORY'] || 67108864
+    const INITIAL_MEMORY = Module['INITIAL_MEMORY'] || 67108864
     wasmMemory = new WebAssembly.Memory({
       initial: INITIAL_MEMORY / 65536,
       maximum: 32768,
     })
   }
   updateMemoryViews()
-  var __ATPRERUN__ = []
-  var __ATINIT__ = []
-  var __ATMAIN__ = []
-  var __ATEXIT__ = []
-  var __ATPOSTRUN__ = []
-  var __RELOC_FUNCS__ = []
-  var runtimeInitialized = false
-  var runtimeExited = false
+  const __ATPRERUN__ = []
+  const __ATINIT__ = []
+  const __ATMAIN__ = []
+  const __ATEXIT__ = []
+  const __ATPOSTRUN__ = []
+  const __RELOC_FUNCS__ = []
+  let runtimeInitialized = false
+  let runtimeExited = false
   function preRun() {
     if (Module['preRun']) {
       if (typeof Module['preRun'] == 'function')
@@ -171,8 +171,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   function addOnPostRun(cb) {
     __ATPOSTRUN__.unshift(cb)
   }
-  var runDependencies = 0
-  var dependenciesFulfilled = null
+  let runDependencies = 0
+  let dependenciesFulfilled = null
   function getUniqueRunDependency(id) {
     return id
   }
@@ -185,7 +185,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     Module['monitorRunDependencies']?.(runDependencies)
     if (runDependencies == 0) {
       if (dependenciesFulfilled) {
-        var callback = dependenciesFulfilled
+        const callback = dependenciesFulfilled
         dependenciesFulfilled = null
         callback()
       }
@@ -197,11 +197,11 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     err(what)
     ABORT = true
     what += '. Build with -sASSERTIONS for more info.'
-    var e = new WebAssembly.RuntimeError(what)
+    const e = new WebAssembly.RuntimeError(what)
     readyPromiseReject(e)
     throw e
   }
-  var wasmBinaryFile = new URL('../release/initdb.wasm', import.meta.url)
+  const wasmBinaryFile = new URL('../release/initdb.wasm', import.meta.url)
   function getWasmImports() {
     return {
       env: wasmImports,
@@ -225,9 +225,9 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     function receiveInstantiationResult(result) {
       receiveInstance(result['instance'], result['module'])
     }
-    var info = getWasmImports()
+    const info = getWasmImports()
     try {
-      var result = await instantiateNodeWasm(
+      const result = await instantiateNodeWasm(
         wasmBinary,
         wasmBinaryFile,
         info,
@@ -243,7 +243,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return
     }
   }
-  var ASM_CONSTS = {}
+  const ASM_CONSTS = {}
   class ExitStatus {
     name = 'ExitStatus'
     constructor(status) {
@@ -251,11 +251,11 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       this.status = status
     }
   }
-  var GOT = {}
-  var currentModuleWeakSymbols = new Set([])
-  var GOTHandler = {
+  const GOT = {}
+  let currentModuleWeakSymbols = new Set([])
+  let GOTHandler = {
     get(obj, symName) {
-      var rtn = GOT[symName]
+      let rtn = GOT[symName]
       if (!rtn) {
         rtn = GOT[symName] = new WebAssembly.Global({
           value: 'i32',
@@ -268,25 +268,26 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return rtn
     },
   }
-  var callRuntimeCallbacks = (callbacks) => {
+  let callRuntimeCallbacks = (callbacks) => {
     while (callbacks.length > 0) {
       callbacks.shift()(Module)
     }
   }
-  var currentModuleWeakSymbols = new Set()
-  var ___heap_base = 205888
-  var alignMemory = (size, alignment) => Math.ceil(size / alignment) * alignment
-  var getMemory = (size) => {
+  currentModuleWeakSymbols = new Set()
+  let ___heap_base = 205888
+  const alignMemory = (size, alignment) =>
+    Math.ceil(size / alignment) * alignment
+  const getMemory = (size) => {
     if (runtimeInitialized) {
       return _calloc(size, 1)
     }
-    var ret = ___heap_base
-    var end = ret + alignMemory(size, 16)
+    const ret = ___heap_base
+    const end = ret + alignMemory(size, 16)
     ___heap_base = end
     GOT['__heap_base'].value = end
     return ret
   }
-  var isInternalSym = (symName) =>
+  const isInternalSym = (symName) =>
     [
       '__cpp_exception',
       '__c_longjmp',
@@ -303,15 +304,15 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       '__start_em_js',
       '__stop_em_js',
     ].includes(symName) || symName.startsWith('__em_js__')
-  var uleb128Encode = (n, target) => {
+  const uleb128Encode = (n, target) => {
     if (n < 128) {
       target.push(n)
     } else {
       target.push(n % 128 | 128, n >> 7)
     }
   }
-  var sigToWasmTypes = (sig) => {
-    var typeNames = {
+  const sigToWasmTypes = (sig) => {
+    const typeNames = {
       i: 'i32',
       j: 'i64',
       f: 'f32',
@@ -319,22 +320,22 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       e: 'externref',
       p: 'i32',
     }
-    var type = {
+    const type = {
       parameters: [],
       results: sig[0] == 'v' ? [] : [typeNames[sig[0]]],
     }
-    for (var i = 1; i < sig.length; ++i) {
+    for (let i = 1; i < sig.length; ++i) {
       type.parameters.push(typeNames[sig[i]])
     }
     return type
   }
-  var generateFuncType = (sig, target) => {
-    var sigRet = sig.slice(0, 1)
-    var sigParam = sig.slice(1)
-    var typeCodes = { i: 127, p: 127, j: 126, f: 125, d: 124, e: 111 }
+  const generateFuncType = (sig, target) => {
+    const sigRet = sig.slice(0, 1)
+    const sigParam = sig.slice(1)
+    const typeCodes = { i: 127, p: 127, j: 126, f: 125, d: 124, e: 111 }
     target.push(96)
     uleb128Encode(sigParam.length, target)
-    for (var i = 0; i < sigParam.length; ++i) {
+    for (let i = 0; i < sigParam.length; ++i) {
       target.push(typeCodes[sigParam[i]])
     }
     if (sigRet == 'v') {
@@ -343,25 +344,25 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       target.push(1, typeCodes[sigRet])
     }
   }
-  var convertJsFunctionToWasm = (func, sig) => {
+  const convertJsFunctionToWasm = (func, sig) => {
     if (typeof WebAssembly.Function == 'function') {
       return new WebAssembly.Function(sigToWasmTypes(sig), func)
     }
-    var typeSectionBody = [1]
+    const typeSectionBody = [1]
     generateFuncType(sig, typeSectionBody)
-    var bytes = [0, 97, 115, 109, 1, 0, 0, 0, 1]
+    const bytes = [0, 97, 115, 109, 1, 0, 0, 0, 1]
     uleb128Encode(typeSectionBody.length, bytes)
     bytes.push(...typeSectionBody)
     bytes.push(2, 7, 1, 1, 101, 1, 102, 0, 0, 7, 5, 1, 1, 102, 0, 0)
-    var module = new WebAssembly.Module(new Uint8Array(bytes))
-    var instance = new WebAssembly.Instance(module, { e: { f: func } })
-    var wrappedFunc = instance.exports['f']
+    const module = new WebAssembly.Module(new Uint8Array(bytes))
+    const instance = new WebAssembly.Instance(module, { e: { f: func } })
+    const wrappedFunc = instance.exports['f']
     return wrappedFunc
   }
-  var wasmTableMirror = []
-  var wasmTable = new WebAssembly.Table({ initial: 144, element: 'anyfunc' })
-  var getWasmTableEntry = (funcPtr) => {
-    var func = wasmTableMirror[funcPtr]
+  const wasmTableMirror = []
+  const wasmTable = new WebAssembly.Table({ initial: 144, element: 'anyfunc' })
+  const getWasmTableEntry = (funcPtr) => {
+    let func = wasmTableMirror[funcPtr]
     if (!func) {
       if (funcPtr >= wasmTableMirror.length)
         wasmTableMirror.length = funcPtr + 1
@@ -369,26 +370,26 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
     return func
   }
-  var updateTableMap = (offset, count) => {
+  const updateTableMap = (offset, count) => {
     if (functionsInTableMap) {
-      for (var i = offset; i < offset + count; i++) {
-        var item = getWasmTableEntry(i)
+      for (let i = offset; i < offset + count; i++) {
+        const item = getWasmTableEntry(i)
         if (item) {
           functionsInTableMap.set(item, i)
         }
       }
     }
   }
-  var functionsInTableMap
-  var getFunctionAddress = (func) => {
+  let functionsInTableMap
+  const getFunctionAddress = (func) => {
     if (!functionsInTableMap) {
       functionsInTableMap = new WeakMap()
       updateTableMap(0, wasmTable.length)
     }
     return functionsInTableMap.get(func) || 0
   }
-  var freeTableIndexes = []
-  var getEmptyTableSlot = () => {
+  const freeTableIndexes = []
+  const getEmptyTableSlot = () => {
     if (freeTableIndexes.length) {
       return freeTableIndexes.pop()
     }
@@ -402,34 +403,34 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
     return wasmTable.length - 1
   }
-  var setWasmTableEntry = (idx, func) => {
+  const setWasmTableEntry = (idx, func) => {
     wasmTable.set(idx, func)
     wasmTableMirror[idx] = wasmTable.get(idx)
   }
-  var addFunction = (func, sig) => {
-    var rtn = getFunctionAddress(func)
+  const addFunction = (func, sig) => {
+    const rtn = getFunctionAddress(func)
     if (rtn) {
       return rtn
     }
-    var ret = getEmptyTableSlot()
+    const ret = getEmptyTableSlot()
     try {
       setWasmTableEntry(ret, func)
     } catch (err) {
       if (!(err instanceof TypeError)) {
         throw err
       }
-      var wrapped = convertJsFunctionToWasm(func, sig)
+      const wrapped = convertJsFunctionToWasm(func, sig)
       setWasmTableEntry(ret, wrapped)
     }
     functionsInTableMap.set(func, ret)
     return ret
   }
-  var updateGOT = (exports, replace) => {
-    for (var symName in exports) {
+  const updateGOT = (exports, replace) => {
+    for (const symName in exports) {
       if (isInternalSym(symName)) {
         continue
       }
-      var value = exports[symName]
+      const value = exports[symName]
       GOT[symName] ||= new WebAssembly.Global({ value: 'i32', mutable: true })
       if (replace || GOT[symName].value == 0) {
         if (typeof value == 'function') {
@@ -442,10 +443,10 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       }
     }
   }
-  var relocateExports = (exports, memoryBase, replace) => {
-    var relocated = {}
-    for (var e in exports) {
-      var value = exports[e]
+  let relocateExports = (exports, memoryBase, replace) => {
+    const relocated = {}
+    for (const e in exports) {
+      let value = exports[e]
       if (typeof value == 'object') {
         value = value.value
       }
@@ -457,23 +458,23 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     updateGOT(relocated, replace)
     return relocated
   }
-  var isSymbolDefined = (symName) => {
-    var existing = wasmImports[symName]
+  const isSymbolDefined = (symName) => {
+    const existing = wasmImports[symName]
     if (!existing || existing.stub) {
       return false
     }
     return true
   }
-  var dynCall = (sig, ptr, args = []) => {
-    var rtn = getWasmTableEntry(ptr)(...args)
+  const dynCall = (sig, ptr, args = []) => {
+    const rtn = getWasmTableEntry(ptr)(...args)
     return rtn
   }
-  var stackSave = () => _emscripten_stack_get_current()
-  var stackRestore = (val) => __emscripten_stack_restore(val)
-  var createInvokeFunction =
+  const stackSave = () => _emscripten_stack_get_current()
+  const stackRestore = (val) => __emscripten_stack_restore(val)
+  const createInvokeFunction =
     (sig) =>
     (ptr, ...args) => {
-      var sp = stackSave()
+      const sp = stackSave()
       try {
         return dynCall(sig, ptr, args)
       } catch (e) {
@@ -483,8 +484,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         if (sig[0] == 'j') return 0n
       }
     }
-  var resolveGlobalSymbol = (symName, direct = false) => {
-    var sym
+  const resolveGlobalSymbol = (symName, direct = false) => {
+    let sym
     if (isSymbolDefined(symName)) {
       sym = wasmImports[symName]
     } else if (symName.startsWith('invoke_')) {
@@ -492,10 +493,10 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
     return { sym, name: symName }
   }
-  var UTF8ToString = (ptr, maxBytesToRead) =>
+  const UTF8ToString = (ptr, maxBytesToRead) =>
     ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead) : ''
-  var mergeLibSymbols = (exports, libName) => {
-    for (var [sym, exp] of Object.entries(exports)) {
+  let mergeLibSymbols = (exports, libName) => {
+    for (let [sym, exp] of Object.entries(exports)) {
       const setImport = (target) => {
         if (!isSymbolDefined(target)) {
           wasmImports[target] = exp
@@ -511,11 +512,11 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       }
     }
   }
-  var asyncLoad = async (url) => new Uint8Array(await readAsync(url))
-  var reportUndefinedSymbols = () => {
-    for (var [symName, entry] of Object.entries(GOT)) {
+  const asyncLoad = async (url) => new Uint8Array(await readAsync(url))
+  let reportUndefinedSymbols = () => {
+    for (const [symName, entry] of Object.entries(GOT)) {
       if (entry.value == 0) {
-        var value = resolveGlobalSymbol(symName, true).sym
+        const value = resolveGlobalSymbol(symName, true).sym
         if (!value && !entry.required) {
           continue
         }
@@ -529,19 +530,19 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       }
     }
   }
-  var loadDylibs = () => reportUndefinedSymbols()
-  var noExitRuntime = Module['noExitRuntime'] || false
-  var ___call_sighandler = (fp, sig) => getWasmTableEntry(fp)(sig)
+  const loadDylibs = () => reportUndefinedSymbols()
+  let noExitRuntime = Module['noExitRuntime'] || false
+  const ___call_sighandler = (fp, sig) => getWasmTableEntry(fp)(sig)
   ___call_sighandler.sig = 'vpi'
-  var ___memory_base = new WebAssembly.Global(
+  const ___memory_base = new WebAssembly.Global(
     { value: 'i32', mutable: false },
     1024,
   )
-  var ___stack_pointer = new WebAssembly.Global(
+  const ___stack_pointer = new WebAssembly.Global(
     { value: 'i32', mutable: true },
     205888,
   )
-  var initRandomFill = () => {
+  const initRandomFill = () => {
     if (
       typeof crypto == 'object' &&
       typeof crypto['getRandomValues'] == 'function'
@@ -549,24 +550,24 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return (view) => crypto.getRandomValues(view)
     } else if (ENVIRONMENT_IS_NODE) {
       try {
-        var crypto_module = crypto
-        var randomFillSync = crypto_module['randomFillSync']
+        const crypto_module = crypto
+        const randomFillSync = crypto_module['randomFillSync']
         if (randomFillSync) {
           return (view) => crypto_module['randomFillSync'](view)
         }
-        var randomBytes = crypto_module['randomBytes']
+        const randomBytes = crypto_module['randomBytes']
         return (view) => (view.set(randomBytes(view.byteLength)), view)
       } catch (e) {}
     }
     abort('initRandomDevice')
   }
-  var randomFill = (view) => (randomFill = initRandomFill())(view)
-  var PATH_FS = {
+  let randomFill = (view) => (randomFill = initRandomFill())(view)
+  let PATH_FS = {
     resolve: (...args) => {
-      var resolvedPath = '',
+      let resolvedPath = '',
         resolvedAbsolute = false
-      for (var i = args.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-        var path = i >= 0 ? args[i] : FS.cwd()
+      for (let i = args.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+        const path = i >= 0 ? args[i] : FS.cwd()
         if (typeof path != 'string') {
           throw new TypeError('Arguments to path.resolve must be strings')
         } else if (!path) {
@@ -585,44 +586,44 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       from = PATH_FS.resolve(from).substr(1)
       to = PATH_FS.resolve(to).substr(1)
       function trim(arr) {
-        var start = 0
+        let start = 0
         for (; start < arr.length; start++) {
           if (arr[start] !== '') break
         }
-        var end = arr.length - 1
+        let end = arr.length - 1
         for (; end >= 0; end--) {
           if (arr[end] !== '') break
         }
         if (start > end) return []
         return arr.slice(start, end - start + 1)
       }
-      var fromParts = trim(from.split('/'))
-      var toParts = trim(to.split('/'))
-      var length = Math.min(fromParts.length, toParts.length)
-      var samePartsLength = length
-      for (var i = 0; i < length; i++) {
+      const fromParts = trim(from.split('/'))
+      const toParts = trim(to.split('/'))
+      const length = Math.min(fromParts.length, toParts.length)
+      let samePartsLength = length
+      for (let i = 0; i < length; i++) {
         if (fromParts[i] !== toParts[i]) {
           samePartsLength = i
           break
         }
       }
-      var outputParts = []
-      for (var i = samePartsLength; i < fromParts.length; i++) {
+      let outputParts = []
+      for (let i = samePartsLength; i < fromParts.length; i++) {
         outputParts.push('..')
       }
       outputParts = outputParts.concat(toParts.slice(samePartsLength))
       return outputParts.join('/')
     },
   }
-  var FS_stdin_getChar_buffer = []
-  var FS_stdin_getChar = () => {
+  let FS_stdin_getChar_buffer = []
+  const FS_stdin_getChar = () => {
     if (!FS_stdin_getChar_buffer.length) {
-      var result = null
+      let result = null
       if (ENVIRONMENT_IS_NODE) {
-        var BUFSIZE = 256
-        var buf = Buffer.alloc(BUFSIZE)
-        var bytesRead = 0
-        var fd = process.stdin.fd
+        const BUFSIZE = 256
+        const buf = Buffer.alloc(BUFSIZE)
+        let bytesRead = 0
+        const fd = process.stdin.fd
         try {
           bytesRead = fs.readSync(fd, buf, 0, BUFSIZE)
         } catch (e) {
@@ -640,7 +641,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
     return FS_stdin_getChar_buffer.shift()
   }
-  var TTY = {
+  let TTY = {
     ttys: [],
     init() {},
     shutdown() {},
@@ -650,7 +651,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     },
     stream_ops: {
       open(stream) {
-        var tty = TTY.ttys[stream.node.rdev]
+        const tty = TTY.ttys[stream.node.rdev]
         if (!tty) {
           throw new FS.ErrnoError(43)
         }
@@ -667,9 +668,9 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         if (!stream.tty || !stream.tty.ops.get_char) {
           throw new FS.ErrnoError(60)
         }
-        var bytesRead = 0
-        for (var i = 0; i < length; i++) {
-          var result
+        let bytesRead = 0
+        for (let i = 0; i < length; i++) {
+          let result
           try {
             result = stream.tty.ops.get_char(stream.tty)
           } catch (e) {
@@ -691,8 +692,9 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         if (!stream.tty || !stream.tty.ops.put_char) {
           throw new FS.ErrnoError(60)
         }
+        let i = 0
         try {
-          for (var i = 0; i < length; i++) {
+          for (; i < length; i++) {
             stream.tty.ops.put_char(stream.tty, buffer[offset + i])
           }
         } catch (e) {
@@ -758,16 +760,16 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       },
     },
   }
-  var zeroMemory = (address, size) => {
+  const zeroMemory = (address, size) => {
     HEAPU8.fill(0, address, address + size)
   }
-  var mmapAlloc = (size) => {
+  const mmapAlloc = (size) => {
     size = alignMemory(size, 65536)
-    var ptr = _emscripten_builtin_memalign(65536, size)
+    const ptr = _emscripten_builtin_memalign(65536, size)
     if (ptr) zeroMemory(ptr, size)
     return ptr
   }
-  var MEMFS = {
+  let MEMFS = {
     ops_table: null,
     mount(mount) {
       return MEMFS.createNode(null, '/', 16895, 0)
@@ -821,7 +823,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
           stream: FS.chrdev_stream_ops,
         },
       }
-      var node = FS.createNode(parent, name, mode, dev)
+      const node = FS.createNode(parent, name, mode, dev)
       if (FS.isDir(node.mode)) {
         node.node_ops = MEMFS.ops_table.dir.node
         node.stream_ops = MEMFS.ops_table.dir.stream
@@ -852,16 +854,16 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return new Uint8Array(node.contents)
     },
     expandFileStorage(node, newCapacity) {
-      var prevCapacity = node.contents ? node.contents.length : 0
+      const prevCapacity = node.contents ? node.contents.length : 0
       if (prevCapacity >= newCapacity) return
-      var CAPACITY_DOUBLING_MAX = 1024 * 1024
+      const CAPACITY_DOUBLING_MAX = 1024 * 1024
       newCapacity = Math.max(
         newCapacity,
         (prevCapacity * (prevCapacity < CAPACITY_DOUBLING_MAX ? 2 : 1.125)) >>>
           0,
       )
       if (prevCapacity != 0) newCapacity = Math.max(newCapacity, 256)
-      var oldContents = node.contents
+      const oldContents = node.contents
       node.contents = new Uint8Array(newCapacity)
       if (node.usedBytes > 0)
         node.contents.set(oldContents.subarray(0, node.usedBytes), 0)
@@ -872,7 +874,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         node.contents = null
         node.usedBytes = 0
       } else {
-        var oldContents = node.contents
+        const oldContents = node.contents
         node.contents = new Uint8Array(newSize)
         if (oldContents) {
           node.contents.set(
@@ -884,7 +886,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     },
     node_ops: {
       getattr(node) {
-        var attr = {}
+        const attr = {}
         attr.dev = FS.isChrdev(node.mode) ? node.id : 1
         attr.ino = node.id
         attr.mode = node.mode
@@ -925,13 +927,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         return MEMFS.createNode(parent, name, mode, dev)
       },
       rename(old_node, new_dir, new_name) {
-        var new_node
+        let new_node
         try {
           new_node = FS.lookupNode(new_dir, new_name)
         } catch (e) {}
         if (new_node) {
           if (FS.isDir(old_node.mode)) {
-            for (var i in new_node.contents) {
+            for (const i in new_node.contents) {
               throw new FS.ErrnoError(55)
             }
           }
@@ -951,8 +953,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         parent.ctime = parent.mtime = Date.now()
       },
       rmdir(parent, name) {
-        var node = FS.lookupNode(parent, name)
-        for (var i in node.contents) {
+        const node = FS.lookupNode(parent, name)
+        for (const i in node.contents) {
           throw new FS.ErrnoError(55)
         }
         delete parent.contents[name]
@@ -962,7 +964,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         return ['.', '..', ...Object.keys(node.contents)]
       },
       symlink(parent, newname, oldpath) {
-        var node = MEMFS.createNode(parent, newname, 511 | 40960, 0)
+        const node = MEMFS.createNode(parent, newname, 511 | 40960, 0)
         node.link = oldpath
         return node
       },
@@ -975,13 +977,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     },
     stream_ops: {
       read(stream, buffer, offset, length, position) {
-        var contents = stream.node.contents
+        const contents = stream.node.contents
         if (position >= stream.node.usedBytes) return 0
-        var size = Math.min(stream.node.usedBytes - position, length)
+        const size = Math.min(stream.node.usedBytes - position, length)
         if (size > 8 && contents.subarray) {
           buffer.set(contents.subarray(position, position + size), offset)
         } else {
-          for (var i = 0; i < size; i++)
+          for (let i = 0; i < size; i++)
             buffer[offset + i] = contents[position + i]
         }
         return size
@@ -991,7 +993,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
           canOwn = false
         }
         if (!length) return 0
-        var node = stream.node
+        const node = stream.node
         node.mtime = node.ctime = Date.now()
         if (buffer.subarray && (!node.contents || node.contents.subarray)) {
           if (canOwn) {
@@ -1014,7 +1016,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         if (node.contents.subarray && buffer.subarray) {
           node.contents.set(buffer.subarray(offset, offset + length), position)
         } else {
-          for (var i = 0; i < length; i++) {
+          for (let i = 0; i < length; i++) {
             node.contents[position + i] = buffer[offset + i]
           }
         }
@@ -1022,7 +1024,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         return length
       },
       llseek(stream, offset, whence) {
-        var position = offset
+        let position = offset
         if (whence === 1) {
           position += stream.position
         } else if (whence === 2) {
@@ -1043,9 +1045,9 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         if (!FS.isFile(stream.node.mode)) {
           throw new FS.ErrnoError(43)
         }
-        var ptr
-        var allocated
-        var contents = stream.node.contents
+        let ptr
+        let allocated
+        let contents = stream.node.contents
         if (!(flags & 2) && contents && contents.buffer === HEAP8.buffer) {
           allocated = false
           ptr = contents.byteOffset
@@ -1078,7 +1080,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       },
     },
   }
-  var FS_createDataFile = (
+  const FS_createDataFile = (
     parent,
     name,
     fileData,
@@ -1088,10 +1090,10 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   ) => {
     FS.createDataFile(parent, name, fileData, canRead, canWrite, canOwn)
   }
-  var FS_handledByPreloadPlugin = (byteArray, fullname, finish, onerror) => {
+  const FS_handledByPreloadPlugin = (byteArray, fullname, finish, onerror) => {
     return false
   }
-  var FS_createPreloadedFile = (
+  const FS_createPreloadedFile = (
     parent,
     name,
     url,
@@ -1103,8 +1105,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     canOwn,
     preFinish,
   ) => {
-    var fullname = name ? PATH_FS.resolve(PATH.join2(parent, name)) : parent
-    var dep = getUniqueRunDependency(`cp ${fullname}`)
+    const fullname = name ? PATH_FS.resolve(PATH.join2(parent, name)) : parent
+    const dep = getUniqueRunDependency(`cp ${fullname}`)
     function processData(byteArray) {
       function finish(byteArray) {
         preFinish?.()
@@ -1131,8 +1133,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       processData(url)
     }
   }
-  var FS_modeStringToFlags = (str) => {
-    var flagModes = {
+  const FS_modeStringToFlags = (str) => {
+    const flagModes = {
       r: 0,
       'r+': 2,
       w: 512 | 64 | 1,
@@ -1140,19 +1142,19 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       a: 1024 | 64 | 1,
       'a+': 1024 | 64 | 2,
     }
-    var flags = flagModes[str]
+    const flags = flagModes[str]
     if (typeof flags == 'undefined') {
       throw new Error(`Unknown file open mode: ${str}`)
     }
     return flags
   }
-  var FS_getMode = (canRead, canWrite) => {
-    var mode = 0
+  const FS_getMode = (canRead, canWrite) => {
+    let mode = 0
     if (canRead) mode |= 292 | 73
     if (canWrite) mode |= 146
     return mode
   }
-  var ERRNO_CODES = {
+  const ERRNO_CODES = {
     EPERM: 63,
     ENOENT: 44,
     ESRCH: 71,
@@ -1275,7 +1277,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     EOWNERDEAD: 62,
     ESTRPIPE: 135,
   }
-  var PROXYFS = {
+  let PROXYFS = {
     mount(mount) {
       return PROXYFS.createNode(
         null,
@@ -1288,13 +1290,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       if (!FS.isDir(mode) && !FS.isFile(mode) && !FS.isLink(mode)) {
         throw new FS.ErrnoError(ERRNO_CODES.EINVAL)
       }
-      var node = FS.createNode(parent, name, mode)
+      const node = FS.createNode(parent, name, mode)
       node.node_ops = PROXYFS.node_ops
       node.stream_ops = PROXYFS.stream_ops
       return node
     },
     realPath(node) {
-      var parts = []
+      const parts = []
       while (node.parent !== node) {
         parts.push(node.name)
         node = node.parent
@@ -1305,8 +1307,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     },
     node_ops: {
       getattr(node) {
-        var path = PROXYFS.realPath(node)
-        var stat
+        const path = PROXYFS.realPath(node)
+        let stat
         try {
           stat = node.mount.opts.fs.lstat(path)
         } catch (e) {
@@ -1330,15 +1332,15 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         }
       },
       setattr(node, attr) {
-        var path = PROXYFS.realPath(node)
+        const path = PROXYFS.realPath(node)
         try {
           if (attr.mode !== undefined) {
             node.mount.opts.fs.chmod(path, attr.mode)
             node.mode = attr.mode
           }
           if (attr.atime || attr.mtime) {
-            var atime = new Date(attr.atime || attr.mtime)
-            var mtime = new Date(attr.mtime || attr.atime)
+            const atime = new Date(attr.atime || attr.mtime)
+            const mtime = new Date(attr.mtime || attr.atime)
             node.mount.opts.fs.utime(path, atime, mtime)
           }
           if (attr.size !== undefined) {
@@ -1351,9 +1353,9 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       },
       lookup(parent, name) {
         try {
-          var path = PATH.join2(PROXYFS.realPath(parent), name)
-          var mode = parent.mount.opts.fs.lstat(path).mode
-          var node = PROXYFS.createNode(parent, name, mode)
+          const path = PATH.join2(PROXYFS.realPath(parent), name)
+          const mode = parent.mount.opts.fs.lstat(path).mode
+          const node = PROXYFS.createNode(parent, name, mode)
           return node
         } catch (e) {
           if (!e.code) throw e
@@ -1361,8 +1363,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         }
       },
       mknod(parent, name, mode, dev) {
-        var node = PROXYFS.createNode(parent, name, mode, dev)
-        var path = PROXYFS.realPath(node)
+        const node = PROXYFS.createNode(parent, name, mode, dev)
+        const path = PROXYFS.realPath(node)
         try {
           if (FS.isDir(node.mode)) {
             node.mount.opts.fs.mkdir(path, node.mode)
@@ -1376,8 +1378,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         return node
       },
       rename(oldNode, newDir, newName) {
-        var oldPath = PROXYFS.realPath(oldNode)
-        var newPath = PATH.join2(PROXYFS.realPath(newDir), newName)
+        const oldPath = PROXYFS.realPath(oldNode)
+        const newPath = PATH.join2(PROXYFS.realPath(newDir), newName)
         try {
           oldNode.mount.opts.fs.rename(oldPath, newPath)
           oldNode.name = newName
@@ -1387,7 +1389,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         }
       },
       unlink(parent, name) {
-        var path = PATH.join2(PROXYFS.realPath(parent), name)
+        const path = PATH.join2(PROXYFS.realPath(parent), name)
         try {
           parent.mount.opts.fs.unlink(path)
         } catch (e) {
@@ -1396,7 +1398,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         }
       },
       rmdir(parent, name) {
-        var path = PATH.join2(PROXYFS.realPath(parent), name)
+        const path = PATH.join2(PROXYFS.realPath(parent), name)
         try {
           parent.mount.opts.fs.rmdir(path)
         } catch (e) {
@@ -1405,7 +1407,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         }
       },
       readdir(node) {
-        var path = PROXYFS.realPath(node)
+        const path = PROXYFS.realPath(node)
         try {
           return node.mount.opts.fs.readdir(path)
         } catch (e) {
@@ -1414,7 +1416,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         }
       },
       symlink(parent, newName, oldPath) {
-        var newPath = PATH.join2(PROXYFS.realPath(parent), newName)
+        const newPath = PATH.join2(PROXYFS.realPath(parent), newName)
         try {
           parent.mount.opts.fs.symlink(oldPath, newPath)
         } catch (e) {
@@ -1423,7 +1425,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         }
       },
       readlink(node) {
-        var path = PROXYFS.realPath(node)
+        const path = PROXYFS.realPath(node)
         try {
           return node.mount.opts.fs.readlink(path)
         } catch (e) {
@@ -1434,7 +1436,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     },
     stream_ops: {
       open(stream) {
-        var path = PROXYFS.realPath(stream.node)
+        const path = PROXYFS.realPath(stream.node)
         try {
           stream.nfd = stream.node.mount.opts.fs.open(path, stream.flags)
         } catch (e) {
@@ -1479,13 +1481,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         }
       },
       llseek(stream, offset, whence) {
-        var position = offset
+        let position = offset
         if (whence === 1) {
           position += stream.position
         } else if (whence === 2) {
           if (FS.isFile(stream.node.mode)) {
             try {
-              var stat = stream.node.node_ops.getattr(stream.node)
+              const stat = stream.node.node_ops.getattr(stream.node)
               position += stat.size
             } catch (e) {
               throw new FS.ErrnoError(ERRNO_CODES[e.code])
@@ -1499,7 +1501,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       },
     },
   }
-  var FS = {
+  let FS = {
     root: null,
     mounts: [],
     devices: {},
@@ -1591,12 +1593,12 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       if (!PATH.isAbs(path)) {
         path = FS.cwd() + '/' + path
       }
-      linkloop: for (var nlinks = 0; nlinks < 40; nlinks++) {
-        var parts = path.split('/').filter((p) => !!p && p !== '.')
-        var current = FS.root
-        var current_path = '/'
-        for (var i = 0; i < parts.length; i++) {
-          var islast = i === parts.length - 1
+      linkloop: for (let nlinks = 0; nlinks < 40; nlinks++) {
+        const parts = path.split('/').filter((p) => !!p && p !== '.')
+        let current = FS.root
+        let current_path = '/'
+        for (let i = 0; i < parts.length; i++) {
+          const islast = i === parts.length - 1
           if (islast && opts.parent) {
             break
           }
@@ -1621,7 +1623,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
             if (!current.node_ops.readlink) {
               throw new FS.ErrnoError(52)
             }
-            var link = current.node_ops.readlink(current)
+            let link = current.node_ops.readlink(current)
             if (!PATH.isAbs(link)) {
               link = PATH.dirname(current_path) + '/' + link
             }
@@ -1634,10 +1636,10 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       throw new FS.ErrnoError(32)
     },
     getPath(node) {
-      var path
+      let path
       while (true) {
         if (FS.isRoot(node)) {
-          var mount = node.mount.mountpoint
+          const mount = node.mount.mountpoint
           if (!path) return mount
           return mount[mount.length - 1] !== '/'
             ? `${mount}/${path}`
@@ -1648,23 +1650,23 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       }
     },
     hashName(parentid, name) {
-      var hash = 0
-      for (var i = 0; i < name.length; i++) {
+      let hash = 0
+      for (let i = 0; i < name.length; i++) {
         hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0
       }
       return ((parentid + hash) >>> 0) % FS.nameTable.length
     },
     hashAddNode(node) {
-      var hash = FS.hashName(node.parent.id, node.name)
+      const hash = FS.hashName(node.parent.id, node.name)
       node.name_next = FS.nameTable[hash]
       FS.nameTable[hash] = node
     },
     hashRemoveNode(node) {
-      var hash = FS.hashName(node.parent.id, node.name)
+      const hash = FS.hashName(node.parent.id, node.name)
       if (FS.nameTable[hash] === node) {
         FS.nameTable[hash] = node.name_next
       } else {
-        var current = FS.nameTable[hash]
+        let current = FS.nameTable[hash]
         while (current) {
           if (current.name_next === node) {
             current.name_next = node.name_next
@@ -1675,13 +1677,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       }
     },
     lookupNode(parent, name) {
-      var errCode = FS.mayLookup(parent)
+      const errCode = FS.mayLookup(parent)
       if (errCode) {
         throw new FS.ErrnoError(errCode)
       }
-      var hash = FS.hashName(parent.id, name)
-      for (var node = FS.nameTable[hash]; node; node = node.name_next) {
-        var nodeName = node.name
+      const hash = FS.hashName(parent.id, name)
+      for (let node = FS.nameTable[hash]; node; node = node.name_next) {
+        const nodeName = node.name
         if (node.parent.id === parent.id && nodeName === name) {
           return node
         }
@@ -1689,7 +1691,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return FS.lookup(parent, name)
     },
     createNode(parent, name, mode, rdev) {
-      var node = new FS.FSNode(parent, name, mode, rdev)
+      const node = new FS.FSNode(parent, name, mode, rdev)
       FS.hashAddNode(node)
       return node
     },
@@ -1724,7 +1726,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return (mode & 49152) === 49152
     },
     flagsToPermissionString(flag) {
-      var perms = ['r', 'w', 'rw'][flag & 3]
+      let perms = ['r', 'w', 'rw'][flag & 3]
       if (flag & 512) {
         perms += 'w'
       }
@@ -1745,7 +1747,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     },
     mayLookup(dir) {
       if (!FS.isDir(dir.mode)) return 54
-      var errCode = FS.nodePermissions(dir, 'x')
+      const errCode = FS.nodePermissions(dir, 'x')
       if (errCode) return errCode
       if (!dir.node_ops.lookup) return 2
       return 0
@@ -1755,19 +1757,19 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         return 54
       }
       try {
-        var node = FS.lookupNode(dir, name)
+        const node = FS.lookupNode(dir, name)
         return 20
       } catch (e) {}
       return FS.nodePermissions(dir, 'wx')
     },
     mayDelete(dir, name, isdir) {
-      var node
+      let node
       try {
         node = FS.lookupNode(dir, name)
       } catch (e) {
         return e.errno
       }
-      var errCode = FS.nodePermissions(dir, 'wx')
+      const errCode = FS.nodePermissions(dir, 'wx')
       if (errCode) {
         return errCode
       }
@@ -1800,7 +1802,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     },
     MAX_OPEN_FDS: 4096,
     nextfd() {
-      for (var fd = 0; fd <= FS.MAX_OPEN_FDS; fd++) {
+      for (let fd = 0; fd <= FS.MAX_OPEN_FDS; fd++) {
         if (!FS.streams[fd]) {
           return fd
         }
@@ -1808,7 +1810,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       throw new FS.ErrnoError(33)
     },
     getStreamChecked(fd) {
-      var stream = FS.getStream(fd)
+      const stream = FS.getStream(fd)
       if (!stream) {
         throw new FS.ErrnoError(8)
       }
@@ -1828,13 +1830,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       FS.streams[fd] = null
     },
     dupStream(origStream, fd = -1) {
-      var stream = FS.createStream(origStream, fd)
+      const stream = FS.createStream(origStream, fd)
       stream.stream_ops?.dup?.(stream)
       return stream
     },
     chrdev_stream_ops: {
       open(stream) {
-        var device = FS.getDevice(stream.node.rdev)
+        const device = FS.getDevice(stream.node.rdev)
         stream.stream_ops = device.stream_ops
         stream.stream_ops.open?.(stream)
       },
@@ -1850,10 +1852,10 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     },
     getDevice: (dev) => FS.devices[dev],
     getMounts(mount) {
-      var mounts = []
-      var check = [mount]
+      const mounts = []
+      const check = [mount]
       while (check.length) {
-        var m = check.pop()
+        const m = check.pop()
         mounts.push(m)
         check.push(...m.mounts)
       }
@@ -1870,8 +1872,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
           `warning: ${FS.syncFSRequests} FS.syncfs operations in flight at once, probably just doing extra work`,
         )
       }
-      var mounts = FS.getMounts(FS.root.mount)
-      var completed = 0
+      const mounts = FS.getMounts(FS.root.mount)
+      let completed = 0
       function doCallback(errCode) {
         FS.syncFSRequests--
         return callback(errCode)
@@ -1896,13 +1898,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       })
     },
     mount(type, opts, mountpoint) {
-      var root = mountpoint === '/'
-      var pseudo = !mountpoint
-      var node
+      const root = mountpoint === '/'
+      const pseudo = !mountpoint
+      let node
       if (root && FS.root) {
         throw new FS.ErrnoError(10)
       } else if (!root && !pseudo) {
-        var lookup = FS.lookupPath(mountpoint, { follow_mount: false })
+        const lookup = FS.lookupPath(mountpoint, { follow_mount: false })
         mountpoint = lookup.path
         node = lookup.node
         if (FS.isMountpoint(node)) {
@@ -1912,8 +1914,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
           throw new FS.ErrnoError(54)
         }
       }
-      var mount = { type, opts, mountpoint, mounts: [] }
-      var mountRoot = type.mount(mount)
+      const mount = { type, opts, mountpoint, mounts: [] }
+      const mountRoot = type.mount(mount)
       mountRoot.mount = mount
       mount.root = mountRoot
       if (root) {
@@ -1927,17 +1929,17 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return mountRoot
     },
     unmount(mountpoint) {
-      var lookup = FS.lookupPath(mountpoint, { follow_mount: false })
+      const lookup = FS.lookupPath(mountpoint, { follow_mount: false })
       if (!FS.isMountpoint(lookup.node)) {
         throw new FS.ErrnoError(28)
       }
-      var node = lookup.node
-      var mount = node.mounted
-      var mounts = FS.getMounts(mount)
+      const node = lookup.node
+      const mount = node.mounted
+      const mounts = FS.getMounts(mount)
       Object.keys(FS.nameTable).forEach((hash) => {
-        var current = FS.nameTable[hash]
+        let current = FS.nameTable[hash]
         while (current) {
-          var next = current.name_next
+          const next = current.name_next
           if (mounts.includes(current.mount)) {
             FS.destroyNode(current)
           }
@@ -1945,20 +1947,20 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         }
       })
       node.mounted = null
-      var idx = node.mount.mounts.indexOf(mount)
+      const idx = node.mount.mounts.indexOf(mount)
       node.mount.mounts.splice(idx, 1)
     },
     lookup(parent, name) {
       return parent.node_ops.lookup(parent, name)
     },
     mknod(path, mode, dev) {
-      var lookup = FS.lookupPath(path, { parent: true })
-      var parent = lookup.node
-      var name = PATH.basename(path)
+      const lookup = FS.lookupPath(path, { parent: true })
+      const parent = lookup.node
+      const name = PATH.basename(path)
       if (!name || name === '.' || name === '..') {
         throw new FS.ErrnoError(28)
       }
-      var errCode = FS.mayCreate(parent, name)
+      const errCode = FS.mayCreate(parent, name)
       if (errCode) {
         throw new FS.ErrnoError(errCode)
       }
@@ -1968,7 +1970,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return parent.node_ops.mknod(parent, name, mode, dev)
     },
     statfs(path) {
-      var rtn = {
+      const rtn = {
         bsize: 4096,
         frsize: 4096,
         blocks: 1e6,
@@ -1980,7 +1982,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         flags: 2,
         namelen: 255,
       }
-      var parent = FS.lookupPath(path, { follow: true }).node
+      const parent = FS.lookupPath(path, { follow: true }).node
       if (parent?.node_ops.statfs) {
         Object.assign(rtn, parent.node_ops.statfs(parent.mount.opts.root))
       }
@@ -1997,9 +1999,9 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return FS.mknod(path, mode, 0)
     },
     mkdirTree(path, mode) {
-      var dirs = path.split('/')
-      var d = ''
-      for (var i = 0; i < dirs.length; ++i) {
+      const dirs = path.split('/')
+      let d = ''
+      for (let i = 0; i < dirs.length; ++i) {
         if (!dirs[i]) continue
         d += '/' + dirs[i]
         try {
@@ -2021,13 +2023,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       if (!PATH_FS.resolve(oldpath)) {
         throw new FS.ErrnoError(44)
       }
-      var lookup = FS.lookupPath(newpath, { parent: true })
-      var parent = lookup.node
+      const lookup = FS.lookupPath(newpath, { parent: true })
+      const parent = lookup.node
       if (!parent) {
         throw new FS.ErrnoError(44)
       }
-      var newname = PATH.basename(newpath)
-      var errCode = FS.mayCreate(parent, newname)
+      const newname = PATH.basename(newpath)
+      const errCode = FS.mayCreate(parent, newname)
       if (errCode) {
         throw new FS.ErrnoError(errCode)
       }
@@ -2037,11 +2039,11 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return parent.node_ops.symlink(parent, newname, oldpath)
     },
     rename(old_path, new_path) {
-      var old_dirname = PATH.dirname(old_path)
-      var new_dirname = PATH.dirname(new_path)
-      var old_name = PATH.basename(old_path)
-      var new_name = PATH.basename(new_path)
-      var lookup, old_dir, new_dir
+      const old_dirname = PATH.dirname(old_path)
+      const new_dirname = PATH.dirname(new_path)
+      const old_name = PATH.basename(old_path)
+      const new_name = PATH.basename(new_path)
+      let lookup, old_dir, new_dir
       lookup = FS.lookupPath(old_path, { parent: true })
       old_dir = lookup.node
       lookup = FS.lookupPath(new_path, { parent: true })
@@ -2050,8 +2052,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       if (old_dir.mount !== new_dir.mount) {
         throw new FS.ErrnoError(75)
       }
-      var old_node = FS.lookupNode(old_dir, old_name)
-      var relative = PATH_FS.relative(old_path, new_dirname)
+      const old_node = FS.lookupNode(old_dir, old_name)
+      let relative = PATH_FS.relative(old_path, new_dirname)
       if (relative.charAt(0) !== '.') {
         throw new FS.ErrnoError(28)
       }
@@ -2059,15 +2061,15 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       if (relative.charAt(0) !== '.') {
         throw new FS.ErrnoError(55)
       }
-      var new_node
+      let new_node
       try {
         new_node = FS.lookupNode(new_dir, new_name)
       } catch (e) {}
       if (old_node === new_node) {
         return
       }
-      var isdir = FS.isDir(old_node.mode)
-      var errCode = FS.mayDelete(old_dir, old_name, isdir)
+      const isdir = FS.isDir(old_node.mode)
+      let errCode = FS.mayDelete(old_dir, old_name, isdir)
       if (errCode) {
         throw new FS.ErrnoError(errCode)
       }
@@ -2103,11 +2105,11 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       }
     },
     rmdir(path) {
-      var lookup = FS.lookupPath(path, { parent: true })
-      var parent = lookup.node
-      var name = PATH.basename(path)
-      var node = FS.lookupNode(parent, name)
-      var errCode = FS.mayDelete(parent, name, true)
+      const lookup = FS.lookupPath(path, { parent: true })
+      const parent = lookup.node
+      const name = PATH.basename(path)
+      const node = FS.lookupNode(parent, name)
+      const errCode = FS.mayDelete(parent, name, true)
       if (errCode) {
         throw new FS.ErrnoError(errCode)
       }
@@ -2121,22 +2123,22 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       FS.destroyNode(node)
     },
     readdir(path) {
-      var lookup = FS.lookupPath(path, { follow: true })
-      var node = lookup.node
+      const lookup = FS.lookupPath(path, { follow: true })
+      const node = lookup.node
       if (!node.node_ops.readdir) {
         throw new FS.ErrnoError(54)
       }
       return node.node_ops.readdir(node)
     },
     unlink(path) {
-      var lookup = FS.lookupPath(path, { parent: true })
-      var parent = lookup.node
+      const lookup = FS.lookupPath(path, { parent: true })
+      const parent = lookup.node
       if (!parent) {
         throw new FS.ErrnoError(44)
       }
-      var name = PATH.basename(path)
-      var node = FS.lookupNode(parent, name)
-      var errCode = FS.mayDelete(parent, name, false)
+      const name = PATH.basename(path)
+      const node = FS.lookupNode(parent, name)
+      const errCode = FS.mayDelete(parent, name, false)
       if (errCode) {
         throw new FS.ErrnoError(errCode)
       }
@@ -2150,8 +2152,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       FS.destroyNode(node)
     },
     readlink(path) {
-      var lookup = FS.lookupPath(path)
-      var link = lookup.node
+      const lookup = FS.lookupPath(path)
+      const link = lookup.node
       if (!link) {
         throw new FS.ErrnoError(44)
       }
@@ -2161,8 +2163,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return link.node_ops.readlink(link)
     },
     stat(path, dontFollow) {
-      var lookup = FS.lookupPath(path, { follow: !dontFollow })
-      var node = lookup.node
+      const lookup = FS.lookupPath(path, { follow: !dontFollow })
+      const node = lookup.node
       if (!node) {
         throw new FS.ErrnoError(44)
       }
@@ -2175,9 +2177,9 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return FS.stat(path, true)
     },
     chmod(path, mode, dontFollow) {
-      var node
+      let node
       if (typeof path == 'string') {
-        var lookup = FS.lookupPath(path, { follow: !dontFollow })
+        const lookup = FS.lookupPath(path, { follow: !dontFollow })
         node = lookup.node
       } else {
         node = path
@@ -2194,13 +2196,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       FS.chmod(path, mode, true)
     },
     fchmod(fd, mode) {
-      var stream = FS.getStreamChecked(fd)
+      const stream = FS.getStreamChecked(fd)
       FS.chmod(stream.node, mode)
     },
     chown(path, uid, gid, dontFollow) {
-      var node
+      let node
       if (typeof path == 'string') {
-        var lookup = FS.lookupPath(path, { follow: !dontFollow })
+        const lookup = FS.lookupPath(path, { follow: !dontFollow })
         node = lookup.node
       } else {
         node = path
@@ -2214,16 +2216,16 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       FS.chown(path, uid, gid, true)
     },
     fchown(fd, uid, gid) {
-      var stream = FS.getStreamChecked(fd)
+      const stream = FS.getStreamChecked(fd)
       FS.chown(stream.node, uid, gid)
     },
     truncate(path, len) {
       if (len < 0) {
         throw new FS.ErrnoError(28)
       }
-      var node
+      let node
       if (typeof path == 'string') {
-        var lookup = FS.lookupPath(path, { follow: true })
+        const lookup = FS.lookupPath(path, { follow: true })
         node = lookup.node
       } else {
         node = path
@@ -2237,22 +2239,22 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       if (!FS.isFile(node.mode)) {
         throw new FS.ErrnoError(28)
       }
-      var errCode = FS.nodePermissions(node, 'w')
+      const errCode = FS.nodePermissions(node, 'w')
       if (errCode) {
         throw new FS.ErrnoError(errCode)
       }
       node.node_ops.setattr(node, { size: len, timestamp: Date.now() })
     },
     ftruncate(fd, len) {
-      var stream = FS.getStreamChecked(fd)
+      const stream = FS.getStreamChecked(fd)
       if ((stream.flags & 2097155) === 0) {
         throw new FS.ErrnoError(28)
       }
       FS.truncate(stream.node, len)
     },
     utime(path, atime, mtime) {
-      var lookup = FS.lookupPath(path, { follow: true })
-      var node = lookup.node
+      const lookup = FS.lookupPath(path, { follow: true })
+      const node = lookup.node
       node.node_ops.setattr(node, { atime, mtime })
     },
     open(path, flags, mode = 438) {
@@ -2265,18 +2267,18 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       } else {
         mode = 0
       }
-      var node
+      let node
       if (typeof path == 'object') {
         node = path
       } else {
-        var lookup = FS.lookupPath(path, {
+        const lookup = FS.lookupPath(path, {
           follow: !(flags & 131072),
           noent_okay: true,
         })
         node = lookup.node
         path = lookup.path
       }
-      var created = false
+      let created = false
       if (flags & 64) {
         if (node) {
           if (flags & 128) {
@@ -2297,7 +2299,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         throw new FS.ErrnoError(54)
       }
       if (!created) {
-        var errCode = FS.mayOpen(node, flags)
+        const errCode = FS.mayOpen(node, flags)
         if (errCode) {
           throw new FS.ErrnoError(errCode)
         }
@@ -2306,7 +2308,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         FS.truncate(node, 0)
       }
       flags &= ~(128 | 512 | 131072)
-      var stream = FS.createStream({
+      const stream = FS.createStream({
         node,
         path: FS.getPath(node),
         flags,
@@ -2375,13 +2377,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       if (!stream.stream_ops.read) {
         throw new FS.ErrnoError(28)
       }
-      var seeking = typeof position != 'undefined'
+      const seeking = typeof position != 'undefined'
       if (!seeking) {
         position = stream.position
       } else if (!stream.seekable) {
         throw new FS.ErrnoError(70)
       }
-      var bytesRead = stream.stream_ops.read(
+      const bytesRead = stream.stream_ops.read(
         stream,
         buffer,
         offset,
@@ -2410,13 +2412,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       if (stream.seekable && stream.flags & 1024) {
         FS.llseek(stream, 0, 2)
       }
-      var seeking = typeof position != 'undefined'
+      const seeking = typeof position != 'undefined'
       if (!seeking) {
         position = stream.position
       } else if (!stream.seekable) {
         throw new FS.ErrnoError(70)
       }
-      var bytesWritten = stream.stream_ops.write(
+      const bytesWritten = stream.stream_ops.write(
         stream,
         buffer,
         offset,
@@ -2482,11 +2484,11 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       if (opts.encoding !== 'utf8' && opts.encoding !== 'binary') {
         throw new Error(`Invalid encoding type "${opts.encoding}"`)
       }
-      var ret
-      var stream = FS.open(path, opts.flags)
-      var stat = FS.stat(path)
-      var length = stat.size
-      var buf = new Uint8Array(length)
+      let ret
+      const stream = FS.open(path, opts.flags)
+      const stat = FS.stat(path)
+      const length = stat.size
+      const buf = new Uint8Array(length)
       FS.read(stream, buf, 0, length, 0)
       if (opts.encoding === 'utf8') {
         ret = UTF8ArrayToString(buf)
@@ -2498,10 +2500,10 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     },
     writeFile(path, data, opts = {}) {
       opts.flags = opts.flags || 577
-      var stream = FS.open(path, opts.flags, opts.mode)
+      const stream = FS.open(path, opts.flags, opts.mode)
       if (typeof data == 'string') {
-        var buf = new Uint8Array(lengthBytesUTF8(data) + 1)
-        var actualNumBytes = stringToUTF8Array(data, buf, 0, buf.length)
+        const buf = new Uint8Array(lengthBytesUTF8(data) + 1)
+        const actualNumBytes = stringToUTF8Array(data, buf, 0, buf.length)
         FS.write(stream, buf, 0, actualNumBytes, undefined, opts.canOwn)
       } else if (ArrayBuffer.isView(data)) {
         FS.write(stream, data, 0, data.byteLength, undefined, opts.canOwn)
@@ -2512,14 +2514,14 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     },
     cwd: () => FS.currentPath,
     chdir(path) {
-      var lookup = FS.lookupPath(path, { follow: true })
+      const lookup = FS.lookupPath(path, { follow: true })
       if (lookup.node === null) {
         throw new FS.ErrnoError(44)
       }
       if (!FS.isDir(lookup.node.mode)) {
         throw new FS.ErrnoError(54)
       }
-      var errCode = FS.nodePermissions(lookup.node, 'x')
+      const errCode = FS.nodePermissions(lookup.node, 'x')
       if (errCode) {
         throw new FS.ErrnoError(errCode)
       }
@@ -2542,9 +2544,9 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       TTY.register(FS.makedev(6, 0), TTY.default_tty1_ops)
       FS.mkdev('/dev/tty', FS.makedev(5, 0))
       FS.mkdev('/dev/tty1', FS.makedev(6, 0))
-      var randomBuffer = new Uint8Array(1024),
+      let randomBuffer = new Uint8Array(1024),
         randomLeft = 0
-      var randomByte = () => {
+      const randomByte = () => {
         if (randomLeft === 0) {
           randomLeft = randomFill(randomBuffer).byteLength
         }
@@ -2557,18 +2559,18 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     },
     createSpecialDirectories() {
       FS.mkdir('/proc')
-      var proc_self = FS.mkdir('/proc/self')
+      const proc_self = FS.mkdir('/proc/self')
       FS.mkdir('/proc/self/fd')
       FS.mount(
         {
           mount() {
-            var node = FS.createNode(proc_self, 'fd', 16895, 73)
+            const node = FS.createNode(proc_self, 'fd', 16895, 73)
             node.stream_ops = { llseek: MEMFS.stream_ops.llseek }
             node.node_ops = {
               lookup(parent, name) {
-                var fd = +name
-                var stream = FS.getStreamChecked(fd)
-                var ret = {
+                const fd = +name
+                const stream = FS.getStreamChecked(fd)
+                const ret = {
                   parent: null,
                   mount: { mountpoint: 'fake' },
                   node_ops: { readlink: () => stream.path },
@@ -2606,9 +2608,9 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       } else {
         FS.symlink('/dev/tty1', '/dev/stderr')
       }
-      var stdin = FS.open('/dev/stdin', 0)
-      var stdout = FS.open('/dev/stdout', 1)
-      var stderr = FS.open('/dev/stderr', 1)
+      const stdin = FS.open('/dev/stdin', 0)
+      const stdout = FS.open('/dev/stdout', 1)
+      const stderr = FS.open('/dev/stderr', 1)
     },
     staticInit() {
       FS.nameTable = new Array(4096)
@@ -2628,8 +2630,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     quit() {
       FS.initialized = false
       _fflush(0)
-      for (var i = 0; i < FS.streams.length; i++) {
-        var stream = FS.streams[i]
+      for (let i = 0; i < FS.streams.length; i++) {
+        const stream = FS.streams[i]
         if (!stream) {
           continue
         }
@@ -2637,7 +2639,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       }
     },
     findObject(path, dontResolveLastLink) {
-      var ret = FS.analyzePath(path, dontResolveLastLink)
+      const ret = FS.analyzePath(path, dontResolveLastLink)
       if (!ret.exists) {
         return null
       }
@@ -2645,10 +2647,10 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     },
     analyzePath(path, dontResolveLastLink) {
       try {
-        var lookup = FS.lookupPath(path, { follow: !dontResolveLastLink })
+        let lookup = FS.lookupPath(path, { follow: !dontResolveLastLink })
         path = lookup.path
       } catch (e) {}
-      var ret = {
+      const ret = {
         isRoot: false,
         exists: false,
         error: 0,
@@ -2660,7 +2662,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         parentObject: null,
       }
       try {
-        var lookup = FS.lookupPath(path, { parent: true })
+        let lookup = FS.lookupPath(path, { parent: true })
         ret.parentExists = true
         ret.parentPath = lookup.path
         ret.parentObject = lookup.node
@@ -2678,11 +2680,12 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     },
     createPath(parent, path, canRead, canWrite) {
       parent = typeof parent == 'string' ? parent : FS.getPath(parent)
-      var parts = path.split('/').reverse()
+      const parts = path.split('/').reverse()
+      let current
       while (parts.length) {
-        var part = parts.pop()
+        const part = parts.pop()
         if (!part) continue
-        var current = PATH.join2(parent, part)
+        current = PATH.join2(parent, part)
         try {
           FS.mkdir(current)
         } catch (e) {}
@@ -2691,43 +2694,43 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return current
     },
     createFile(parent, name, properties, canRead, canWrite) {
-      var path = PATH.join2(
+      const path = PATH.join2(
         typeof parent == 'string' ? parent : FS.getPath(parent),
         name,
       )
-      var mode = FS_getMode(canRead, canWrite)
+      const mode = FS_getMode(canRead, canWrite)
       return FS.create(path, mode)
     },
     createDataFile(parent, name, data, canRead, canWrite, canOwn) {
-      var path = name
+      let path = name
       if (parent) {
         parent = typeof parent == 'string' ? parent : FS.getPath(parent)
         path = name ? PATH.join2(parent, name) : parent
       }
-      var mode = FS_getMode(canRead, canWrite)
-      var node = FS.create(path, mode)
+      const mode = FS_getMode(canRead, canWrite)
+      const node = FS.create(path, mode)
       if (data) {
         if (typeof data == 'string') {
-          var arr = new Array(data.length)
-          for (var i = 0, len = data.length; i < len; ++i)
+          const arr = new Array(data.length)
+          for (let i = 0, len = data.length; i < len; ++i)
             arr[i] = data.charCodeAt(i)
           data = arr
         }
         FS.chmod(node, mode | 146)
-        var stream = FS.open(node, 577)
+        const stream = FS.open(node, 577)
         FS.write(stream, data, 0, data.length, 0, canOwn)
         FS.close(stream)
         FS.chmod(node, mode)
       }
     },
     createDevice(parent, name, input, output) {
-      var path = PATH.join2(
+      const path = PATH.join2(
         typeof parent == 'string' ? parent : FS.getPath(parent),
         name,
       )
-      var mode = FS_getMode(!!input, !!output)
+      const mode = FS_getMode(!!input, !!output)
       FS.createDevice.major ??= 64
-      var dev = FS.makedev(FS.createDevice.major++, 0)
+      const dev = FS.makedev(FS.createDevice.major++, 0)
       FS.registerDevice(dev, {
         open(stream) {
           stream.seekable = false
@@ -2738,9 +2741,9 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
           }
         },
         read(stream, buffer, offset, length, pos) {
-          var bytesRead = 0
-          for (var i = 0; i < length; i++) {
-            var result
+          let bytesRead = 0
+          for (let i = 0; i < length; i++) {
+            let result
             try {
               result = input()
             } catch (e) {
@@ -2759,7 +2762,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
           return bytesRead
         },
         write(stream, buffer, offset, length, pos) {
-          for (var i = 0; i < length; i++) {
+          let i = 0
+          for (; i < length; i++) {
             try {
               output(buffer[offset + i])
             } catch (e) {
@@ -2808,17 +2812,17 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return node
     },
   }
-  var SYSCALLS = {
+  let SYSCALLS = {
     DEFAULT_POLLMASK: 5,
     calculateAt(dirfd, path, allowEmpty) {
       if (PATH.isAbs(path)) {
         return path
       }
-      var dir
+      let dir
       if (dirfd === -100) {
         dir = FS.cwd()
       } else {
-        var dirstream = SYSCALLS.getStreamFromFD(dirfd)
+        const dirstream = SYSCALLS.getStreamFromFD(dirfd)
         dir = dirstream.path
       }
       if (path.length == 0) {
@@ -2830,7 +2834,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return dir + '/' + path
     },
     doStat(func, path, buf) {
-      var stat = func(path)
+      const stat = func(path)
       HEAP32[buf >> 2] = stat.dev
       HEAP32[(buf + 4) >> 2] = stat.mode
       HEAPU32[(buf + 8) >> 2] = stat.nlink
@@ -2840,9 +2844,9 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       HEAP64[(buf + 24) >> 3] = BigInt(stat.size)
       HEAP32[(buf + 32) >> 2] = 4096
       HEAP32[(buf + 36) >> 2] = stat.blocks
-      var atime = stat.atime.getTime()
-      var mtime = stat.mtime.getTime()
-      var ctime = stat.ctime.getTime()
+      const atime = stat.atime.getTime()
+      const mtime = stat.mtime.getTime()
+      const ctime = stat.ctime.getTime()
       HEAP64[(buf + 40) >> 3] = BigInt(Math.floor(atime / 1e3))
       HEAPU32[(buf + 48) >> 2] = (atime % 1e3) * 1e3 * 1e3
       HEAP64[(buf + 56) >> 3] = BigInt(Math.floor(mtime / 1e3))
@@ -2859,16 +2863,16 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       if (flags & 2) {
         return 0
       }
-      var buffer = HEAPU8.slice(addr, addr + len)
+      const buffer = HEAPU8.slice(addr, addr + len)
       FS.msync(stream, buffer, offset, len, flags)
     },
     getStreamFromFD(fd) {
-      var stream = FS.getStreamChecked(fd)
+      const stream = FS.getStreamChecked(fd)
       return stream
     },
     varargs: undefined,
     getStr(ptr) {
-      var ret = UTF8ToString(ptr)
+      const ret = UTF8ToString(ptr)
       return ret
     },
   }
@@ -2885,10 +2889,10 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   ___syscall_chmod.sig = 'ipi'
   function ___syscall_dup3(fd, newfd, flags) {
     try {
-      var old = SYSCALLS.getStreamFromFD(fd)
+      const old = SYSCALLS.getStreamFromFD(fd)
       if (old.fd === newfd) return -28
       if (newfd < 0 || newfd >= FS.MAX_OPEN_FDS) return -8
-      var existing = FS.getStream(newfd)
+      const existing = FS.getStream(newfd)
       if (existing) FS.close(existing)
       return FS.dupStream(old, newfd).fd
     } catch (e) {
@@ -2904,12 +2908,12 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       if (amode & ~7) {
         return -28
       }
-      var lookup = FS.lookupPath(path, { follow: true })
-      var node = lookup.node
+      const lookup = FS.lookupPath(path, { follow: true })
+      const node = lookup.node
       if (!node) {
         return -44
       }
-      var perms = ''
+      let perms = ''
       if (amode & 4) perms += 'r'
       if (amode & 2) perms += 'w'
       if (amode & 1) perms += 'x'
@@ -2923,28 +2927,28 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   ___syscall_faccessat.sig = 'iipii'
-  var ___syscall_fadvise64 = (fd, offset, len, advice) => 0
+  const ___syscall_fadvise64 = (fd, offset, len, advice) => 0
   ___syscall_fadvise64.sig = 'iijji'
-  var syscallGetVarargI = () => {
-    var ret = HEAP32[+SYSCALLS.varargs >> 2]
+  const syscallGetVarargI = () => {
+    const ret = HEAP32[+SYSCALLS.varargs >> 2]
     SYSCALLS.varargs += 4
     return ret
   }
-  var syscallGetVarargP = syscallGetVarargI
+  const syscallGetVarargP = syscallGetVarargI
   function ___syscall_fcntl64(fd, cmd, varargs) {
     SYSCALLS.varargs = varargs
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       switch (cmd) {
         case 0: {
-          var arg = syscallGetVarargI()
+          let arg = syscallGetVarargI()
           if (arg < 0) {
             return -28
           }
           while (FS.streams[arg]) {
             arg++
           }
-          var newStream
+          let newStream
           newStream = FS.dupStream(stream, arg)
           return newStream.fd
         }
@@ -2954,13 +2958,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         case 3:
           return stream.flags
         case 4: {
-          var arg = syscallGetVarargI()
+          let arg = syscallGetVarargI()
           stream.flags |= arg
           return 0
         }
         case 12: {
-          var arg = syscallGetVarargP()
-          var offset = 0
+          let arg = syscallGetVarargP()
+          const offset = 0
           HEAP16[(arg + offset) >> 1] = 2
           return 0
         }
@@ -2977,7 +2981,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   ___syscall_fcntl64.sig = 'iiip'
   function ___syscall_fstat64(fd, buf) {
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       return SYSCALLS.doStat(FS.stat, stream.path, buf)
     } catch (e) {
       if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
@@ -2985,13 +2989,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   ___syscall_fstat64.sig = 'iip'
-  var stringToUTF8 = (str, outPtr, maxBytesToWrite) =>
+  const stringToUTF8 = (str, outPtr, maxBytesToWrite) =>
     stringToUTF8Array(str, HEAPU8, outPtr, maxBytesToWrite)
   function ___syscall_getcwd(buf, size) {
     try {
       if (size === 0) return -28
-      var cwd = FS.cwd()
-      var cwdLengthInBytes = lengthBytesUTF8(cwd) + 1
+      const cwd = FS.cwd()
+      const cwdLengthInBytes = lengthBytesUTF8(cwd) + 1
       if (size < cwdLengthInBytes) return -68
       stringToUTF8(cwd, buf, size)
       return cwdLengthInBytes
@@ -3003,29 +3007,30 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   ___syscall_getcwd.sig = 'ipp'
   function ___syscall_getdents64(fd, dirp, count) {
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       stream.getdents ||= FS.readdir(stream.path)
-      var struct_size = 280
-      var pos = 0
-      var off = FS.llseek(stream, 0, 1)
-      var startIdx = Math.floor(off / struct_size)
-      var endIdx = Math.min(
+      const struct_size = 280
+      let pos = 0
+      const off = FS.llseek(stream, 0, 1)
+      const startIdx = Math.floor(off / struct_size)
+      const endIdx = Math.min(
         stream.getdents.length,
         startIdx + Math.floor(count / struct_size),
       )
-      for (var idx = startIdx; idx < endIdx; idx++) {
-        var id
-        var type
-        var name = stream.getdents[idx]
+      let idx = startIdx
+      for (; idx < endIdx; idx++) {
+        let id
+        let type
+        const name = stream.getdents[idx]
         if (name === '.') {
           id = stream.node.id
           type = 4
         } else if (name === '..') {
-          var lookup = FS.lookupPath(stream.path, { parent: true })
+          const lookup = FS.lookupPath(stream.path, { parent: true })
           id = lookup.node.id
           type = 4
         } else {
-          var child
+          let child
           try {
             child = FS.lookupNode(stream.node, name)
           } catch (e) {
@@ -3061,7 +3066,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   function ___syscall_ioctl(fd, op, varargs) {
     SYSCALLS.varargs = varargs
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       switch (op) {
         case 21509: {
           if (!stream.tty) return -59
@@ -3070,13 +3075,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         case 21505: {
           if (!stream.tty) return -59
           if (stream.tty.ops.ioctl_tcgets) {
-            var termios = stream.tty.ops.ioctl_tcgets(stream)
-            var argp = syscallGetVarargP()
+            const termios = stream.tty.ops.ioctl_tcgets(stream)
+            let argp = syscallGetVarargP()
             HEAP32[argp >> 2] = termios.c_iflag || 0
             HEAP32[(argp + 4) >> 2] = termios.c_oflag || 0
             HEAP32[(argp + 8) >> 2] = termios.c_cflag || 0
             HEAP32[(argp + 12) >> 2] = termios.c_lflag || 0
-            for (var i = 0; i < 32; i++) {
+            for (let i = 0; i < 32; i++) {
               HEAP8[argp + i + 17] = termios.c_cc[i] || 0
             }
             return 0
@@ -3094,13 +3099,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         case 21508: {
           if (!stream.tty) return -59
           if (stream.tty.ops.ioctl_tcsets) {
-            var argp = syscallGetVarargP()
-            var c_iflag = HEAP32[argp >> 2]
-            var c_oflag = HEAP32[(argp + 4) >> 2]
-            var c_cflag = HEAP32[(argp + 8) >> 2]
-            var c_lflag = HEAP32[(argp + 12) >> 2]
-            var c_cc = []
-            for (var i = 0; i < 32; i++) {
+            let argp = syscallGetVarargP()
+            const c_iflag = HEAP32[argp >> 2]
+            const c_oflag = HEAP32[(argp + 4) >> 2]
+            const c_cflag = HEAP32[(argp + 8) >> 2]
+            const c_lflag = HEAP32[(argp + 12) >> 2]
+            const c_cc = []
+            for (let i = 0; i < 32; i++) {
               c_cc.push(HEAP8[argp + i + 17])
             }
             return stream.tty.ops.ioctl_tcsets(stream.tty, op, {
@@ -3115,7 +3120,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         }
         case 21519: {
           if (!stream.tty) return -59
-          var argp = syscallGetVarargP()
+          let argp = syscallGetVarargP()
           HEAP32[argp >> 2] = 0
           return 0
         }
@@ -3124,14 +3129,14 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
           return -28
         }
         case 21531: {
-          var argp = syscallGetVarargP()
+          let argp = syscallGetVarargP()
           return FS.ioctl(stream, op, argp)
         }
         case 21523: {
           if (!stream.tty) return -59
           if (stream.tty.ops.ioctl_tiocgwinsz) {
-            var winsize = stream.tty.ops.ioctl_tiocgwinsz(stream.tty)
-            var argp = syscallGetVarargP()
+            const winsize = stream.tty.ops.ioctl_tiocgwinsz(stream.tty)
+            let argp = syscallGetVarargP()
             HEAP16[argp >> 1] = winsize[0]
             HEAP16[(argp + 2) >> 1] = winsize[1]
           }
@@ -3179,8 +3184,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   function ___syscall_newfstatat(dirfd, path, buf, flags) {
     try {
       path = SYSCALLS.getStr(path)
-      var nofollow = flags & 256
-      var allowEmpty = flags & 4096
+      const nofollow = flags & 256
+      const allowEmpty = flags & 4096
       flags = flags & ~6400
       path = SYSCALLS.calculateAt(dirfd, path, allowEmpty)
       return SYSCALLS.doStat(nofollow ? FS.lstat : FS.stat, path, buf)
@@ -3195,7 +3200,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     try {
       path = SYSCALLS.getStr(path)
       path = SYSCALLS.calculateAt(dirfd, path)
-      var mode = varargs ? syscallGetVarargI() : 0
+      const mode = varargs ? syscallGetVarargI() : 0
       return FS.open(path, flags, mode).fd
     } catch (e) {
       if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
@@ -3208,9 +3213,9 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       path = SYSCALLS.getStr(path)
       path = SYSCALLS.calculateAt(dirfd, path)
       if (bufsize <= 0) return -28
-      var ret = FS.readlink(path)
-      var len = Math.min(bufsize, lengthBytesUTF8(ret))
-      var endChar = HEAP8[buf + len]
+      const ret = FS.readlink(path)
+      const len = Math.min(bufsize, lengthBytesUTF8(ret))
+      const endChar = HEAP8[buf + len]
       stringToUTF8(ret, buf, bufsize + 1)
       HEAP8[buf + len] = endChar
       return len
@@ -3272,45 +3277,45 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   ___syscall_unlinkat.sig = 'iipi'
-  var ___table_base = new WebAssembly.Global(
+  const ___table_base = new WebAssembly.Global(
     { value: 'i32', mutable: false },
     1,
   )
-  var __abort_js = () => abort('')
+  const __abort_js = () => abort('')
   __abort_js.sig = 'v'
-  var runtimeKeepaliveCounter = 0
-  var __emscripten_runtime_keepalive_clear = () => {
+  let runtimeKeepaliveCounter = 0
+  const __emscripten_runtime_keepalive_clear = () => {
     noExitRuntime = false
     runtimeKeepaliveCounter = 0
   }
   __emscripten_runtime_keepalive_clear.sig = 'v'
-  var __emscripten_throw_longjmp = () => {
+  const __emscripten_throw_longjmp = () => {
     throw Infinity
   }
   __emscripten_throw_longjmp.sig = 'v'
-  var isLeapYear = (year) =>
+  const isLeapYear = (year) =>
     year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)
-  var MONTH_DAYS_LEAP_CUMULATIVE = [
+  const MONTH_DAYS_LEAP_CUMULATIVE = [
     0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335,
   ]
-  var MONTH_DAYS_REGULAR_CUMULATIVE = [
+  const MONTH_DAYS_REGULAR_CUMULATIVE = [
     0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334,
   ]
-  var ydayFromDate = (date) => {
-    var leap = isLeapYear(date.getFullYear())
-    var monthDaysCumulative = leap
+  const ydayFromDate = (date) => {
+    const leap = isLeapYear(date.getFullYear())
+    const monthDaysCumulative = leap
       ? MONTH_DAYS_LEAP_CUMULATIVE
       : MONTH_DAYS_REGULAR_CUMULATIVE
-    var yday = monthDaysCumulative[date.getMonth()] + date.getDate() - 1
+    const yday = monthDaysCumulative[date.getMonth()] + date.getDate() - 1
     return yday
   }
-  var INT53_MAX = 9007199254740992
-  var INT53_MIN = -9007199254740992
-  var bigintToI53Checked = (num) =>
+  const INT53_MAX = 9007199254740992
+  const INT53_MIN = -9007199254740992
+  const bigintToI53Checked = (num) =>
     num < INT53_MIN || num > INT53_MAX ? NaN : Number(num)
   function __localtime_js(time, tmPtr) {
     time = bigintToI53Checked(time)
-    var date = new Date(time * 1e3)
+    const date = new Date(time * 1e3)
     HEAP32[tmPtr >> 2] = date.getSeconds()
     HEAP32[(tmPtr + 4) >> 2] = date.getMinutes()
     HEAP32[(tmPtr + 8) >> 2] = date.getHours()
@@ -3318,21 +3323,21 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     HEAP32[(tmPtr + 16) >> 2] = date.getMonth()
     HEAP32[(tmPtr + 20) >> 2] = date.getFullYear() - 1900
     HEAP32[(tmPtr + 24) >> 2] = date.getDay()
-    var yday = ydayFromDate(date) | 0
+    const yday = ydayFromDate(date) | 0
     HEAP32[(tmPtr + 28) >> 2] = yday
     HEAP32[(tmPtr + 36) >> 2] = -(date.getTimezoneOffset() * 60)
-    var start = new Date(date.getFullYear(), 0, 1)
-    var summerOffset = new Date(date.getFullYear(), 6, 1).getTimezoneOffset()
-    var winterOffset = start.getTimezoneOffset()
-    var dst =
+    const start = new Date(date.getFullYear(), 0, 1)
+    const summerOffset = new Date(date.getFullYear(), 6, 1).getTimezoneOffset()
+    const winterOffset = start.getTimezoneOffset()
+    const dst =
       (summerOffset != winterOffset &&
         date.getTimezoneOffset() == Math.min(winterOffset, summerOffset)) | 0
     HEAP32[(tmPtr + 32) >> 2] = dst
   }
   __localtime_js.sig = 'vjp'
-  var __mktime_js = function (tmPtr) {
-    var ret = (() => {
-      var date = new Date(
+  const __mktime_js = function (tmPtr) {
+    const ret = (() => {
+      const date = new Date(
         HEAP32[(tmPtr + 20) >> 2] + 1900,
         HEAP32[(tmPtr + 16) >> 2],
         HEAP32[(tmPtr + 12) >> 2],
@@ -3341,23 +3346,27 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         HEAP32[tmPtr >> 2],
         0,
       )
-      var dst = HEAP32[(tmPtr + 32) >> 2]
-      var guessedOffset = date.getTimezoneOffset()
-      var start = new Date(date.getFullYear(), 0, 1)
-      var summerOffset = new Date(date.getFullYear(), 6, 1).getTimezoneOffset()
-      var winterOffset = start.getTimezoneOffset()
-      var dstOffset = Math.min(winterOffset, summerOffset)
+      const dst = HEAP32[(tmPtr + 32) >> 2]
+      const guessedOffset = date.getTimezoneOffset()
+      const start = new Date(date.getFullYear(), 0, 1)
+      const summerOffset = new Date(
+        date.getFullYear(),
+        6,
+        1,
+      ).getTimezoneOffset()
+      const winterOffset = start.getTimezoneOffset()
+      const dstOffset = Math.min(winterOffset, summerOffset)
       if (dst < 0) {
         HEAP32[(tmPtr + 32) >> 2] = Number(
           summerOffset != winterOffset && dstOffset == guessedOffset,
         )
       } else if (dst > 0 != (dstOffset == guessedOffset)) {
-        var nonDstOffset = Math.max(winterOffset, summerOffset)
-        var trueOffset = dst > 0 ? dstOffset : nonDstOffset
+        const nonDstOffset = Math.max(winterOffset, summerOffset)
+        const trueOffset = dst > 0 ? dstOffset : nonDstOffset
         date.setTime(date.getTime() + (trueOffset - guessedOffset) * 6e4)
       }
       HEAP32[(tmPtr + 24) >> 2] = date.getDay()
-      var yday = ydayFromDate(date) | 0
+      const yday = ydayFromDate(date) | 0
       HEAP32[(tmPtr + 28) >> 2] = yday
       HEAP32[tmPtr >> 2] = date.getSeconds()
       HEAP32[(tmPtr + 4) >> 2] = date.getMinutes()
@@ -3365,7 +3374,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       HEAP32[(tmPtr + 12) >> 2] = date.getDate()
       HEAP32[(tmPtr + 16) >> 2] = date.getMonth()
       HEAP32[(tmPtr + 20) >> 2] = date.getYear()
-      var timeMs = date.getTime()
+      const timeMs = date.getTime()
       if (isNaN(timeMs)) {
         return -1
       }
@@ -3378,9 +3387,9 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     offset = bigintToI53Checked(offset)
     try {
       if (isNaN(offset)) return 61
-      var stream = SYSCALLS.getStreamFromFD(fd)
-      var res = FS.mmap(stream, len, offset, prot, flags)
-      var ptr = res.ptr
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      const res = FS.mmap(stream, len, offset, prot, flags)
+      const ptr = res.ptr
       HEAP32[allocated >> 2] = res.allocated
       HEAPU32[addr >> 2] = ptr
       return 0
@@ -3393,7 +3402,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   function __munmap_js(addr, len, prot, flags, fd, offset) {
     offset = bigintToI53Checked(offset)
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       if (prot & 2) {
         SYSCALLS.doMsync(addr, stream, len, flags, offset)
       }
@@ -3403,15 +3412,15 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   __munmap_js.sig = 'ippiiij'
-  var timers = {}
-  var handleException = (e) => {
+  const timers = {}
+  const handleException = (e) => {
     if (e instanceof ExitStatus || e == 'unwind') {
       return EXITSTATUS
     }
     quit_(1, e)
   }
-  var keepRuntimeAlive = () => noExitRuntime || runtimeKeepaliveCounter > 0
-  var _proc_exit = (code) => {
+  const keepRuntimeAlive = () => noExitRuntime || runtimeKeepaliveCounter > 0
+  const _proc_exit = (code) => {
     EXITSTATUS = code
     if (!keepRuntimeAlive()) {
       Module['onExit']?.(code)
@@ -3420,16 +3429,16 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     quit_(code, new ExitStatus(code))
   }
   _proc_exit.sig = 'vi'
-  var exitJS = (status, implicit) => {
+  const exitJS = (status, implicit) => {
     EXITSTATUS = status
     if (!keepRuntimeAlive()) {
       exitRuntime()
     }
     _proc_exit(status)
   }
-  var _exit = exitJS
+  const _exit = exitJS
   _exit.sig = 'vi'
-  var maybeExit = () => {
+  const maybeExit = () => {
     if (runtimeExited) {
       return
     }
@@ -3441,7 +3450,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       }
     }
   }
-  var callUserCallback = (func) => {
+  const callUserCallback = (func) => {
     if (runtimeExited || ABORT) {
       return
     }
@@ -3452,15 +3461,15 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       handleException(e)
     }
   }
-  var _emscripten_get_now = () => performance.now()
+  const _emscripten_get_now = () => performance.now()
   _emscripten_get_now.sig = 'd'
-  var __setitimer_js = (which, timeout_ms) => {
+  const __setitimer_js = (which, timeout_ms) => {
     if (timers[which]) {
       clearTimeout(timers[which].id)
       delete timers[which]
     }
     if (!timeout_ms) return 0
-    var id = setTimeout(() => {
+    const id = setTimeout(() => {
       delete timers[which]
       callUserCallback(() => __emscripten_timeout(which, _emscripten_get_now()))
     }, timeout_ms)
@@ -3468,24 +3477,24 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     return 0
   }
   __setitimer_js.sig = 'iid'
-  var __tzset_js = (timezone, daylight, std_name, dst_name) => {
-    var currentYear = new Date().getFullYear()
-    var winter = new Date(currentYear, 0, 1)
-    var summer = new Date(currentYear, 6, 1)
-    var winterOffset = winter.getTimezoneOffset()
-    var summerOffset = summer.getTimezoneOffset()
-    var stdTimezoneOffset = Math.max(winterOffset, summerOffset)
+  const __tzset_js = (timezone, daylight, std_name, dst_name) => {
+    const currentYear = new Date().getFullYear()
+    const winter = new Date(currentYear, 0, 1)
+    const summer = new Date(currentYear, 6, 1)
+    const winterOffset = winter.getTimezoneOffset()
+    const summerOffset = summer.getTimezoneOffset()
+    const stdTimezoneOffset = Math.max(winterOffset, summerOffset)
     HEAPU32[timezone >> 2] = stdTimezoneOffset * 60
     HEAP32[daylight >> 2] = Number(winterOffset != summerOffset)
-    var extractZone = (timezoneOffset) => {
-      var sign = timezoneOffset >= 0 ? '-' : '+'
-      var absOffset = Math.abs(timezoneOffset)
-      var hours = String(Math.floor(absOffset / 60)).padStart(2, '0')
-      var minutes = String(absOffset % 60).padStart(2, '0')
+    const extractZone = (timezoneOffset) => {
+      const sign = timezoneOffset >= 0 ? '-' : '+'
+      const absOffset = Math.abs(timezoneOffset)
+      const hours = String(Math.floor(absOffset / 60)).padStart(2, '0')
+      const minutes = String(absOffset % 60).padStart(2, '0')
       return `UTC${sign}${hours}${minutes}`
     }
-    var winterName = extractZone(winterOffset)
-    var summerName = extractZone(summerOffset)
+    const winterName = extractZone(winterOffset)
+    const summerName = extractZone(summerOffset)
     if (summerOffset < winterOffset) {
       stringToUTF8(winterName, std_name, 17)
       stringToUTF8(summerName, dst_name, 17)
@@ -3495,33 +3504,33 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   __tzset_js.sig = 'vpppp'
-  var _emscripten_date_now = () => Date.now()
+  const _emscripten_date_now = () => Date.now()
   _emscripten_date_now.sig = 'd'
-  var getHeapMax = () => 2147483648
-  var growMemory = (size) => {
-    var b = wasmMemory.buffer
-    var pages = ((size - b.byteLength + 65535) / 65536) | 0
+  const getHeapMax = () => 2147483648
+  const growMemory = (size) => {
+    const b = wasmMemory.buffer
+    const pages = ((size - b.byteLength + 65535) / 65536) | 0
     try {
       wasmMemory.grow(pages)
       updateMemoryViews()
       return 1
     } catch (e) {}
   }
-  var _emscripten_resize_heap = (requestedSize) => {
-    var oldSize = HEAPU8.length
+  const _emscripten_resize_heap = (requestedSize) => {
+    const oldSize = HEAPU8.length
     requestedSize >>>= 0
-    var maxHeapSize = getHeapMax()
+    const maxHeapSize = getHeapMax()
     if (requestedSize > maxHeapSize) {
       return false
     }
-    for (var cutDown = 1; cutDown <= 4; cutDown *= 2) {
-      var overGrownHeapSize = oldSize * (1 + 0.2 / cutDown)
+    for (let cutDown = 1; cutDown <= 4; cutDown *= 2) {
+      let overGrownHeapSize = oldSize * (1 + 0.2 / cutDown)
       overGrownHeapSize = Math.min(overGrownHeapSize, requestedSize + 100663296)
-      var newSize = Math.min(
+      const newSize = Math.min(
         maxHeapSize,
         alignMemory(Math.max(requestedSize, overGrownHeapSize), 65536),
       )
-      var replacement = growMemory(newSize)
+      const replacement = growMemory(newSize)
       if (replacement) {
         return true
       }
@@ -3529,12 +3538,12 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     return false
   }
   _emscripten_resize_heap.sig = 'ip'
-  var ENV = {}
-  var getExecutableName = () => thisProgram || './this.program'
-  var getEnvStrings = () => {
+  const ENV = {}
+  const getExecutableName = () => thisProgram || './this.program'
+  const getEnvStrings = () => {
     if (!getEnvStrings.strings) {
-      var lang = 'C'.replace('-', '_') + '.UTF-8'
-      var env = {
+      const lang = 'C'.replace('-', '_') + '.UTF-8'
+      const env = {
         USER: 'web_user',
         LOGNAME: 'web_user',
         PATH: '/',
@@ -3543,28 +3552,28 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         LANG: lang,
         _: getExecutableName(),
       }
-      for (var x in ENV) {
+      for (let x in ENV) {
         if (ENV[x] === undefined) delete env[x]
         else env[x] = ENV[x]
       }
-      var strings = []
-      for (var x in env) {
+      const strings = []
+      for (let x in env) {
         strings.push(`${x}=${env[x]}`)
       }
       getEnvStrings.strings = strings
     }
     return getEnvStrings.strings
   }
-  var stringToAscii = (str, buffer) => {
-    for (var i = 0; i < str.length; ++i) {
+  const stringToAscii = (str, buffer) => {
+    for (let i = 0; i < str.length; ++i) {
       HEAP8[buffer++] = str.charCodeAt(i)
     }
     HEAP8[buffer] = 0
   }
-  var _environ_get = (__environ, environ_buf) => {
-    var bufSize = 0
+  const _environ_get = (__environ, environ_buf) => {
+    let bufSize = 0
     getEnvStrings().forEach((string, i) => {
-      var ptr = environ_buf + bufSize
+      const ptr = environ_buf + bufSize
       HEAPU32[(__environ + i * 4) >> 2] = ptr
       stringToAscii(string, ptr)
       bufSize += string.length + 1
@@ -3572,10 +3581,10 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     return 0
   }
   _environ_get.sig = 'ipp'
-  var _environ_sizes_get = (penviron_count, penviron_buf_size) => {
-    var strings = getEnvStrings()
+  const _environ_sizes_get = (penviron_count, penviron_buf_size) => {
+    const strings = getEnvStrings()
     HEAPU32[penviron_count >> 2] = strings.length
-    var bufSize = 0
+    let bufSize = 0
     strings.forEach((string) => (bufSize += string.length + 1))
     HEAPU32[penviron_buf_size >> 2] = bufSize
     return 0
@@ -3583,7 +3592,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   _environ_sizes_get.sig = 'ipp'
   function _fd_close(fd) {
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       FS.close(stream)
       return 0
     } catch (e) {
@@ -3594,19 +3603,17 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   _fd_close.sig = 'ii'
   function _fd_fdstat_get(fd, pbuf) {
     try {
-      var rightsBase = 0
-      var rightsInheriting = 0
-      var flags = 0
-      {
-        var stream = SYSCALLS.getStreamFromFD(fd)
-        var type = stream.tty
-          ? 2
-          : FS.isDir(stream.mode)
-            ? 3
-            : FS.isLink(stream.mode)
-              ? 7
-              : 4
-      }
+      const rightsBase = 0
+      const rightsInheriting = 0
+      const flags = 0
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      const type = stream.tty
+        ? 2
+        : FS.isDir(stream.mode)
+          ? 3
+          : FS.isLink(stream.mode)
+            ? 7
+            : 4
       HEAP8[pbuf] = type
       HEAP16[(pbuf + 2) >> 1] = flags
       HEAP64[(pbuf + 8) >> 3] = BigInt(rightsBase)
@@ -3618,13 +3625,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   _fd_fdstat_get.sig = 'iip'
-  var doReadv = (stream, iov, iovcnt, offset) => {
-    var ret = 0
-    for (var i = 0; i < iovcnt; i++) {
-      var ptr = HEAPU32[iov >> 2]
-      var len = HEAPU32[(iov + 4) >> 2]
+  const doReadv = (stream, iov, iovcnt, offset) => {
+    let ret = 0
+    for (let i = 0; i < iovcnt; i++) {
+      const ptr = HEAPU32[iov >> 2]
+      const len = HEAPU32[(iov + 4) >> 2]
       iov += 8
-      var curr = FS.read(stream, HEAP8, ptr, len, offset)
+      const curr = FS.read(stream, HEAP8, ptr, len, offset)
       if (curr < 0) return -1
       ret += curr
       if (curr < len) break
@@ -3636,8 +3643,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   }
   function _fd_read(fd, iov, iovcnt, pnum) {
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
-      var num = doReadv(stream, iov, iovcnt)
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      const num = doReadv(stream, iov, iovcnt)
       HEAPU32[pnum >> 2] = num
       return 0
     } catch (e) {
@@ -3650,7 +3657,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     offset = bigintToI53Checked(offset)
     try {
       if (isNaN(offset)) return 61
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       FS.llseek(stream, offset, whence)
       HEAP64[newOffset >> 3] = BigInt(stream.position)
       if (stream.getdents && offset === 0 && whence === 0)
@@ -3664,7 +3671,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   _fd_seek.sig = 'iijip'
   function _fd_sync(fd) {
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       if (stream.stream_ops?.fsync) {
         return stream.stream_ops.fsync(stream)
       }
@@ -3675,13 +3682,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   _fd_sync.sig = 'ii'
-  var doWritev = (stream, iov, iovcnt, offset) => {
-    var ret = 0
-    for (var i = 0; i < iovcnt; i++) {
-      var ptr = HEAPU32[iov >> 2]
-      var len = HEAPU32[(iov + 4) >> 2]
+  const doWritev = (stream, iov, iovcnt, offset) => {
+    let ret = 0
+    for (let i = 0; i < iovcnt; i++) {
+      const ptr = HEAPU32[iov >> 2]
+      const len = HEAPU32[(iov + 4) >> 2]
       iov += 8
-      var curr = FS.write(stream, HEAP8, ptr, len, offset)
+      const curr = FS.write(stream, HEAP8, ptr, len, offset)
       if (curr < 0) return -1
       ret += curr
       if (curr < len) {
@@ -3695,8 +3702,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   }
   function _fd_write(fd, iov, iovcnt, pnum) {
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
-      var num = doWritev(stream, iov, iovcnt)
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      const num = doWritev(stream, iov, iovcnt)
       HEAPU32[pnum >> 2] = num
       return 0
     } catch (e) {
@@ -3705,30 +3712,30 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   _fd_write.sig = 'iippp'
-  var _getaddrinfo = () => -2
+  const _getaddrinfo = () => -2
   _getaddrinfo.sig = 'ipppp'
-  var stackAlloc = (sz) => __emscripten_stack_alloc(sz)
-  var stringToUTF8OnStack = (str) => {
-    var size = lengthBytesUTF8(str) + 1
-    var ret = stackAlloc(size)
+  const stackAlloc = (sz) => __emscripten_stack_alloc(sz)
+  const stringToUTF8OnStack = (str) => {
+    const size = lengthBytesUTF8(str) + 1
+    const ret = stackAlloc(size)
     stringToUTF8(str, ret, size)
     return ret
   }
-  var removeFunction = (index) => {
+  const removeFunction = (index) => {
     functionsInTableMap.delete(getWasmTableEntry(index))
     setWasmTableEntry(index, null)
     freeTableIndexes.push(index)
   }
-  var stringToNewUTF8 = (str) => {
-    var size = lengthBytesUTF8(str) + 1
-    var ret = _malloc(size)
+  const stringToNewUTF8 = (str) => {
+    const size = lengthBytesUTF8(str) + 1
+    const ret = _malloc(size)
     if (ret) stringToUTF8(str, ret, size)
     return ret
   }
-  var FS_createPath = FS.createPath
-  var FS_unlink = (path) => FS.unlink(path)
-  var FS_createLazyFile = FS.createLazyFile
-  var FS_createDevice = FS.createDevice
+  const FS_createPath = FS.createPath
+  const FS_unlink = (path) => FS.unlink(path)
+  const FS_createLazyFile = FS.createLazyFile
+  const FS_createDevice = FS.createDevice
   FS.createPreloadedFile = FS_createPreloadedFile
   FS.staticInit()
   Module['FS_createPath'] = FS.createPath
@@ -3739,7 +3746,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   Module['FS_createDevice'] = FS.createDevice
   MEMFS.doesNotExistError = new FS.ErrnoError(44)
   MEMFS.doesNotExistError.stack = '<generic error, no stack>'
-  var wasmImports = {
+  let wasmImports = {
     __call_sighandler: ___call_sighandler,
     __heap_base: ___heap_base,
     __indirect_function_table: wasmTable,
@@ -3792,146 +3799,146 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     memory: wasmMemory,
     proc_exit: _proc_exit,
   }
-  var wasmExports
+  let wasmExports
   createWasm()
-  var ___wasm_call_ctors = () =>
+  let ___wasm_call_ctors = () =>
     (___wasm_call_ctors = wasmExports['__wasm_call_ctors'])()
-  var _pgl_exit = (Module['_pgl_exit'] = (a0) =>
+  let _pgl_exit = (Module['_pgl_exit'] = (a0) =>
     (_pgl_exit = Module['_pgl_exit'] = wasmExports['pgl_exit'])(a0))
-  var ___errno_location = (Module['___errno_location'] = () =>
+  let ___errno_location = (Module['___errno_location'] = () =>
     (___errno_location = Module['___errno_location'] =
       wasmExports['__errno_location'])())
-  var _fflush = (Module['_fflush'] = (a0) =>
+  let _fflush = (Module['_fflush'] = (a0) =>
     (_fflush = Module['_fflush'] = wasmExports['fflush'])(a0))
-  var _fopen = (Module['_fopen'] = (a0, a1) =>
+  let _fopen = (Module['_fopen'] = (a0, a1) =>
     (_fopen = Module['_fopen'] = wasmExports['fopen'])(a0, a1))
-  var _fclose = (Module['_fclose'] = (a0) =>
+  let _fclose = (Module['_fclose'] = (a0) =>
     (_fclose = Module['_fclose'] = wasmExports['fclose'])(a0))
-  var _pgl_popen = (Module['_pgl_popen'] = (a0, a1) =>
+  let _pgl_popen = (Module['_pgl_popen'] = (a0, a1) =>
     (_pgl_popen = Module['_pgl_popen'] = wasmExports['pgl_popen'])(a0, a1))
-  var _fputs = (Module['_fputs'] = (a0, a1) =>
+  let _fputs = (Module['_fputs'] = (a0, a1) =>
     (_fputs = Module['_fputs'] = wasmExports['fputs'])(a0, a1))
-  var _main = (Module['_main'] = (a0, a1) =>
+  let _main = (Module['_main'] = (a0, a1) =>
     (_main = Module['_main'] = wasmExports['__main_argc_argv'])(a0, a1))
-  var _pgl_atexit = (Module['_pgl_atexit'] = (a0) =>
+  let _pgl_atexit = (Module['_pgl_atexit'] = (a0) =>
     (_pgl_atexit = Module['_pgl_atexit'] = wasmExports['pgl_atexit'])(a0))
-  var _pgl_geteuid = (Module['_pgl_geteuid'] = () =>
+  let _pgl_geteuid = (Module['_pgl_geteuid'] = () =>
     (_pgl_geteuid = Module['_pgl_geteuid'] = wasmExports['pgl_geteuid'])())
-  var _pgl_system = (Module['_pgl_system'] = (a0) =>
+  let _pgl_system = (Module['_pgl_system'] = (a0) =>
     (_pgl_system = Module['_pgl_system'] = wasmExports['pgl_system'])(a0))
-  var _malloc = (a0) => (_malloc = wasmExports['malloc'])(a0)
-  var _calloc = (a0, a1) => (_calloc = wasmExports['calloc'])(a0, a1)
-  var _pgl_setsockopt = (Module['_pgl_setsockopt'] = (a0, a1, a2, a3, a4) =>
+  let _malloc = (a0) => (_malloc = wasmExports['malloc'])(a0)
+  let _calloc = (a0, a1) => (_calloc = wasmExports['calloc'])(a0, a1)
+  let _pgl_setsockopt = (Module['_pgl_setsockopt'] = (a0, a1, a2, a3, a4) =>
     (_pgl_setsockopt = Module['_pgl_setsockopt'] =
       wasmExports['pgl_setsockopt'])(a0, a1, a2, a3, a4))
-  var _pgl_connect = (Module['_pgl_connect'] = (a0, a1, a2) =>
+  let _pgl_connect = (Module['_pgl_connect'] = (a0, a1, a2) =>
     (_pgl_connect = Module['_pgl_connect'] = wasmExports['pgl_connect'])(
       a0,
       a1,
       a2,
     ))
-  var _pgl_send = (Module['_pgl_send'] = (a0, a1, a2, a3) =>
+  let _pgl_send = (Module['_pgl_send'] = (a0, a1, a2, a3) =>
     (_pgl_send = Module['_pgl_send'] = wasmExports['pgl_send'])(a0, a1, a2, a3))
-  var _pgl_recv = (Module['_pgl_recv'] = (a0, a1, a2, a3) =>
+  let _pgl_recv = (Module['_pgl_recv'] = (a0, a1, a2, a3) =>
     (_pgl_recv = Module['_pgl_recv'] = wasmExports['pgl_recv'])(a0, a1, a2, a3))
-  var _fgets = (Module['_fgets'] = (a0, a1, a2) =>
+  let _fgets = (Module['_fgets'] = (a0, a1, a2) =>
     (_fgets = Module['_fgets'] = wasmExports['fgets'])(a0, a1, a2))
-  var _pgl_getsockopt = (Module['_pgl_getsockopt'] = (a0, a1, a2, a3, a4) =>
+  let _pgl_getsockopt = (Module['_pgl_getsockopt'] = (a0, a1, a2, a3, a4) =>
     (_pgl_getsockopt = Module['_pgl_getsockopt'] =
       wasmExports['pgl_getsockopt'])(a0, a1, a2, a3, a4))
-  var _pgl_getsockname = (Module['_pgl_getsockname'] = (a0, a1, a2) =>
+  let _pgl_getsockname = (Module['_pgl_getsockname'] = (a0, a1, a2) =>
     (_pgl_getsockname = Module['_pgl_getsockname'] =
       wasmExports['pgl_getsockname'])(a0, a1, a2))
-  var _pgl_poll = (Module['_pgl_poll'] = (a0, a1, a2) =>
+  let _pgl_poll = (Module['_pgl_poll'] = (a0, a1, a2) =>
     (_pgl_poll = Module['_pgl_poll'] = wasmExports['pgl_poll'])(a0, a1, a2))
-  var _clear_setitimer = (Module['_clear_setitimer'] = () =>
+  let _clear_setitimer = (Module['_clear_setitimer'] = () =>
     (_clear_setitimer = Module['_clear_setitimer'] =
       wasmExports['clear_setitimer'])())
-  var _pgl_longjmp = (Module['_pgl_longjmp'] = (a0, a1) =>
+  let _pgl_longjmp = (Module['_pgl_longjmp'] = (a0, a1) =>
     (_pgl_longjmp = Module['_pgl_longjmp'] = wasmExports['pgl_longjmp'])(
       a0,
       a1,
     ))
-  var _pgl_siglongjmp = (Module['_pgl_siglongjmp'] = (a0, a1) =>
+  let _pgl_siglongjmp = (Module['_pgl_siglongjmp'] = (a0, a1) =>
     (_pgl_siglongjmp = Module['_pgl_siglongjmp'] =
       wasmExports['pgl_siglongjmp'])(a0, a1))
-  var _pgl_set_system_fn = (Module['_pgl_set_system_fn'] = (a0) =>
+  let _pgl_set_system_fn = (Module['_pgl_set_system_fn'] = (a0) =>
     (_pgl_set_system_fn = Module['_pgl_set_system_fn'] =
       wasmExports['pgl_set_system_fn'])(a0))
-  var _pgl_set_popen_fn = (Module['_pgl_set_popen_fn'] = (a0) =>
+  let _pgl_set_popen_fn = (Module['_pgl_set_popen_fn'] = (a0) =>
     (_pgl_set_popen_fn = Module['_pgl_set_popen_fn'] =
       wasmExports['pgl_set_popen_fn'])(a0))
-  var _pgl_set_pclose_fn = (Module['_pgl_set_pclose_fn'] = (a0) =>
+  let _pgl_set_pclose_fn = (Module['_pgl_set_pclose_fn'] = (a0) =>
     (_pgl_set_pclose_fn = Module['_pgl_set_pclose_fn'] =
       wasmExports['pgl_set_pclose_fn'])(a0))
-  var _pgl_pclose = (Module['_pgl_pclose'] = (a0) =>
+  let _pgl_pclose = (Module['_pgl_pclose'] = (a0) =>
     (_pgl_pclose = Module['_pgl_pclose'] = wasmExports['pgl_pclose'])(a0))
-  var _pclose = (Module['_pclose'] = (a0) =>
+  let _pclose = (Module['_pclose'] = (a0) =>
     (_pclose = Module['_pclose'] = wasmExports['pclose'])(a0))
-  var _pgl_getuid = (Module['_pgl_getuid'] = () =>
+  let _pgl_getuid = (Module['_pgl_getuid'] = () =>
     (_pgl_getuid = Module['_pgl_getuid'] = wasmExports['pgl_getuid'])())
-  var _pgl_getpwuid = (Module['_pgl_getpwuid'] = (a0) =>
+  let _pgl_getpwuid = (Module['_pgl_getpwuid'] = (a0) =>
     (_pgl_getpwuid = Module['_pgl_getpwuid'] = wasmExports['pgl_getpwuid'])(a0))
-  var _pgl_run_atexit_funcs = (Module['_pgl_run_atexit_funcs'] = () =>
+  let _pgl_run_atexit_funcs = (Module['_pgl_run_atexit_funcs'] = () =>
     (_pgl_run_atexit_funcs = Module['_pgl_run_atexit_funcs'] =
       wasmExports['pgl_run_atexit_funcs'])())
-  var _pgl_freopen = (Module['_pgl_freopen'] = (a0, a1, a2) =>
+  let _pgl_freopen = (Module['_pgl_freopen'] = (a0, a1, a2) =>
     (_pgl_freopen = Module['_pgl_freopen'] = wasmExports['pgl_freopen'])(
       a0,
       a1,
       a2,
     ))
-  var _pgl_shmget = (Module['_pgl_shmget'] = (a0, a1, a2) =>
+  let _pgl_shmget = (Module['_pgl_shmget'] = (a0, a1, a2) =>
     (_pgl_shmget = Module['_pgl_shmget'] = wasmExports['pgl_shmget'])(
       a0,
       a1,
       a2,
     ))
-  var _pgl_shmat = (Module['_pgl_shmat'] = (a0, a1, a2) =>
+  let _pgl_shmat = (Module['_pgl_shmat'] = (a0, a1, a2) =>
     (_pgl_shmat = Module['_pgl_shmat'] = wasmExports['pgl_shmat'])(a0, a1, a2))
-  var _pgl_shmdt = (Module['_pgl_shmdt'] = (a0) =>
+  let _pgl_shmdt = (Module['_pgl_shmdt'] = (a0) =>
     (_pgl_shmdt = Module['_pgl_shmdt'] = wasmExports['pgl_shmdt'])(a0))
-  var _pgl_shmctl = (Module['_pgl_shmctl'] = (a0, a1, a2) =>
+  let _pgl_shmctl = (Module['_pgl_shmctl'] = (a0, a1, a2) =>
     (_pgl_shmctl = Module['_pgl_shmctl'] = wasmExports['pgl_shmctl'])(
       a0,
       a1,
       a2,
     ))
-  var _pgl_munmap = (Module['_pgl_munmap'] = (a0, a1) =>
+  let _pgl_munmap = (Module['_pgl_munmap'] = (a0, a1) =>
     (_pgl_munmap = Module['_pgl_munmap'] = wasmExports['pgl_munmap'])(a0, a1))
-  var _pgl_set_rw_cbs = (Module['_pgl_set_rw_cbs'] = (a0, a1) =>
+  let _pgl_set_rw_cbs = (Module['_pgl_set_rw_cbs'] = (a0, a1) =>
     (_pgl_set_rw_cbs = Module['_pgl_set_rw_cbs'] =
       wasmExports['pgl_set_rw_cbs'])(a0, a1))
-  var _pgl_fcntl = (Module['_pgl_fcntl'] = (a0, a1, a2) =>
+  let _pgl_fcntl = (Module['_pgl_fcntl'] = (a0, a1, a2) =>
     (_pgl_fcntl = Module['_pgl_fcntl'] = wasmExports['pgl_fcntl'])(a0, a1, a2))
-  var _strerror = (Module['_strerror'] = (a0) =>
+  let _strerror = (Module['_strerror'] = (a0) =>
     (_strerror = Module['_strerror'] = wasmExports['strerror'])(a0))
-  var ___funcs_on_exit = () =>
+  let ___funcs_on_exit = () =>
     (___funcs_on_exit = wasmExports['__funcs_on_exit'])()
-  var ___dl_seterr = (a0, a1) =>
+  let ___dl_seterr = (a0, a1) =>
     (___dl_seterr = wasmExports['__dl_seterr'])(a0, a1)
-  var _htonl = (a0) => (_htonl = wasmExports['htonl'])(a0)
-  var _htons = (a0) => (_htons = wasmExports['htons'])(a0)
-  var _emscripten_builtin_memalign = (a0, a1) =>
+  let _htonl = (a0) => (_htonl = wasmExports['htonl'])(a0)
+  let _htons = (a0) => (_htons = wasmExports['htons'])(a0)
+  let _emscripten_builtin_memalign = (a0, a1) =>
     (_emscripten_builtin_memalign = wasmExports['emscripten_builtin_memalign'])(
       a0,
       a1,
     )
-  var _ntohs = (a0) => (_ntohs = wasmExports['ntohs'])(a0)
-  var __emscripten_timeout = (a0, a1) =>
+  let _ntohs = (a0) => (_ntohs = wasmExports['ntohs'])(a0)
+  let __emscripten_timeout = (a0, a1) =>
     (__emscripten_timeout = wasmExports['_emscripten_timeout'])(a0, a1)
-  var _setThrew = (a0, a1) => (_setThrew = wasmExports['setThrew'])(a0, a1)
-  var __emscripten_stack_restore = (a0) =>
+  let _setThrew = (a0, a1) => (_setThrew = wasmExports['setThrew'])(a0, a1)
+  let __emscripten_stack_restore = (a0) =>
     (__emscripten_stack_restore = wasmExports['_emscripten_stack_restore'])(a0)
-  var __emscripten_stack_alloc = (a0) =>
+  let __emscripten_stack_alloc = (a0) =>
     (__emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'])(a0)
-  var _emscripten_stack_get_current = () =>
+  let _emscripten_stack_get_current = () =>
     (_emscripten_stack_get_current =
       wasmExports['emscripten_stack_get_current'])()
-  var ___wasm_apply_data_relocs = () =>
+  let ___wasm_apply_data_relocs = () =>
     (___wasm_apply_data_relocs = wasmExports['__wasm_apply_data_relocs'])()
   function invoke_iiii(index, a1, a2, a3) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3)
     } catch (e) {
@@ -3941,7 +3948,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   function invoke_ii(index, a1) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1)
     } catch (e) {
@@ -3951,7 +3958,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   function invoke_vii(index, a1, a2) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2)
     } catch (e) {
@@ -3978,25 +3985,25 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   Module['FS_createLazyFile'] = FS_createLazyFile
   Module['MEMFS'] = MEMFS
   Module['PROXYFS'] = PROXYFS
-  var calledRun
+  let calledRun
   dependenciesFulfilled = function runCaller() {
     if (!calledRun) run()
     if (!calledRun) dependenciesFulfilled = runCaller
   }
   function callMain(args = []) {
-    var entryFunction = resolveGlobalSymbol('main').sym
+    const entryFunction = resolveGlobalSymbol('main').sym
     if (!entryFunction) return
     args.unshift(thisProgram)
-    var argc = args.length
-    var argv = stackAlloc((argc + 1) * 4)
-    var argv_ptr = argv
+    const argc = args.length
+    const argv = stackAlloc((argc + 1) * 4)
+    let argv_ptr = argv
     args.forEach((arg) => {
       HEAPU32[argv_ptr >> 2] = stringToUTF8OnStack(arg)
       argv_ptr += 4
     })
     HEAPU32[argv_ptr >> 2] = 0
     try {
-      var ret = entryFunction(argc, argv)
+      const ret = entryFunction(argc, argv)
       exitJS(ret, true)
       return ret
     } catch (e) {
@@ -4040,7 +4047,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       Module['preInit'].pop()()
     }
   }
-  var shouldRunNow = false
+  let shouldRunNow = false
   if (Module['noInitialRun']) shouldRunNow = false
   run()
   moduleRtn = readyPromise

@@ -86,24 +86,24 @@ type PostgresFactory = (
 ) => Promise<PostgresMod>
 
 const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
-  var moduleRtn
-  var Module = moduleArg
-  var readyPromiseResolve, readyPromiseReject
-  var readyPromise = new Promise((resolve, reject) => {
+  let moduleRtn
+  const Module = moduleArg
+  let readyPromiseResolve, readyPromiseReject
+  const readyPromise = new Promise((resolve, reject) => {
     readyPromiseResolve = resolve
     readyPromiseReject = reject
   })
-  var ENVIRONMENT_IS_NODE = true
+  const ENVIRONMENT_IS_NODE = true
   Module['expectedDataFileDownloads'] ??= 0
   Module['expectedDataFileDownloads']++
   ;(() => {
     function loadPackage(metadata) {
-      var PACKAGE_NAME = 'pglite.data'
-      var REMOTE_PACKAGE_NAME = 'pglite.data'
-      var REMOTE_PACKAGE_SIZE = metadata['remote_package_size']
+      const PACKAGE_NAME = 'pglite.data'
+      const REMOTE_PACKAGE_NAME = 'pglite.data'
+      const REMOTE_PACKAGE_SIZE = metadata['remote_package_size']
       function loadLocalPackage(packageName, packageSize, callback, errback) {
         try {
-          var data = readFileSync(
+          const data = readFileSync(
             new URL('../release/' + packageName, import.meta.url),
           )
           callback(
@@ -119,7 +119,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       function handleError(error) {
         console.error('package error:', error)
       }
-      var fetched = Module['getPreloadedPackage']
+      let fetched = Module['getPreloadedPackage']
         ? Module['getPreloadedPackage'](
             REMOTE_PACKAGE_NAME,
             REMOTE_PACKAGE_SIZE,
@@ -344,11 +344,11 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
           },
           send: function () {},
           onload: function () {
-            var byteArray = this.byteArray.subarray(this.start, this.end)
+            const byteArray = this.byteArray.subarray(this.start, this.end)
             this.finish(byteArray)
           },
           finish: function (byteArray) {
-            var that = this
+            const that = this
             Module['FS_createDataFile'](
               this.name,
               null,
@@ -361,8 +361,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
             this.requests[this.name] = null
           },
         }
-        var files = metadata['files']
-        for (var i = 0; i < files.length; ++i) {
+        const files = metadata['files']
+        for (let i = 0; i < files.length; ++i) {
           new DataRequest(
             files[i]['start'],
             files[i]['end'],
@@ -375,10 +375,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
             arrayBuffer.constructor.name === ArrayBuffer.name,
             'bad input to processPackageData',
           )
-          var byteArray = new Uint8Array(arrayBuffer)
+          const byteArray = new Uint8Array(arrayBuffer)
           DataRequest.prototype.byteArray = byteArray
-          var files = metadata['files']
-          for (var i = 0; i < files.length; ++i) {
+          const files = metadata['files']
+          for (let i = 0; i < files.length; ++i) {
             DataRequest.prototype.requests[files[i].filename].onload()
           }
           Module['removeRunDependency']('datafile_pglite.data')
@@ -3894,10 +3894,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       remote_package_size: 6293216,
     })
   })()
-  var moduleOverrides = Object.assign({}, Module)
-  var arguments_ = []
-  var thisProgram = './this.program'
-  var quit_ = (status, toThrow) => {
+  let moduleOverrides = Object.assign({}, Module)
+  let arguments_ = []
+  let thisProgram = './this.program'
+  const quit_ = (status, toThrow) => {
     throw toThrow
   }
   Object.assign(Module, moduleOverrides)
@@ -3908,39 +3908,39 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     thisProgram = process.argv[1].replace(/\\/g, '/')
   }
   arguments_ = process.argv.slice(2)
-  var out = Module['print'] || console.log.bind(console)
-  var err = Module['printErr'] || console.error.bind(console)
-  var dynamicLibraries = Module['dynamicLibraries'] || []
-  var wasmBinary = Module['wasmModule'] || Module['wasmBinary']
-  var out = Module['print'] || console.log.bind(console)
-  var err = Module['printErr'] || console.error.bind(console)
+  let out = Module['print'] || console.log.bind(console)
+  let err = Module['printErr'] || console.error.bind(console)
+  let dynamicLibraries = Module['dynamicLibraries'] || []
+  let wasmBinary = Module['wasmModule'] || Module['wasmBinary']
+  out = Module['print'] || console.log.bind(console)
+  err = Module['printErr'] || console.error.bind(console)
   Object.assign(Module, moduleOverrides)
   moduleOverrides = null
   if (Module['arguments']) arguments_ = Module['arguments']
   if (Module['thisProgram']) thisProgram = Module['thisProgram']
-  var dynamicLibraries = Module['dynamicLibraries'] || []
-  var wasmBinary = Module['wasmBinary']
+  dynamicLibraries = Module['dynamicLibraries'] || []
+  wasmBinary = Module['wasmBinary']
   function intArrayFromBase64(s) {
     if (typeof ENVIRONMENT_IS_NODE != 'undefined' && ENVIRONMENT_IS_NODE) {
-      var buf = Buffer.from(s, 'base64')
+      const buf = Buffer.from(s, 'base64')
       return new Uint8Array(buf.buffer, buf.byteOffset, buf.length)
     }
-    var decoded = atob(s)
-    var bytes = new Uint8Array(decoded.length)
-    for (var i = 0; i < decoded.length; ++i) {
+    const decoded = atob(s)
+    const bytes = new Uint8Array(decoded.length)
+    for (let i = 0; i < decoded.length; ++i) {
       bytes[i] = decoded.charCodeAt(i)
     }
     return bytes
   }
-  var wasmMemory
-  var ABORT = false
-  var EXITSTATUS
+  let wasmMemory
+  let ABORT = false
+  let EXITSTATUS
   function assert(condition, text) {
     if (!condition) {
       abort(text)
     }
   }
-  var HEAP8,
+  let HEAP8,
     HEAPU8,
     HEAP16,
     HEAPU16,
@@ -3951,7 +3951,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     HEAPU64,
     HEAPF64
   function updateMemoryViews() {
-    var b = wasmMemory.buffer
+    const b = wasmMemory.buffer
     Module['HEAP8'] = HEAP8 = new Int8Array(b)
     Module['HEAP16'] = HEAP16 = new Int16Array(b)
     Module['HEAPU8'] = HEAPU8 = new Uint8Array(b)
@@ -3966,21 +3966,21 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   if (Module['wasmMemory']) {
     wasmMemory = Module['wasmMemory']
   } else {
-    var INITIAL_MEMORY = Module['INITIAL_MEMORY'] || 134217728
+    const INITIAL_MEMORY = Module['INITIAL_MEMORY'] || 134217728
     wasmMemory = new WebAssembly.Memory({
       initial: INITIAL_MEMORY / 65536,
       maximum: 32768,
     })
   }
   updateMemoryViews()
-  var __ATPRERUN__ = []
-  var __ATINIT__ = []
-  var __ATMAIN__ = []
-  var __ATEXIT__ = []
-  var __ATPOSTRUN__ = []
-  var __RELOC_FUNCS__ = []
-  var runtimeInitialized = false
-  var runtimeExited = false
+  const __ATPRERUN__ = []
+  const __ATINIT__ = []
+  const __ATMAIN__ = []
+  const __ATEXIT__ = []
+  const __ATPOSTRUN__ = []
+  const __RELOC_FUNCS__ = []
+  let runtimeInitialized = false
+  let runtimeExited = false
   function preRun() {
     if (Module['preRun']) {
       if (typeof Module['preRun'] == 'function')
@@ -4029,8 +4029,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   function addOnPostRun(cb) {
     __ATPOSTRUN__.unshift(cb)
   }
-  var runDependencies = 0
-  var dependenciesFulfilled = null
+  let runDependencies = 0
+  let dependenciesFulfilled = null
   function getUniqueRunDependency(id) {
     return id
   }
@@ -4043,7 +4043,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     Module['monitorRunDependencies']?.(runDependencies)
     if (runDependencies == 0) {
       if (dependenciesFulfilled) {
-        var callback = dependenciesFulfilled
+        const callback = dependenciesFulfilled
         dependenciesFulfilled = null
         callback()
       }
@@ -4055,11 +4055,11 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     err(what)
     ABORT = true
     what += '. Build with -sASSERTIONS for more info.'
-    var e = new WebAssembly.RuntimeError(what)
+    const e = new WebAssembly.RuntimeError(what)
     readyPromiseReject(e)
     throw e
   }
-  var wasmBinaryFile = new URL('../release/pglite.wasm', import.meta.url)
+  const wasmBinaryFile = new URL('../release/pglite.wasm', import.meta.url)
   function getWasmImports() {
     return {
       env: wasmImports,
@@ -4072,7 +4072,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     function receiveInstance(instance, module) {
       wasmExports = instance.exports
       wasmExports = relocateExports(wasmExports, 1024)
-      var metadata = getDylinkMetadata(module)
+      const metadata = getDylinkMetadata(module)
       if (metadata.neededDynlibs) {
         dynamicLibraries = metadata.neededDynlibs.concat(dynamicLibraries)
       }
@@ -4088,9 +4088,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     function receiveInstantiationResult(result) {
       receiveInstance(result['instance'], result['module'])
     }
-    var info = getWasmImports()
+    const info = getWasmImports()
     try {
-      var result = await instantiateNodeWasm(
+      const result = await instantiateNodeWasm(
         wasmBinary,
         wasmBinaryFile,
         info,
@@ -4106,7 +4106,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return
     }
   }
-  var ASM_CONSTS = {}
+  const ASM_CONSTS = {}
   class ExitStatus {
     name = 'ExitStatus'
     constructor(status) {
@@ -4114,11 +4114,11 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       this.status = status
     }
   }
-  var GOT = {}
-  var currentModuleWeakSymbols = new Set([])
-  var GOTHandler = {
+  const GOT = {}
+  let currentModuleWeakSymbols = new Set([])
+  let GOTHandler = {
     get(obj, symName) {
-      var rtn = GOT[symName]
+      let rtn = GOT[symName]
       if (!rtn) {
         rtn = GOT[symName] = new WebAssembly.Global({
           value: 'i32',
@@ -4131,22 +4131,22 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return rtn
     },
   }
-  var callRuntimeCallbacks = (callbacks) => {
+  let callRuntimeCallbacks = (callbacks) => {
     while (callbacks.length > 0) {
       callbacks.shift()(Module)
     }
   }
-  var getDylinkMetadata = (binary) => {
-    var offset = 0
-    var end = 0
+  let getDylinkMetadata = (binary) => {
+    let offset = 0
+    let end = 0
     function getU8() {
       return binary[offset++]
     }
     function getLEB() {
-      var ret = 0
-      var mul = 1
+      let ret = 0
+      let mul = 1
       while (1) {
-        var byte = binary[offset++]
+        const byte = binary[offset++]
         ret += (byte & 127) * mul
         mul *= 128
         if (!(byte & 128)) break
@@ -4154,16 +4154,16 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return ret
     }
     function getString() {
-      var len = getLEB()
+      const len = getLEB()
       offset += len
       return UTF8ArrayToString(binary, offset - len, len)
     }
     function failIf(condition, message) {
       if (condition) throw new Error(message)
     }
-    var name = 'dylink.0'
+    let name = 'dylink.0'
     if (binary instanceof WebAssembly.Module) {
-      var dylinkSection = WebAssembly.Module.customSections(binary, name)
+      let dylinkSection = WebAssembly.Module.customSections(binary, name)
       if (dylinkSection.length === 0) {
         name = 'dylink'
         dylinkSection = WebAssembly.Module.customSections(binary, name)
@@ -4172,18 +4172,18 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       binary = new Uint8Array(dylinkSection[0])
       end = binary.length
     } else {
-      var int32View = new Uint32Array(
+      const int32View = new Uint32Array(
         new Uint8Array(binary.subarray(0, 24)).buffer,
       )
-      var magicNumberFound = int32View[0] == 1836278016
+      const magicNumberFound = int32View[0] == 1836278016
       failIf(!magicNumberFound, 'need to see wasm magic number')
       failIf(binary[8] !== 0, 'need the dylink section to be first')
       offset = 9
-      var section_size = getLEB()
+      const section_size = getLEB()
       end = offset + section_size
       name = getString()
     }
-    var customSection = {
+    const customSection = {
       neededDynlibs: [],
       tlsExports: new Set(),
       weakImports: new Set(),
@@ -4193,49 +4193,49 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       customSection.memoryAlign = getLEB()
       customSection.tableSize = getLEB()
       customSection.tableAlign = getLEB()
-      var neededDynlibsCount = getLEB()
-      for (var i = 0; i < neededDynlibsCount; ++i) {
-        var libname = getString()
+      let neededDynlibsCount = getLEB()
+      for (let i = 0; i < neededDynlibsCount; ++i) {
+        let libname = getString()
         customSection.neededDynlibs.push(libname)
       }
     } else {
       failIf(name !== 'dylink.0')
-      var WASM_DYLINK_MEM_INFO = 1
-      var WASM_DYLINK_NEEDED = 2
-      var WASM_DYLINK_EXPORT_INFO = 3
-      var WASM_DYLINK_IMPORT_INFO = 4
-      var WASM_SYMBOL_TLS = 256
-      var WASM_SYMBOL_BINDING_MASK = 3
-      var WASM_SYMBOL_BINDING_WEAK = 1
+      const WASM_DYLINK_MEM_INFO = 1
+      const WASM_DYLINK_NEEDED = 2
+      const WASM_DYLINK_EXPORT_INFO = 3
+      const WASM_DYLINK_IMPORT_INFO = 4
+      const WASM_SYMBOL_TLS = 256
+      const WASM_SYMBOL_BINDING_MASK = 3
+      const WASM_SYMBOL_BINDING_WEAK = 1
       while (offset < end) {
-        var subsectionType = getU8()
-        var subsectionSize = getLEB()
+        const subsectionType = getU8()
+        const subsectionSize = getLEB()
         if (subsectionType === WASM_DYLINK_MEM_INFO) {
           customSection.memorySize = getLEB()
           customSection.memoryAlign = getLEB()
           customSection.tableSize = getLEB()
           customSection.tableAlign = getLEB()
         } else if (subsectionType === WASM_DYLINK_NEEDED) {
-          var neededDynlibsCount = getLEB()
-          for (var i = 0; i < neededDynlibsCount; ++i) {
+          let neededDynlibsCount = getLEB()
+          for (let i = 0; i < neededDynlibsCount; ++i) {
             libname = getString()
             customSection.neededDynlibs.push(libname)
           }
         } else if (subsectionType === WASM_DYLINK_EXPORT_INFO) {
-          var count = getLEB()
+          let count = getLEB()
           while (count--) {
-            var symname = getString()
-            var flags = getLEB()
+            let symname = getString()
+            let flags = getLEB()
             if (flags & WASM_SYMBOL_TLS) {
               customSection.tlsExports.add(symname)
             }
           }
         } else if (subsectionType === WASM_DYLINK_IMPORT_INFO) {
-          var count = getLEB()
+          let count = getLEB()
           while (count--) {
-            var modname = getString()
-            var symname = getString()
-            var flags = getLEB()
+            const modname = getString()
+            let symname = getString()
+            let flags = getLEB()
             if (
               (flags & WASM_SYMBOL_BINDING_MASK) ==
               WASM_SYMBOL_BINDING_WEAK
@@ -4273,34 +4273,35 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         abort(`invalid type for getValue: ${type}`)
     }
   }
-  var newDSO = (name, handle, syms) => {
-    var dso = { refcount: Infinity, name, exports: syms, global: true }
+  const newDSO = (name, handle, syms) => {
+    const dso = { refcount: Infinity, name, exports: syms, global: true }
     LDSO.loadedLibsByName[name] = dso
     if (handle != undefined) {
       LDSO.loadedLibsByHandle[handle] = dso
     }
     return dso
   }
-  var LDSO = {
+  let LDSO = {
     loadedLibsByName: {},
     loadedLibsByHandle: {},
     init() {
       newDSO('__main__', 0, wasmImports)
     },
   }
-  var ___heap_base = 11373728
-  var alignMemory = (size, alignment) => Math.ceil(size / alignment) * alignment
-  var getMemory = (size) => {
+  let ___heap_base = 11373728
+  const alignMemory = (size, alignment) =>
+    Math.ceil(size / alignment) * alignment
+  const getMemory = (size) => {
     if (runtimeInitialized) {
       return _calloc(size, 1)
     }
-    var ret = ___heap_base
-    var end = ret + alignMemory(size, 16)
+    const ret = ___heap_base
+    const end = ret + alignMemory(size, 16)
     ___heap_base = end
     GOT['__heap_base'].value = end
     return ret
   }
-  var isInternalSym = (symName) =>
+  const isInternalSym = (symName) =>
     [
       '__cpp_exception',
       '__c_longjmp',
@@ -4317,15 +4318,15 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       '__start_em_js',
       '__stop_em_js',
     ].includes(symName) || symName.startsWith('__em_js__')
-  var uleb128Encode = (n, target) => {
+  const uleb128Encode = (n, target) => {
     if (n < 128) {
       target.push(n)
     } else {
       target.push(n % 128 | 128, n >> 7)
     }
   }
-  var sigToWasmTypes = (sig) => {
-    var typeNames = {
+  const sigToWasmTypes = (sig) => {
+    const typeNames = {
       i: 'i32',
       j: 'i64',
       f: 'f32',
@@ -4333,22 +4334,22 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       e: 'externref',
       p: 'i32',
     }
-    var type = {
+    const type = {
       parameters: [],
       results: sig[0] == 'v' ? [] : [typeNames[sig[0]]],
     }
-    for (var i = 1; i < sig.length; ++i) {
+    for (let i = 1; i < sig.length; ++i) {
       type.parameters.push(typeNames[sig[i]])
     }
     return type
   }
-  var generateFuncType = (sig, target) => {
-    var sigRet = sig.slice(0, 1)
-    var sigParam = sig.slice(1)
-    var typeCodes = { i: 127, p: 127, j: 126, f: 125, d: 124, e: 111 }
+  const generateFuncType = (sig, target) => {
+    const sigRet = sig.slice(0, 1)
+    const sigParam = sig.slice(1)
+    const typeCodes = { i: 127, p: 127, j: 126, f: 125, d: 124, e: 111 }
     target.push(96)
     uleb128Encode(sigParam.length, target)
-    for (var i = 0; i < sigParam.length; ++i) {
+    for (let i = 0; i < sigParam.length; ++i) {
       target.push(typeCodes[sigParam[i]])
     }
     if (sigRet == 'v') {
@@ -4357,25 +4358,25 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       target.push(1, typeCodes[sigRet])
     }
   }
-  var convertJsFunctionToWasm = (func, sig) => {
+  const convertJsFunctionToWasm = (func, sig) => {
     if (typeof WebAssembly.Function == 'function') {
       return new WebAssembly.Function(sigToWasmTypes(sig), func)
     }
-    var typeSectionBody = [1]
+    const typeSectionBody = [1]
     generateFuncType(sig, typeSectionBody)
-    var bytes = [0, 97, 115, 109, 1, 0, 0, 0, 1]
+    const bytes = [0, 97, 115, 109, 1, 0, 0, 0, 1]
     uleb128Encode(typeSectionBody.length, bytes)
     bytes.push(...typeSectionBody)
     bytes.push(2, 7, 1, 1, 101, 1, 102, 0, 0, 7, 5, 1, 1, 102, 0, 0)
-    var module = new WebAssembly.Module(new Uint8Array(bytes))
-    var instance = new WebAssembly.Instance(module, { e: { f: func } })
-    var wrappedFunc = instance.exports['f']
+    const module = new WebAssembly.Module(new Uint8Array(bytes))
+    const instance = new WebAssembly.Instance(module, { e: { f: func } })
+    const wrappedFunc = instance.exports['f']
     return wrappedFunc
   }
-  var wasmTableMirror = []
-  var wasmTable = new WebAssembly.Table({ initial: 7367, element: 'anyfunc' })
-  var getWasmTableEntry = (funcPtr) => {
-    var func = wasmTableMirror[funcPtr]
+  const wasmTableMirror = []
+  const wasmTable = new WebAssembly.Table({ initial: 7367, element: 'anyfunc' })
+  const getWasmTableEntry = (funcPtr) => {
+    let func = wasmTableMirror[funcPtr]
     if (!func) {
       if (funcPtr >= wasmTableMirror.length)
         wasmTableMirror.length = funcPtr + 1
@@ -4383,26 +4384,26 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
     return func
   }
-  var updateTableMap = (offset, count) => {
+  const updateTableMap = (offset, count) => {
     if (functionsInTableMap) {
-      for (var i = offset; i < offset + count; i++) {
-        var item = getWasmTableEntry(i)
+      for (let i = offset; i < offset + count; i++) {
+        const item = getWasmTableEntry(i)
         if (item) {
           functionsInTableMap.set(item, i)
         }
       }
     }
   }
-  var functionsInTableMap
-  var getFunctionAddress = (func) => {
+  let functionsInTableMap
+  const getFunctionAddress = (func) => {
     if (!functionsInTableMap) {
       functionsInTableMap = new WeakMap()
       updateTableMap(0, wasmTable.length)
     }
     return functionsInTableMap.get(func) || 0
   }
-  var freeTableIndexes = []
-  var getEmptyTableSlot = () => {
+  const freeTableIndexes = []
+  const getEmptyTableSlot = () => {
     if (freeTableIndexes.length) {
       return freeTableIndexes.pop()
     }
@@ -4416,34 +4417,34 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
     return wasmTable.length - 1
   }
-  var setWasmTableEntry = (idx, func) => {
+  const setWasmTableEntry = (idx, func) => {
     wasmTable.set(idx, func)
     wasmTableMirror[idx] = wasmTable.get(idx)
   }
-  var addFunction = (func, sig) => {
-    var rtn = getFunctionAddress(func)
+  const addFunction = (func, sig) => {
+    const rtn = getFunctionAddress(func)
     if (rtn) {
       return rtn
     }
-    var ret = getEmptyTableSlot()
+    const ret = getEmptyTableSlot()
     try {
       setWasmTableEntry(ret, func)
     } catch (err) {
       if (!(err instanceof TypeError)) {
         throw err
       }
-      var wrapped = convertJsFunctionToWasm(func, sig)
+      const wrapped = convertJsFunctionToWasm(func, sig)
       setWasmTableEntry(ret, wrapped)
     }
     functionsInTableMap.set(func, ret)
     return ret
   }
-  var updateGOT = (exports, replace) => {
-    for (var symName in exports) {
+  const updateGOT = (exports, replace) => {
+    for (const symName in exports) {
       if (isInternalSym(symName)) {
         continue
       }
-      var value = exports[symName]
+      const value = exports[symName]
       GOT[symName] ||= new WebAssembly.Global({ value: 'i32', mutable: true })
       if (replace || GOT[symName].value == 0) {
         if (typeof value == 'function') {
@@ -4456,10 +4457,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       }
     }
   }
-  var relocateExports = (exports, memoryBase, replace) => {
-    var relocated = {}
-    for (var e in exports) {
-      var value = exports[e]
+  let relocateExports = (exports, memoryBase, replace) => {
+    const relocated = {}
+    for (const e in exports) {
+      let value = exports[e]
       if (typeof value == 'object') {
         value = value.value
       }
@@ -4471,23 +4472,23 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     updateGOT(relocated, replace)
     return relocated
   }
-  var isSymbolDefined = (symName) => {
-    var existing = wasmImports[symName]
+  const isSymbolDefined = (symName) => {
+    const existing = wasmImports[symName]
     if (!existing || existing.stub) {
       return false
     }
     return true
   }
-  var dynCall = (sig, ptr, args = []) => {
-    var rtn = getWasmTableEntry(ptr)(...args)
+  const dynCall = (sig, ptr, args = []) => {
+    const rtn = getWasmTableEntry(ptr)(...args)
     return rtn
   }
-  var stackSave = () => _emscripten_stack_get_current()
-  var stackRestore = (val) => __emscripten_stack_restore(val)
-  var createInvokeFunction =
+  const stackSave = () => _emscripten_stack_get_current()
+  const stackRestore = (val) => __emscripten_stack_restore(val)
+  const createInvokeFunction =
     (sig) =>
     (ptr, ...args) => {
-      var sp = stackSave()
+      const sp = stackSave()
       try {
         return dynCall(sig, ptr, args)
       } catch (e) {
@@ -4497,8 +4498,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         if (sig[0] == 'j') return 0n
       }
     }
-  var resolveGlobalSymbol = (symName, direct = false) => {
-    var sym
+  const resolveGlobalSymbol = (symName, direct = false) => {
+    let sym
     if (isSymbolDefined(symName)) {
       sym = wasmImports[symName]
     } else if (symName.startsWith('invoke_')) {
@@ -4506,19 +4507,27 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
     return { sym, name: symName }
   }
-  var UTF8ToString = (ptr, maxBytesToRead) =>
+  const UTF8ToString = (ptr, maxBytesToRead) =>
     ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead) : ''
-  var loadWebAssemblyModule = (binary, flags, libName, localScope, handle) => {
-    var metadata = getDylinkMetadata(binary)
+  const loadWebAssemblyModule = (
+    binary,
+    flags,
+    libName,
+    localScope,
+    handle,
+  ) => {
+    const metadata = getDylinkMetadata(binary)
     currentModuleWeakSymbols = metadata.weakImports
     function loadModule() {
-      var firstLoad = !handle || !HEAP8[handle + 8]
+      const firstLoad = !handle || !HEAP8[handle + 8]
+      let memoryBase
+      let tableBase
       if (firstLoad) {
-        var memAlign = Math.pow(2, metadata.memoryAlign)
-        var memoryBase = metadata.memorySize
+        const memAlign = Math.pow(2, metadata.memoryAlign)
+        memoryBase = metadata.memorySize
           ? alignMemory(getMemory(metadata.memorySize + memAlign), memAlign)
           : 0
-        var tableBase = metadata.tableSize ? wasmTable.length : 0
+        tableBase = metadata.tableSize ? wasmTable.length : 0
         if (handle) {
           HEAP8[handle + 8] = 1
           HEAPU32[(handle + 12) >> 2] = memoryBase
@@ -4530,13 +4539,14 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         memoryBase = HEAPU32[(handle + 12) >> 2]
         tableBase = HEAPU32[(handle + 20) >> 2]
       }
-      var tableGrowthNeeded = tableBase + metadata.tableSize - wasmTable.length
+      const tableGrowthNeeded =
+        tableBase + metadata.tableSize - wasmTable.length
       if (tableGrowthNeeded > 0) {
         wasmTable.grow(tableGrowthNeeded)
       }
-      var moduleExports
+      let moduleExports
       function resolveSymbol(sym) {
-        var resolved = resolveGlobalSymbol(sym).sym
+        let resolved = resolveGlobalSymbol(sym).sym
         if (!resolved && localScope) {
           resolved = localScope[sym]
         }
@@ -4545,7 +4555,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         }
         return resolved
       }
-      var proxyHandler = {
+      const proxyHandler = {
         get(stubs, prop) {
           switch (prop) {
             case '__memory_base':
@@ -4557,7 +4567,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
             return wasmImports[prop]
           }
           if (!(prop in stubs)) {
-            var resolved
+            let resolved
             stubs[prop] = (...args) => {
               resolved ||= resolveSymbol(prop)
               return resolved(...args)
@@ -4566,8 +4576,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
           return stubs[prop]
         },
       }
-      var proxy = new Proxy({}, proxyHandler)
-      var info = {
+      const proxy = new Proxy({}, proxyHandler)
+      const info = {
         'GOT.mem': new Proxy({}, GOTHandler),
         'GOT.func': new Proxy({}, GOTHandler),
         env: proxy,
@@ -4580,8 +4590,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
           reportUndefinedSymbols()
         }
         function addEmAsm(addr, body) {
-          var args = []
-          var arity = 0
+          let args = []
+          let arity = 0
           for (; arity < 16; arity++) {
             if (body.indexOf('$' + arity) != -1) {
               args.push('$' + arity)
@@ -4590,41 +4600,41 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
             }
           }
           args = args.join(',')
-          var func = `(${args}) => { ${body} };`
+          const func = `(${args}) => { ${body} };`
           ASM_CONSTS[start] = eval(func)
         }
         if ('__start_em_asm' in moduleExports) {
-          var start = moduleExports['__start_em_asm']
-          var stop = moduleExports['__stop_em_asm']
+          let start = moduleExports['__start_em_asm']
+          const stop = moduleExports['__stop_em_asm']
           while (start < stop) {
-            var jsString = UTF8ToString(start)
+            let jsString = UTF8ToString(start)
             addEmAsm(start, jsString)
             start = HEAPU8.indexOf(0, start) + 1
           }
         }
         function addEmJs(name, cSig, body) {
-          var jsArgs = []
+          const jsArgs = []
           cSig = cSig.slice(1, -1)
           if (cSig != 'void') {
             cSig = cSig.split(',')
-            for (var i in cSig) {
-              var jsArg = cSig[i].split(' ').pop()
+            for (const i in cSig) {
+              const jsArg = cSig[i].split(' ').pop()
               jsArgs.push(jsArg.replace('*', ''))
             }
           }
-          var func = `(${jsArgs}) => ${body};`
+          const func = `(${jsArgs}) => ${body};`
           moduleExports[name] = eval(func)
         }
-        for (var name in moduleExports) {
+        for (const name in moduleExports) {
           if (name.startsWith('__em_js__')) {
-            var start = moduleExports[name]
-            var jsString = UTF8ToString(start)
-            var parts = jsString.split('<::>')
+            let start = moduleExports[name]
+            let jsString = UTF8ToString(start)
+            const parts = jsString.split('<::>')
             addEmJs(name.replace('__em_js__', ''), parts[0], parts[1])
             delete moduleExports[name]
           }
         }
-        var applyRelocs = moduleExports['__wasm_apply_data_relocs']
+        const applyRelocs = moduleExports['__wasm_apply_data_relocs']
         if (applyRelocs) {
           if (runtimeInitialized) {
             applyRelocs()
@@ -4632,7 +4642,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
             __RELOC_FUNCS__.push(applyRelocs)
           }
         }
-        var init = moduleExports['__wasm_call_ctors']
+        const init = moduleExports['__wasm_call_ctors']
         if (init) {
           if (runtimeInitialized) {
             init()
@@ -4644,18 +4654,18 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       }
       if (flags.loadAsync) {
         if (binary instanceof WebAssembly.Module) {
-          var instance = new WebAssembly.Instance(binary, info)
+          let instance = new WebAssembly.Instance(binary, info)
           return Promise.resolve(postInstantiation(binary, instance))
         }
         return WebAssembly.instantiate(binary, info).then((result) =>
           postInstantiation(result.module, result.instance),
         )
       }
-      var module =
+      const module =
         binary instanceof WebAssembly.Module
           ? binary
           : new WebAssembly.Module(binary)
-      var instance = new WebAssembly.Instance(module, info)
+      let instance = new WebAssembly.Instance(module, info)
       return postInstantiation(module, instance)
     }
     if (flags.loadAsync) {
@@ -4672,8 +4682,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     )
     return loadModule()
   }
-  var mergeLibSymbols = (exports, libName) => {
-    for (var [sym, exp] of Object.entries(exports)) {
+  let mergeLibSymbols = (exports, libName) => {
+    for (let [sym, exp] of Object.entries(exports)) {
       const setImport = (target) => {
         if (!isSymbolDefined(target)) {
           wasmImports[target] = exp
@@ -4689,13 +4699,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       }
     }
   }
-  var asyncLoad = async (url) => {
-    var arrayBuffer = await readAsync(url)
+  const asyncLoad = async (url) => {
+    const arrayBuffer = await readAsync(url)
     return new Uint8Array(arrayBuffer)
   }
-  var preloadPlugins = Module['preloadPlugins'] || []
-  var registerWasmPlugin = () => {
-    var wasmPlugin = {
+  const preloadPlugins = Module['preloadPlugins'] || []
+  const registerWasmPlugin = () => {
+    let wasmPlugin = {
       promiseChainEnd: Promise.resolve(),
       canHandle: (name) => !Module['noWasmDecoding'] && name.endsWith('.so'),
       handle: (byteArray, name, onload, onerror) => {
@@ -4722,14 +4732,14 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
     preloadPlugins.push(wasmPlugin)
   }
-  var preloadedWasm = {}
+  let preloadedWasm = {}
   function loadDynamicLibrary(
     libName,
     flags = { global: true, nodelete: true },
     localScope,
     handle,
   ) {
-    var dso = LDSO.loadedLibsByName[libName]
+    let dso = LDSO.loadedLibsByName[libName]
     if (dso) {
       if (!flags.global) {
         if (localScope) {
@@ -4753,14 +4763,14 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     dso.global = flags.global
     function loadLibData() {
       if (handle) {
-        var data = HEAPU32[(handle + 28) >> 2]
-        var dataSize = HEAPU32[(handle + 32) >> 2]
+        const data = HEAPU32[(handle + 28) >> 2]
+        const dataSize = HEAPU32[(handle + 32) >> 2]
         if (data && dataSize) {
-          var libData = HEAP8.slice(data, data + dataSize)
+          const libData = HEAP8.slice(data, data + dataSize)
           return flags.loadAsync ? Promise.resolve(libData) : libData
         }
       }
-      var libFile = locateFile(libName)
+      const libFile = locateFile(libName)
       if (flags.loadAsync) {
         return asyncLoad(libFile)
       }
@@ -4772,7 +4782,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return readBinary(libFile)
     }
     function getExports() {
-      var preloaded = preloadedWasm[libName]
+      const preloaded = preloadedWasm[libName]
       if (preloaded) {
         return flags.loadAsync ? Promise.resolve(preloaded) : preloaded
       }
@@ -4806,10 +4816,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     moduleLoaded(getExports())
     return true
   }
-  var reportUndefinedSymbols = () => {
-    for (var [symName, entry] of Object.entries(GOT)) {
+  let reportUndefinedSymbols = () => {
+    for (const [symName, entry] of Object.entries(GOT)) {
       if (entry.value == 0) {
-        var value = resolveGlobalSymbol(symName, true).sym
+        const value = resolveGlobalSymbol(symName, true).sym
         if (!value && !entry.required) {
           continue
         }
@@ -4823,7 +4833,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       }
     }
   }
-  var loadDylibs = () => {
+  let loadDylibs = () => {
     if (!dynamicLibraries.length) {
       reportUndefinedSymbols()
       return
@@ -4847,7 +4857,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         removeRunDependency('loadDylibs')
       })
   }
-  var noExitRuntime = Module['noExitRuntime'] || false
+  let noExitRuntime = Module['noExitRuntime'] || false
   function setValue(ptr, value, type = 'i8') {
     if (type.endsWith('*')) type = '*'
     switch (type) {
@@ -4879,7 +4889,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         abort(`invalid type for setValue: ${type}`)
     }
   }
-  var ___assert_fail = (condition, filename, line, func) =>
+  const ___assert_fail = (condition, filename, line, func) =>
     abort(
       `Assertion failed: ${UTF8ToString(condition)}, at: ` +
         [
@@ -4889,19 +4899,19 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         ],
     )
   ___assert_fail.sig = 'vppip'
-  var ___call_sighandler = (fp, sig) => getWasmTableEntry(fp)(sig)
+  const ___call_sighandler = (fp, sig) => getWasmTableEntry(fp)(sig)
   ___call_sighandler.sig = 'vpi'
-  var ___memory_base = new WebAssembly.Global(
+  const ___memory_base = new WebAssembly.Global(
     { value: 'i32', mutable: false },
     1024,
   )
   Module['___memory_base'] = ___memory_base
-  var ___stack_pointer = new WebAssembly.Global(
+  const ___stack_pointer = new WebAssembly.Global(
     { value: 'i32', mutable: true },
     11373728,
   )
   Module['___stack_pointer'] = ___stack_pointer
-  var initRandomFill = () => {
+  const initRandomFill = () => {
     if (
       typeof crypto == 'object' &&
       typeof crypto['getRandomValues'] == 'function'
@@ -4909,24 +4919,24 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return (view) => crypto.getRandomValues(view)
     } else if (ENVIRONMENT_IS_NODE) {
       try {
-        var crypto_module = crypto
-        var randomFillSync = crypto_module['randomFillSync']
+        const crypto_module = crypto
+        const randomFillSync = crypto_module['randomFillSync']
         if (randomFillSync) {
           return (view) => crypto_module['randomFillSync'](view)
         }
-        var randomBytes = crypto_module['randomBytes']
+        const randomBytes = crypto_module['randomBytes']
         return (view) => (view.set(randomBytes(view.byteLength)), view)
       } catch (e) {}
     }
     abort('initRandomDevice')
   }
-  var randomFill = (view) => (randomFill = initRandomFill())(view)
-  var PATH_FS = {
+  let randomFill = (view) => (randomFill = initRandomFill())(view)
+  let PATH_FS = {
     resolve: (...args) => {
-      var resolvedPath = '',
+      let resolvedPath = '',
         resolvedAbsolute = false
-      for (var i = args.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-        var path = i >= 0 ? args[i] : FS.cwd()
+      for (let i = args.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+        const path = i >= 0 ? args[i] : FS.cwd()
         if (typeof path != 'string') {
           throw new TypeError('Arguments to path.resolve must be strings')
         } else if (!path) {
@@ -4945,44 +4955,44 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       from = PATH_FS.resolve(from).substr(1)
       to = PATH_FS.resolve(to).substr(1)
       function trim(arr) {
-        var start = 0
+        let start = 0
         for (; start < arr.length; start++) {
           if (arr[start] !== '') break
         }
-        var end = arr.length - 1
+        let end = arr.length - 1
         for (; end >= 0; end--) {
           if (arr[end] !== '') break
         }
         if (start > end) return []
         return arr.slice(start, end - start + 1)
       }
-      var fromParts = trim(from.split('/'))
-      var toParts = trim(to.split('/'))
-      var length = Math.min(fromParts.length, toParts.length)
-      var samePartsLength = length
-      for (var i = 0; i < length; i++) {
+      const fromParts = trim(from.split('/'))
+      const toParts = trim(to.split('/'))
+      const length = Math.min(fromParts.length, toParts.length)
+      let samePartsLength = length
+      for (let i = 0; i < length; i++) {
         if (fromParts[i] !== toParts[i]) {
           samePartsLength = i
           break
         }
       }
-      var outputParts = []
-      for (var i = samePartsLength; i < fromParts.length; i++) {
+      let outputParts = []
+      for (let i = samePartsLength; i < fromParts.length; i++) {
         outputParts.push('..')
       }
       outputParts = outputParts.concat(toParts.slice(samePartsLength))
       return outputParts.join('/')
     },
   }
-  var FS_stdin_getChar_buffer = []
-  var FS_stdin_getChar = () => {
+  let FS_stdin_getChar_buffer = []
+  const FS_stdin_getChar = () => {
     if (!FS_stdin_getChar_buffer.length) {
-      var result = null
+      let result = null
       if (ENVIRONMENT_IS_NODE) {
-        var BUFSIZE = 256
-        var buf = Buffer.alloc(BUFSIZE)
-        var bytesRead = 0
-        var fd = process.stdin.fd
+        const BUFSIZE = 256
+        const buf = Buffer.alloc(BUFSIZE)
+        let bytesRead = 0
+        const fd = process.stdin.fd
         try {
           bytesRead = fs.readSync(fd, buf, 0, BUFSIZE)
         } catch (e) {
@@ -5000,7 +5010,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
     return FS_stdin_getChar_buffer.shift()
   }
-  var TTY = {
+  let TTY = {
     ttys: [],
     init() {},
     shutdown() {},
@@ -5010,7 +5020,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     },
     stream_ops: {
       open(stream) {
-        var tty = TTY.ttys[stream.node.rdev]
+        const tty = TTY.ttys[stream.node.rdev]
         if (!tty) {
           throw new FS.ErrnoError(43)
         }
@@ -5027,9 +5037,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         if (!stream.tty || !stream.tty.ops.get_char) {
           throw new FS.ErrnoError(60)
         }
-        var bytesRead = 0
-        for (var i = 0; i < length; i++) {
-          var result
+        let bytesRead = 0
+        for (let i = 0; i < length; i++) {
+          let result
           try {
             result = stream.tty.ops.get_char(stream.tty)
           } catch (e) {
@@ -5051,8 +5061,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         if (!stream.tty || !stream.tty.ops.put_char) {
           throw new FS.ErrnoError(60)
         }
+        let i = 0
         try {
-          for (var i = 0; i < length; i++) {
+          for (; i < length; i++) {
             stream.tty.ops.put_char(stream.tty, buffer[offset + i])
           }
         } catch (e) {
@@ -5118,16 +5129,16 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       },
     },
   }
-  var zeroMemory = (address, size) => {
+  const zeroMemory = (address, size) => {
     HEAPU8.fill(0, address, address + size)
   }
-  var mmapAlloc = (size) => {
+  const mmapAlloc = (size) => {
     size = alignMemory(size, 65536)
-    var ptr = _emscripten_builtin_memalign(65536, size)
+    const ptr = _emscripten_builtin_memalign(65536, size)
     if (ptr) zeroMemory(ptr, size)
     return ptr
   }
-  var MEMFS = {
+  let MEMFS = {
     ops_table: null,
     mount(mount) {
       return MEMFS.createNode(null, '/', 16895, 0)
@@ -5181,7 +5192,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
           stream: FS.chrdev_stream_ops,
         },
       }
-      var node = FS.createNode(parent, name, mode, dev)
+      const node = FS.createNode(parent, name, mode, dev)
       if (FS.isDir(node.mode)) {
         node.node_ops = MEMFS.ops_table.dir.node
         node.stream_ops = MEMFS.ops_table.dir.stream
@@ -5212,16 +5223,16 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return new Uint8Array(node.contents)
     },
     expandFileStorage(node, newCapacity) {
-      var prevCapacity = node.contents ? node.contents.length : 0
+      const prevCapacity = node.contents ? node.contents.length : 0
       if (prevCapacity >= newCapacity) return
-      var CAPACITY_DOUBLING_MAX = 1024 * 1024
+      const CAPACITY_DOUBLING_MAX = 1024 * 1024
       newCapacity = Math.max(
         newCapacity,
         (prevCapacity * (prevCapacity < CAPACITY_DOUBLING_MAX ? 2 : 1.125)) >>>
           0,
       )
       if (prevCapacity != 0) newCapacity = Math.max(newCapacity, 256)
-      var oldContents = node.contents
+      const oldContents = node.contents
       node.contents = new Uint8Array(newCapacity)
       if (node.usedBytes > 0)
         node.contents.set(oldContents.subarray(0, node.usedBytes), 0)
@@ -5232,7 +5243,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         node.contents = null
         node.usedBytes = 0
       } else {
-        var oldContents = node.contents
+        const oldContents = node.contents
         node.contents = new Uint8Array(newSize)
         if (oldContents) {
           node.contents.set(
@@ -5244,7 +5255,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     },
     node_ops: {
       getattr(node) {
-        var attr = {}
+        const attr = {}
         attr.dev = FS.isChrdev(node.mode) ? node.id : 1
         attr.ino = node.id
         attr.mode = node.mode
@@ -5285,13 +5296,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         return MEMFS.createNode(parent, name, mode, dev)
       },
       rename(old_node, new_dir, new_name) {
-        var new_node
+        let new_node
         try {
           new_node = FS.lookupNode(new_dir, new_name)
         } catch (e) {}
         if (new_node) {
           if (FS.isDir(old_node.mode)) {
-            for (var i in new_node.contents) {
+            for (const i in new_node.contents) {
               throw new FS.ErrnoError(55)
             }
           }
@@ -5311,8 +5322,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         parent.ctime = parent.mtime = Date.now()
       },
       rmdir(parent, name) {
-        var node = FS.lookupNode(parent, name)
-        for (var i in node.contents) {
+        const node = FS.lookupNode(parent, name)
+        for (const i in node.contents) {
           throw new FS.ErrnoError(55)
         }
         delete parent.contents[name]
@@ -5322,7 +5333,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         return ['.', '..', ...Object.keys(node.contents)]
       },
       symlink(parent, newname, oldpath) {
-        var node = MEMFS.createNode(parent, newname, 511 | 40960, 0)
+        const node = MEMFS.createNode(parent, newname, 511 | 40960, 0)
         node.link = oldpath
         return node
       },
@@ -5335,13 +5346,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     },
     stream_ops: {
       read(stream, buffer, offset, length, position) {
-        var contents = stream.node.contents
+        const contents = stream.node.contents
         if (position >= stream.node.usedBytes) return 0
-        var size = Math.min(stream.node.usedBytes - position, length)
+        const size = Math.min(stream.node.usedBytes - position, length)
         if (size > 8 && contents.subarray) {
           buffer.set(contents.subarray(position, position + size), offset)
         } else {
-          for (var i = 0; i < size; i++)
+          for (let i = 0; i < size; i++)
             buffer[offset + i] = contents[position + i]
         }
         return size
@@ -5351,7 +5362,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
           canOwn = false
         }
         if (!length) return 0
-        var node = stream.node
+        const node = stream.node
         node.mtime = node.ctime = Date.now()
         if (buffer.subarray && (!node.contents || node.contents.subarray)) {
           if (canOwn) {
@@ -5374,7 +5385,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         if (node.contents.subarray && buffer.subarray) {
           node.contents.set(buffer.subarray(offset, offset + length), position)
         } else {
-          for (var i = 0; i < length; i++) {
+          for (let i = 0; i < length; i++) {
             node.contents[position + i] = buffer[offset + i]
           }
         }
@@ -5382,7 +5393,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         return length
       },
       llseek(stream, offset, whence) {
-        var position = offset
+        let position = offset
         if (whence === 1) {
           position += stream.position
         } else if (whence === 2) {
@@ -5403,9 +5414,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         if (!FS.isFile(stream.node.mode)) {
           throw new FS.ErrnoError(43)
         }
-        var ptr
-        var allocated
-        var contents = stream.node.contents
+        let ptr
+        let allocated
+        let contents = stream.node.contents
         if (!(flags & 2) && contents && contents.buffer === HEAP8.buffer) {
           allocated = false
           ptr = contents.byteOffset
@@ -5438,7 +5449,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       },
     },
   }
-  var FS_createDataFile = (
+  const FS_createDataFile = (
     parent,
     name,
     fileData,
@@ -5448,9 +5459,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) => {
     FS.createDataFile(parent, name, fileData, canRead, canWrite, canOwn)
   }
-  var FS_handledByPreloadPlugin = (byteArray, fullname, finish, onerror) => {
+  const FS_handledByPreloadPlugin = (byteArray, fullname, finish, onerror) => {
     if (typeof Browser != 'undefined') Browser.init()
-    var handled = false
+    let handled = false
     preloadPlugins.forEach((plugin) => {
       if (handled) return
       if (plugin['canHandle'](fullname)) {
@@ -5460,7 +5471,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     })
     return handled
   }
-  var FS_createPreloadedFile = (
+  const FS_createPreloadedFile = (
     parent,
     name,
     url,
@@ -5472,8 +5483,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     canOwn,
     preFinish,
   ) => {
-    var fullname = name ? PATH_FS.resolve(PATH.join2(parent, name)) : parent
-    var dep = getUniqueRunDependency(`cp ${fullname}`)
+    const fullname = name ? PATH_FS.resolve(PATH.join2(parent, name)) : parent
+    const dep = getUniqueRunDependency(`cp ${fullname}`)
     function processData(byteArray) {
       function finish(byteArray) {
         preFinish?.()
@@ -5500,8 +5511,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       processData(url)
     }
   }
-  var FS_modeStringToFlags = (str) => {
-    var flagModes = {
+  const FS_modeStringToFlags = (str) => {
+    const flagModes = {
       r: 0,
       'r+': 2,
       w: 512 | 64 | 1,
@@ -5509,19 +5520,19 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a: 1024 | 64 | 1,
       'a+': 1024 | 64 | 2,
     }
-    var flags = flagModes[str]
+    const flags = flagModes[str]
     if (typeof flags == 'undefined') {
       throw new Error(`Unknown file open mode: ${str}`)
     }
     return flags
   }
-  var FS_getMode = (canRead, canWrite) => {
-    var mode = 0
+  const FS_getMode = (canRead, canWrite) => {
+    let mode = 0
     if (canRead) mode |= 292 | 73
     if (canWrite) mode |= 146
     return mode
   }
-  var ERRNO_CODES = {
+  const ERRNO_CODES = {
     EPERM: 63,
     ENOENT: 44,
     ESRCH: 71,
@@ -5644,11 +5655,11 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     EOWNERDEAD: 62,
     ESTRPIPE: 135,
   }
-  var NODEFS = {
+  let NODEFS = {
     isWindows: false,
     staticInit() {
       NODEFS.isWindows = !!process.platform.match(/^win/)
-      var flags = process.binding('constants')
+      let flags = process.binding('constants')
       if (flags['fs']) {
         flags = flags['fs']
       }
@@ -5666,7 +5677,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       }
     },
     convertNodeCode(e) {
-      var code = e.code
+      const code = e.code
       return ERRNO_CODES[code]
     },
     tryFSOperation(f) {
@@ -5685,14 +5696,14 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       if (!FS.isDir(mode) && !FS.isFile(mode) && !FS.isLink(mode)) {
         throw new FS.ErrnoError(28)
       }
-      var node = FS.createNode(parent, name, mode)
+      const node = FS.createNode(parent, name, mode)
       node.node_ops = NODEFS.node_ops
       node.stream_ops = NODEFS.stream_ops
       return node
     },
     getMode(path) {
       return NODEFS.tryFSOperation(() => {
-        var mode = fs.lstatSync(path).mode
+        let mode = fs.lstatSync(path).mode
         if (NODEFS.isWindows) {
           mode |= (mode & 292) >> 2
         }
@@ -5700,7 +5711,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       })
     },
     realPath(node) {
-      var parts = []
+      const parts = []
       while (node.parent !== node) {
         parts.push(node.name)
         node = node.parent
@@ -5715,8 +5726,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       flags &= ~32768
       flags &= ~524288
       flags &= ~65536
-      var newFlags = 0
-      for (var k in NODEFS.flagsForNodeMap) {
+      let newFlags = 0
+      for (const k in NODEFS.flagsForNodeMap) {
         if (flags & k) {
           newFlags |= NODEFS.flagsForNodeMap[k]
           flags ^= k
@@ -5729,8 +5740,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     },
     node_ops: {
       getattr(node) {
-        var path = NODEFS.realPath(node)
-        var stat
+        const path = NODEFS.realPath(node)
+        let stat
         NODEFS.tryFSOperation(() => (stat = fs.lstatSync(path)))
         if (NODEFS.isWindows) {
           if (!stat.blksize) {
@@ -5758,10 +5769,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         }
       },
       setattr(node, attr) {
-        var path = NODEFS.realPath(node)
+        const path = NODEFS.realPath(node)
         NODEFS.tryFSOperation(() => {
           if (attr.mode !== undefined) {
-            var mode = attr.mode
+            let mode = attr.mode
             if (NODEFS.isWindows) {
               mode &= 384
             }
@@ -5769,8 +5780,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
             node.mode = attr.mode
           }
           if (attr.atime || attr.mtime) {
-            var atime = attr.atime && new Date(attr.atime)
-            var mtime = attr.mtime && new Date(attr.mtime)
+            const atime = attr.atime && new Date(attr.atime)
+            const mtime = attr.mtime && new Date(attr.mtime)
             fs.utimesSync(path, atime, mtime)
           }
           if (attr.size !== undefined) {
@@ -5779,13 +5790,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         })
       },
       lookup(parent, name) {
-        var path = PATH.join2(NODEFS.realPath(parent), name)
-        var mode = NODEFS.getMode(path)
+        const path = PATH.join2(NODEFS.realPath(parent), name)
+        const mode = NODEFS.getMode(path)
         return NODEFS.createNode(parent, name, mode)
       },
       mknod(parent, name, mode, dev) {
-        var node = NODEFS.createNode(parent, name, mode, dev)
-        var path = NODEFS.realPath(node)
+        const node = NODEFS.createNode(parent, name, mode, dev)
+        const path = NODEFS.realPath(node)
         NODEFS.tryFSOperation(() => {
           if (FS.isDir(node.mode)) {
             fs.mkdirSync(path, node.mode)
@@ -5796,8 +5807,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         return node
       },
       rename(oldNode, newDir, newName) {
-        var oldPath = NODEFS.realPath(oldNode)
-        var newPath = PATH.join2(NODEFS.realPath(newDir), newName)
+        const oldPath = NODEFS.realPath(oldNode)
+        const newPath = PATH.join2(NODEFS.realPath(newDir), newName)
         try {
           FS.unlink(newPath)
         } catch (e) {}
@@ -5805,34 +5816,34 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         oldNode.name = newName
       },
       unlink(parent, name) {
-        var path = PATH.join2(NODEFS.realPath(parent), name)
+        const path = PATH.join2(NODEFS.realPath(parent), name)
         NODEFS.tryFSOperation(() => fs.unlinkSync(path))
       },
       rmdir(parent, name) {
-        var path = PATH.join2(NODEFS.realPath(parent), name)
+        const path = PATH.join2(NODEFS.realPath(parent), name)
         NODEFS.tryFSOperation(() => fs.rmdirSync(path))
       },
       readdir(node) {
-        var path = NODEFS.realPath(node)
+        const path = NODEFS.realPath(node)
         return NODEFS.tryFSOperation(() => fs.readdirSync(path))
       },
       symlink(parent, newName, oldPath) {
-        var newPath = PATH.join2(NODEFS.realPath(parent), newName)
+        const newPath = PATH.join2(NODEFS.realPath(parent), newName)
         NODEFS.tryFSOperation(() => fs.symlinkSync(oldPath, newPath))
       },
       readlink(node) {
-        var path = NODEFS.realPath(node)
+        const path = NODEFS.realPath(node)
         return NODEFS.tryFSOperation(() => fs.readlinkSync(path))
       },
       statfs(path) {
-        var stats = NODEFS.tryFSOperation(() => fs.statfsSync(path))
+        const stats = NODEFS.tryFSOperation(() => fs.statfsSync(path))
         stats.frsize = stats.bsize
         return stats
       },
     },
     stream_ops: {
       open(stream) {
-        var path = NODEFS.realPath(stream.node)
+        const path = NODEFS.realPath(stream.node)
         NODEFS.tryFSOperation(() => {
           if (FS.isFile(stream.node.mode)) {
             stream.shared.refcount = 1
@@ -5878,13 +5889,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         )
       },
       llseek(stream, offset, whence) {
-        var position = offset
+        let position = offset
         if (whence === 1) {
           position += stream.position
         } else if (whence === 2) {
           if (FS.isFile(stream.node.mode)) {
             NODEFS.tryFSOperation(() => {
-              var stat = fs.fstatSync(stream.nfd)
+              const stat = fs.fstatSync(stream.nfd)
               position += stat.size
             })
           }
@@ -5898,7 +5909,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         if (!FS.isFile(stream.node.mode)) {
           throw new FS.ErrnoError(43)
         }
-        var ptr = mmapAlloc(length)
+        const ptr = mmapAlloc(length)
         NODEFS.stream_ops.read(stream, HEAP8, ptr, length, position)
         return { ptr, allocated: true }
       },
@@ -5908,7 +5919,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       },
     },
   }
-  var PROXYFS = {
+  let PROXYFS = {
     mount(mount) {
       return PROXYFS.createNode(
         null,
@@ -5921,13 +5932,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       if (!FS.isDir(mode) && !FS.isFile(mode) && !FS.isLink(mode)) {
         throw new FS.ErrnoError(ERRNO_CODES.EINVAL)
       }
-      var node = FS.createNode(parent, name, mode)
+      const node = FS.createNode(parent, name, mode)
       node.node_ops = PROXYFS.node_ops
       node.stream_ops = PROXYFS.stream_ops
       return node
     },
     realPath(node) {
-      var parts = []
+      const parts = []
       while (node.parent !== node) {
         parts.push(node.name)
         node = node.parent
@@ -5938,8 +5949,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     },
     node_ops: {
       getattr(node) {
-        var path = PROXYFS.realPath(node)
-        var stat
+        const path = PROXYFS.realPath(node)
+        let stat
         try {
           stat = node.mount.opts.fs.lstat(path)
         } catch (e) {
@@ -5963,15 +5974,15 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         }
       },
       setattr(node, attr) {
-        var path = PROXYFS.realPath(node)
+        const path = PROXYFS.realPath(node)
         try {
           if (attr.mode !== undefined) {
             node.mount.opts.fs.chmod(path, attr.mode)
             node.mode = attr.mode
           }
           if (attr.atime || attr.mtime) {
-            var atime = new Date(attr.atime || attr.mtime)
-            var mtime = new Date(attr.mtime || attr.atime)
+            const atime = new Date(attr.atime || attr.mtime)
+            const mtime = new Date(attr.mtime || attr.atime)
             node.mount.opts.fs.utime(path, atime, mtime)
           }
           if (attr.size !== undefined) {
@@ -5984,9 +5995,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       },
       lookup(parent, name) {
         try {
-          var path = PATH.join2(PROXYFS.realPath(parent), name)
-          var mode = parent.mount.opts.fs.lstat(path).mode
-          var node = PROXYFS.createNode(parent, name, mode)
+          const path = PATH.join2(PROXYFS.realPath(parent), name)
+          const mode = parent.mount.opts.fs.lstat(path).mode
+          const node = PROXYFS.createNode(parent, name, mode)
           return node
         } catch (e) {
           if (!e.code) throw e
@@ -5994,8 +6005,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         }
       },
       mknod(parent, name, mode, dev) {
-        var node = PROXYFS.createNode(parent, name, mode, dev)
-        var path = PROXYFS.realPath(node)
+        const node = PROXYFS.createNode(parent, name, mode, dev)
+        const path = PROXYFS.realPath(node)
         try {
           if (FS.isDir(node.mode)) {
             node.mount.opts.fs.mkdir(path, node.mode)
@@ -6009,8 +6020,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         return node
       },
       rename(oldNode, newDir, newName) {
-        var oldPath = PROXYFS.realPath(oldNode)
-        var newPath = PATH.join2(PROXYFS.realPath(newDir), newName)
+        const oldPath = PROXYFS.realPath(oldNode)
+        const newPath = PATH.join2(PROXYFS.realPath(newDir), newName)
         try {
           oldNode.mount.opts.fs.rename(oldPath, newPath)
           oldNode.name = newName
@@ -6020,7 +6031,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         }
       },
       unlink(parent, name) {
-        var path = PATH.join2(PROXYFS.realPath(parent), name)
+        const path = PATH.join2(PROXYFS.realPath(parent), name)
         try {
           parent.mount.opts.fs.unlink(path)
         } catch (e) {
@@ -6029,7 +6040,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         }
       },
       rmdir(parent, name) {
-        var path = PATH.join2(PROXYFS.realPath(parent), name)
+        const path = PATH.join2(PROXYFS.realPath(parent), name)
         try {
           parent.mount.opts.fs.rmdir(path)
         } catch (e) {
@@ -6038,7 +6049,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         }
       },
       readdir(node) {
-        var path = PROXYFS.realPath(node)
+        const path = PROXYFS.realPath(node)
         try {
           return node.mount.opts.fs.readdir(path)
         } catch (e) {
@@ -6047,7 +6058,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         }
       },
       symlink(parent, newName, oldPath) {
-        var newPath = PATH.join2(PROXYFS.realPath(parent), newName)
+        const newPath = PATH.join2(PROXYFS.realPath(parent), newName)
         try {
           parent.mount.opts.fs.symlink(oldPath, newPath)
         } catch (e) {
@@ -6056,7 +6067,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         }
       },
       readlink(node) {
-        var path = PROXYFS.realPath(node)
+        const path = PROXYFS.realPath(node)
         try {
           return node.mount.opts.fs.readlink(path)
         } catch (e) {
@@ -6067,7 +6078,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     },
     stream_ops: {
       open(stream) {
-        var path = PROXYFS.realPath(stream.node)
+        const path = PROXYFS.realPath(stream.node)
         try {
           stream.nfd = stream.node.mount.opts.fs.open(path, stream.flags)
         } catch (e) {
@@ -6112,13 +6123,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         }
       },
       llseek(stream, offset, whence) {
-        var position = offset
+        let position = offset
         if (whence === 1) {
           position += stream.position
         } else if (whence === 2) {
           if (FS.isFile(stream.node.mode)) {
             try {
-              var stat = stream.node.node_ops.getattr(stream.node)
+              const stat = stream.node.node_ops.getattr(stream.node)
               position += stat.size
             } catch (e) {
               throw new FS.ErrnoError(ERRNO_CODES[e.code])
@@ -6132,7 +6143,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       },
     },
   }
-  var FS = {
+  let FS = {
     root: null,
     mounts: [],
     devices: {},
@@ -6224,12 +6235,12 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       if (!PATH.isAbs(path)) {
         path = FS.cwd() + '/' + path
       }
-      linkloop: for (var nlinks = 0; nlinks < 40; nlinks++) {
-        var parts = path.split('/').filter((p) => !!p && p !== '.')
-        var current = FS.root
-        var current_path = '/'
-        for (var i = 0; i < parts.length; i++) {
-          var islast = i === parts.length - 1
+      linkloop: for (let nlinks = 0; nlinks < 40; nlinks++) {
+        const parts = path.split('/').filter((p) => !!p && p !== '.')
+        let current = FS.root
+        let current_path = '/'
+        for (let i = 0; i < parts.length; i++) {
+          const islast = i === parts.length - 1
           if (islast && opts.parent) {
             break
           }
@@ -6254,7 +6265,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
             if (!current.node_ops.readlink) {
               throw new FS.ErrnoError(52)
             }
-            var link = current.node_ops.readlink(current)
+            let link = current.node_ops.readlink(current)
             if (!PATH.isAbs(link)) {
               link = PATH.dirname(current_path) + '/' + link
             }
@@ -6267,10 +6278,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       throw new FS.ErrnoError(32)
     },
     getPath(node) {
-      var path
+      let path
       while (true) {
         if (FS.isRoot(node)) {
-          var mount = node.mount.mountpoint
+          const mount = node.mount.mountpoint
           if (!path) return mount
           return mount[mount.length - 1] !== '/'
             ? `${mount}/${path}`
@@ -6281,23 +6292,23 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       }
     },
     hashName(parentid, name) {
-      var hash = 0
-      for (var i = 0; i < name.length; i++) {
+      let hash = 0
+      for (let i = 0; i < name.length; i++) {
         hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0
       }
       return ((parentid + hash) >>> 0) % FS.nameTable.length
     },
     hashAddNode(node) {
-      var hash = FS.hashName(node.parent.id, node.name)
+      const hash = FS.hashName(node.parent.id, node.name)
       node.name_next = FS.nameTable[hash]
       FS.nameTable[hash] = node
     },
     hashRemoveNode(node) {
-      var hash = FS.hashName(node.parent.id, node.name)
+      const hash = FS.hashName(node.parent.id, node.name)
       if (FS.nameTable[hash] === node) {
         FS.nameTable[hash] = node.name_next
       } else {
-        var current = FS.nameTable[hash]
+        let current = FS.nameTable[hash]
         while (current) {
           if (current.name_next === node) {
             current.name_next = node.name_next
@@ -6308,13 +6319,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       }
     },
     lookupNode(parent, name) {
-      var errCode = FS.mayLookup(parent)
+      const errCode = FS.mayLookup(parent)
       if (errCode) {
         throw new FS.ErrnoError(errCode)
       }
-      var hash = FS.hashName(parent.id, name)
-      for (var node = FS.nameTable[hash]; node; node = node.name_next) {
-        var nodeName = node.name
+      const hash = FS.hashName(parent.id, name)
+      for (let node = FS.nameTable[hash]; node; node = node.name_next) {
+        const nodeName = node.name
         if (node.parent.id === parent.id && nodeName === name) {
           return node
         }
@@ -6322,7 +6333,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return FS.lookup(parent, name)
     },
     createNode(parent, name, mode, rdev) {
-      var node = new FS.FSNode(parent, name, mode, rdev)
+      const node = new FS.FSNode(parent, name, mode, rdev)
       FS.hashAddNode(node)
       return node
     },
@@ -6357,7 +6368,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return (mode & 49152) === 49152
     },
     flagsToPermissionString(flag) {
-      var perms = ['r', 'w', 'rw'][flag & 3]
+      let perms = ['r', 'w', 'rw'][flag & 3]
       if (flag & 512) {
         perms += 'w'
       }
@@ -6378,7 +6389,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     },
     mayLookup(dir) {
       if (!FS.isDir(dir.mode)) return 54
-      var errCode = FS.nodePermissions(dir, 'x')
+      const errCode = FS.nodePermissions(dir, 'x')
       if (errCode) return errCode
       if (!dir.node_ops.lookup) return 2
       return 0
@@ -6388,19 +6399,19 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         return 54
       }
       try {
-        var node = FS.lookupNode(dir, name)
+        const node = FS.lookupNode(dir, name)
         return 20
       } catch (e) {}
       return FS.nodePermissions(dir, 'wx')
     },
     mayDelete(dir, name, isdir) {
-      var node
+      let node
       try {
         node = FS.lookupNode(dir, name)
       } catch (e) {
         return e.errno
       }
-      var errCode = FS.nodePermissions(dir, 'wx')
+      const errCode = FS.nodePermissions(dir, 'wx')
       if (errCode) {
         return errCode
       }
@@ -6433,7 +6444,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     },
     MAX_OPEN_FDS: 4096,
     nextfd() {
-      for (var fd = 0; fd <= FS.MAX_OPEN_FDS; fd++) {
+      for (let fd = 0; fd <= FS.MAX_OPEN_FDS; fd++) {
         if (!FS.streams[fd]) {
           return fd
         }
@@ -6441,7 +6452,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       throw new FS.ErrnoError(33)
     },
     getStreamChecked(fd) {
-      var stream = FS.getStream(fd)
+      const stream = FS.getStream(fd)
       if (!stream) {
         throw new FS.ErrnoError(8)
       }
@@ -6461,13 +6472,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       FS.streams[fd] = null
     },
     dupStream(origStream, fd = -1) {
-      var stream = FS.createStream(origStream, fd)
+      const stream = FS.createStream(origStream, fd)
       stream.stream_ops?.dup?.(stream)
       return stream
     },
     chrdev_stream_ops: {
       open(stream) {
-        var device = FS.getDevice(stream.node.rdev)
+        const device = FS.getDevice(stream.node.rdev)
         stream.stream_ops = device.stream_ops
         stream.stream_ops.open?.(stream)
       },
@@ -6483,10 +6494,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     },
     getDevice: (dev) => FS.devices[dev],
     getMounts(mount) {
-      var mounts = []
-      var check = [mount]
+      const mounts = []
+      const check = [mount]
       while (check.length) {
-        var m = check.pop()
+        const m = check.pop()
         mounts.push(m)
         check.push(...m.mounts)
       }
@@ -6503,8 +6514,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
           `warning: ${FS.syncFSRequests} FS.syncfs operations in flight at once, probably just doing extra work`,
         )
       }
-      var mounts = FS.getMounts(FS.root.mount)
-      var completed = 0
+      const mounts = FS.getMounts(FS.root.mount)
+      let completed = 0
       function doCallback(errCode) {
         FS.syncFSRequests--
         return callback(errCode)
@@ -6529,13 +6540,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       })
     },
     mount(type, opts, mountpoint) {
-      var root = mountpoint === '/'
-      var pseudo = !mountpoint
-      var node
+      const root = mountpoint === '/'
+      const pseudo = !mountpoint
+      let node
       if (root && FS.root) {
         throw new FS.ErrnoError(10)
       } else if (!root && !pseudo) {
-        var lookup = FS.lookupPath(mountpoint, { follow_mount: false })
+        const lookup = FS.lookupPath(mountpoint, { follow_mount: false })
         mountpoint = lookup.path
         node = lookup.node
         if (FS.isMountpoint(node)) {
@@ -6545,8 +6556,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
           throw new FS.ErrnoError(54)
         }
       }
-      var mount = { type, opts, mountpoint, mounts: [] }
-      var mountRoot = type.mount(mount)
+      const mount = { type, opts, mountpoint, mounts: [] }
+      const mountRoot = type.mount(mount)
       mountRoot.mount = mount
       mount.root = mountRoot
       if (root) {
@@ -6560,17 +6571,17 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return mountRoot
     },
     unmount(mountpoint) {
-      var lookup = FS.lookupPath(mountpoint, { follow_mount: false })
+      const lookup = FS.lookupPath(mountpoint, { follow_mount: false })
       if (!FS.isMountpoint(lookup.node)) {
         throw new FS.ErrnoError(28)
       }
-      var node = lookup.node
-      var mount = node.mounted
-      var mounts = FS.getMounts(mount)
+      const node = lookup.node
+      const mount = node.mounted
+      const mounts = FS.getMounts(mount)
       Object.keys(FS.nameTable).forEach((hash) => {
-        var current = FS.nameTable[hash]
+        let current = FS.nameTable[hash]
         while (current) {
-          var next = current.name_next
+          const next = current.name_next
           if (mounts.includes(current.mount)) {
             FS.destroyNode(current)
           }
@@ -6578,20 +6589,20 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         }
       })
       node.mounted = null
-      var idx = node.mount.mounts.indexOf(mount)
+      const idx = node.mount.mounts.indexOf(mount)
       node.mount.mounts.splice(idx, 1)
     },
     lookup(parent, name) {
       return parent.node_ops.lookup(parent, name)
     },
     mknod(path, mode, dev) {
-      var lookup = FS.lookupPath(path, { parent: true })
-      var parent = lookup.node
-      var name = PATH.basename(path)
+      const lookup = FS.lookupPath(path, { parent: true })
+      const parent = lookup.node
+      const name = PATH.basename(path)
       if (!name || name === '.' || name === '..') {
         throw new FS.ErrnoError(28)
       }
-      var errCode = FS.mayCreate(parent, name)
+      const errCode = FS.mayCreate(parent, name)
       if (errCode) {
         throw new FS.ErrnoError(errCode)
       }
@@ -6601,7 +6612,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return parent.node_ops.mknod(parent, name, mode, dev)
     },
     statfs(path) {
-      var rtn = {
+      const rtn = {
         bsize: 4096,
         frsize: 4096,
         blocks: 1e6,
@@ -6613,7 +6624,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         flags: 2,
         namelen: 255,
       }
-      var parent = FS.lookupPath(path, { follow: true }).node
+      const parent = FS.lookupPath(path, { follow: true }).node
       if (parent?.node_ops.statfs) {
         Object.assign(rtn, parent.node_ops.statfs(parent.mount.opts.root))
       }
@@ -6630,9 +6641,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return FS.mknod(path, mode, 0)
     },
     mkdirTree(path, mode) {
-      var dirs = path.split('/')
-      var d = ''
-      for (var i = 0; i < dirs.length; ++i) {
+      const dirs = path.split('/')
+      let d = ''
+      for (let i = 0; i < dirs.length; ++i) {
         if (!dirs[i]) continue
         d += '/' + dirs[i]
         try {
@@ -6654,13 +6665,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       if (!PATH_FS.resolve(oldpath)) {
         throw new FS.ErrnoError(44)
       }
-      var lookup = FS.lookupPath(newpath, { parent: true })
-      var parent = lookup.node
+      const lookup = FS.lookupPath(newpath, { parent: true })
+      const parent = lookup.node
       if (!parent) {
         throw new FS.ErrnoError(44)
       }
-      var newname = PATH.basename(newpath)
-      var errCode = FS.mayCreate(parent, newname)
+      const newname = PATH.basename(newpath)
+      const errCode = FS.mayCreate(parent, newname)
       if (errCode) {
         throw new FS.ErrnoError(errCode)
       }
@@ -6670,11 +6681,11 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return parent.node_ops.symlink(parent, newname, oldpath)
     },
     rename(old_path, new_path) {
-      var old_dirname = PATH.dirname(old_path)
-      var new_dirname = PATH.dirname(new_path)
-      var old_name = PATH.basename(old_path)
-      var new_name = PATH.basename(new_path)
-      var lookup, old_dir, new_dir
+      const old_dirname = PATH.dirname(old_path)
+      const new_dirname = PATH.dirname(new_path)
+      const old_name = PATH.basename(old_path)
+      const new_name = PATH.basename(new_path)
+      let lookup, old_dir, new_dir
       lookup = FS.lookupPath(old_path, { parent: true })
       old_dir = lookup.node
       lookup = FS.lookupPath(new_path, { parent: true })
@@ -6683,8 +6694,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       if (old_dir.mount !== new_dir.mount) {
         throw new FS.ErrnoError(75)
       }
-      var old_node = FS.lookupNode(old_dir, old_name)
-      var relative = PATH_FS.relative(old_path, new_dirname)
+      const old_node = FS.lookupNode(old_dir, old_name)
+      let relative = PATH_FS.relative(old_path, new_dirname)
       if (relative.charAt(0) !== '.') {
         throw new FS.ErrnoError(28)
       }
@@ -6692,15 +6703,15 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       if (relative.charAt(0) !== '.') {
         throw new FS.ErrnoError(55)
       }
-      var new_node
+      let new_node
       try {
         new_node = FS.lookupNode(new_dir, new_name)
       } catch (e) {}
       if (old_node === new_node) {
         return
       }
-      var isdir = FS.isDir(old_node.mode)
-      var errCode = FS.mayDelete(old_dir, old_name, isdir)
+      const isdir = FS.isDir(old_node.mode)
+      let errCode = FS.mayDelete(old_dir, old_name, isdir)
       if (errCode) {
         throw new FS.ErrnoError(errCode)
       }
@@ -6736,11 +6747,11 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       }
     },
     rmdir(path) {
-      var lookup = FS.lookupPath(path, { parent: true })
-      var parent = lookup.node
-      var name = PATH.basename(path)
-      var node = FS.lookupNode(parent, name)
-      var errCode = FS.mayDelete(parent, name, true)
+      const lookup = FS.lookupPath(path, { parent: true })
+      const parent = lookup.node
+      const name = PATH.basename(path)
+      const node = FS.lookupNode(parent, name)
+      const errCode = FS.mayDelete(parent, name, true)
       if (errCode) {
         throw new FS.ErrnoError(errCode)
       }
@@ -6754,22 +6765,22 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       FS.destroyNode(node)
     },
     readdir(path) {
-      var lookup = FS.lookupPath(path, { follow: true })
-      var node = lookup.node
+      const lookup = FS.lookupPath(path, { follow: true })
+      const node = lookup.node
       if (!node.node_ops.readdir) {
         throw new FS.ErrnoError(54)
       }
       return node.node_ops.readdir(node)
     },
     unlink(path) {
-      var lookup = FS.lookupPath(path, { parent: true })
-      var parent = lookup.node
+      const lookup = FS.lookupPath(path, { parent: true })
+      const parent = lookup.node
       if (!parent) {
         throw new FS.ErrnoError(44)
       }
-      var name = PATH.basename(path)
-      var node = FS.lookupNode(parent, name)
-      var errCode = FS.mayDelete(parent, name, false)
+      const name = PATH.basename(path)
+      const node = FS.lookupNode(parent, name)
+      const errCode = FS.mayDelete(parent, name, false)
       if (errCode) {
         throw new FS.ErrnoError(errCode)
       }
@@ -6783,8 +6794,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       FS.destroyNode(node)
     },
     readlink(path) {
-      var lookup = FS.lookupPath(path)
-      var link = lookup.node
+      const lookup = FS.lookupPath(path)
+      const link = lookup.node
       if (!link) {
         throw new FS.ErrnoError(44)
       }
@@ -6794,8 +6805,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return link.node_ops.readlink(link)
     },
     stat(path, dontFollow) {
-      var lookup = FS.lookupPath(path, { follow: !dontFollow })
-      var node = lookup.node
+      const lookup = FS.lookupPath(path, { follow: !dontFollow })
+      const node = lookup.node
       if (!node) {
         throw new FS.ErrnoError(44)
       }
@@ -6808,9 +6819,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return FS.stat(path, true)
     },
     chmod(path, mode, dontFollow) {
-      var node
+      let node
       if (typeof path == 'string') {
-        var lookup = FS.lookupPath(path, { follow: !dontFollow })
+        const lookup = FS.lookupPath(path, { follow: !dontFollow })
         node = lookup.node
       } else {
         node = path
@@ -6827,13 +6838,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       FS.chmod(path, mode, true)
     },
     fchmod(fd, mode) {
-      var stream = FS.getStreamChecked(fd)
+      const stream = FS.getStreamChecked(fd)
       FS.chmod(stream.node, mode)
     },
     chown(path, uid, gid, dontFollow) {
-      var node
+      let node
       if (typeof path == 'string') {
-        var lookup = FS.lookupPath(path, { follow: !dontFollow })
+        const lookup = FS.lookupPath(path, { follow: !dontFollow })
         node = lookup.node
       } else {
         node = path
@@ -6847,16 +6858,16 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       FS.chown(path, uid, gid, true)
     },
     fchown(fd, uid, gid) {
-      var stream = FS.getStreamChecked(fd)
+      const stream = FS.getStreamChecked(fd)
       FS.chown(stream.node, uid, gid)
     },
     truncate(path, len) {
       if (len < 0) {
         throw new FS.ErrnoError(28)
       }
-      var node
+      let node
       if (typeof path == 'string') {
-        var lookup = FS.lookupPath(path, { follow: true })
+        const lookup = FS.lookupPath(path, { follow: true })
         node = lookup.node
       } else {
         node = path
@@ -6870,22 +6881,22 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       if (!FS.isFile(node.mode)) {
         throw new FS.ErrnoError(28)
       }
-      var errCode = FS.nodePermissions(node, 'w')
+      const errCode = FS.nodePermissions(node, 'w')
       if (errCode) {
         throw new FS.ErrnoError(errCode)
       }
       node.node_ops.setattr(node, { size: len, timestamp: Date.now() })
     },
     ftruncate(fd, len) {
-      var stream = FS.getStreamChecked(fd)
+      const stream = FS.getStreamChecked(fd)
       if ((stream.flags & 2097155) === 0) {
         throw new FS.ErrnoError(28)
       }
       FS.truncate(stream.node, len)
     },
     utime(path, atime, mtime) {
-      var lookup = FS.lookupPath(path, { follow: true })
-      var node = lookup.node
+      const lookup = FS.lookupPath(path, { follow: true })
+      const node = lookup.node
       node.node_ops.setattr(node, { atime, mtime })
     },
     open(path, flags, mode = 438) {
@@ -6898,18 +6909,18 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       } else {
         mode = 0
       }
-      var node
+      let node
       if (typeof path == 'object') {
         node = path
       } else {
-        var lookup = FS.lookupPath(path, {
+        const lookup = FS.lookupPath(path, {
           follow: !(flags & 131072),
           noent_okay: true,
         })
         node = lookup.node
         path = lookup.path
       }
-      var created = false
+      let created = false
       if (flags & 64) {
         if (node) {
           if (flags & 128) {
@@ -6930,7 +6941,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         throw new FS.ErrnoError(54)
       }
       if (!created) {
-        var errCode = FS.mayOpen(node, flags)
+        const errCode = FS.mayOpen(node, flags)
         if (errCode) {
           throw new FS.ErrnoError(errCode)
         }
@@ -6939,7 +6950,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         FS.truncate(node, 0)
       }
       flags &= ~(128 | 512 | 131072)
-      var stream = FS.createStream({
+      const stream = FS.createStream({
         node,
         path: FS.getPath(node),
         flags,
@@ -7008,13 +7019,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       if (!stream.stream_ops.read) {
         throw new FS.ErrnoError(28)
       }
-      var seeking = typeof position != 'undefined'
+      const seeking = typeof position != 'undefined'
       if (!seeking) {
         position = stream.position
       } else if (!stream.seekable) {
         throw new FS.ErrnoError(70)
       }
-      var bytesRead = stream.stream_ops.read(
+      const bytesRead = stream.stream_ops.read(
         stream,
         buffer,
         offset,
@@ -7043,13 +7054,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       if (stream.seekable && stream.flags & 1024) {
         FS.llseek(stream, 0, 2)
       }
-      var seeking = typeof position != 'undefined'
+      const seeking = typeof position != 'undefined'
       if (!seeking) {
         position = stream.position
       } else if (!stream.seekable) {
         throw new FS.ErrnoError(70)
       }
-      var bytesWritten = stream.stream_ops.write(
+      const bytesWritten = stream.stream_ops.write(
         stream,
         buffer,
         offset,
@@ -7115,11 +7126,11 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       if (opts.encoding !== 'utf8' && opts.encoding !== 'binary') {
         throw new Error(`Invalid encoding type "${opts.encoding}"`)
       }
-      var ret
-      var stream = FS.open(path, opts.flags)
-      var stat = FS.stat(path)
-      var length = stat.size
-      var buf = new Uint8Array(length)
+      let ret
+      const stream = FS.open(path, opts.flags)
+      const stat = FS.stat(path)
+      const length = stat.size
+      const buf = new Uint8Array(length)
       FS.read(stream, buf, 0, length, 0)
       if (opts.encoding === 'utf8') {
         ret = UTF8ArrayToString(buf)
@@ -7131,10 +7142,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     },
     writeFile(path, data, opts = {}) {
       opts.flags = opts.flags || 577
-      var stream = FS.open(path, opts.flags, opts.mode)
+      const stream = FS.open(path, opts.flags, opts.mode)
       if (typeof data == 'string') {
-        var buf = new Uint8Array(lengthBytesUTF8(data) + 1)
-        var actualNumBytes = stringToUTF8Array(data, buf, 0, buf.length)
+        const buf = new Uint8Array(lengthBytesUTF8(data) + 1)
+        const actualNumBytes = stringToUTF8Array(data, buf, 0, buf.length)
         FS.write(stream, buf, 0, actualNumBytes, undefined, opts.canOwn)
       } else if (ArrayBuffer.isView(data)) {
         FS.write(stream, data, 0, data.byteLength, undefined, opts.canOwn)
@@ -7145,14 +7156,14 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     },
     cwd: () => FS.currentPath,
     chdir(path) {
-      var lookup = FS.lookupPath(path, { follow: true })
+      const lookup = FS.lookupPath(path, { follow: true })
       if (lookup.node === null) {
         throw new FS.ErrnoError(44)
       }
       if (!FS.isDir(lookup.node.mode)) {
         throw new FS.ErrnoError(54)
       }
-      var errCode = FS.nodePermissions(lookup.node, 'x')
+      const errCode = FS.nodePermissions(lookup.node, 'x')
       if (errCode) {
         throw new FS.ErrnoError(errCode)
       }
@@ -7175,9 +7186,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       TTY.register(FS.makedev(6, 0), TTY.default_tty1_ops)
       FS.mkdev('/dev/tty', FS.makedev(5, 0))
       FS.mkdev('/dev/tty1', FS.makedev(6, 0))
-      var randomBuffer = new Uint8Array(1024),
+      let randomBuffer = new Uint8Array(1024),
         randomLeft = 0
-      var randomByte = () => {
+      const randomByte = () => {
         if (randomLeft === 0) {
           randomLeft = randomFill(randomBuffer).byteLength
         }
@@ -7190,18 +7201,18 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     },
     createSpecialDirectories() {
       FS.mkdir('/proc')
-      var proc_self = FS.mkdir('/proc/self')
+      const proc_self = FS.mkdir('/proc/self')
       FS.mkdir('/proc/self/fd')
       FS.mount(
         {
           mount() {
-            var node = FS.createNode(proc_self, 'fd', 16895, 73)
+            const node = FS.createNode(proc_self, 'fd', 16895, 73)
             node.stream_ops = { llseek: MEMFS.stream_ops.llseek }
             node.node_ops = {
               lookup(parent, name) {
-                var fd = +name
-                var stream = FS.getStreamChecked(fd)
-                var ret = {
+                const fd = +name
+                const stream = FS.getStreamChecked(fd)
+                const ret = {
                   parent: null,
                   mount: { mountpoint: 'fake' },
                   node_ops: { readlink: () => stream.path },
@@ -7239,9 +7250,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       } else {
         FS.symlink('/dev/tty1', '/dev/stderr')
       }
-      var stdin = FS.open('/dev/stdin', 0)
-      var stdout = FS.open('/dev/stdout', 1)
-      var stderr = FS.open('/dev/stderr', 1)
+      const stdin = FS.open('/dev/stdin', 0)
+      const stdout = FS.open('/dev/stdout', 1)
+      const stderr = FS.open('/dev/stderr', 1)
     },
     staticInit() {
       FS.nameTable = new Array(4096)
@@ -7261,8 +7272,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     quit() {
       FS.initialized = false
       _fflush(0)
-      for (var i = 0; i < FS.streams.length; i++) {
-        var stream = FS.streams[i]
+      for (let i = 0; i < FS.streams.length; i++) {
+        const stream = FS.streams[i]
         if (!stream) {
           continue
         }
@@ -7270,7 +7281,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       }
     },
     findObject(path, dontResolveLastLink) {
-      var ret = FS.analyzePath(path, dontResolveLastLink)
+      const ret = FS.analyzePath(path, dontResolveLastLink)
       if (!ret.exists) {
         return null
       }
@@ -7278,10 +7289,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     },
     analyzePath(path, dontResolveLastLink) {
       try {
-        var lookup = FS.lookupPath(path, { follow: !dontResolveLastLink })
+        let lookup = FS.lookupPath(path, { follow: !dontResolveLastLink })
         path = lookup.path
       } catch (e) {}
-      var ret = {
+      const ret = {
         isRoot: false,
         exists: false,
         error: 0,
@@ -7293,7 +7304,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         parentObject: null,
       }
       try {
-        var lookup = FS.lookupPath(path, { parent: true })
+        let lookup = FS.lookupPath(path, { parent: true })
         ret.parentExists = true
         ret.parentPath = lookup.path
         ret.parentObject = lookup.node
@@ -7311,11 +7322,12 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     },
     createPath(parent, path, canRead, canWrite) {
       parent = typeof parent == 'string' ? parent : FS.getPath(parent)
-      var parts = path.split('/').reverse()
+      const parts = path.split('/').reverse()
+      let current
       while (parts.length) {
-        var part = parts.pop()
+        const part = parts.pop()
         if (!part) continue
-        var current = PATH.join2(parent, part)
+        current = PATH.join2(parent, part)
         try {
           FS.mkdir(current)
         } catch (e) {}
@@ -7324,43 +7336,43 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return current
     },
     createFile(parent, name, properties, canRead, canWrite) {
-      var path = PATH.join2(
+      const path = PATH.join2(
         typeof parent == 'string' ? parent : FS.getPath(parent),
         name,
       )
-      var mode = FS_getMode(canRead, canWrite)
+      const mode = FS_getMode(canRead, canWrite)
       return FS.create(path, mode)
     },
     createDataFile(parent, name, data, canRead, canWrite, canOwn) {
-      var path = name
+      let path = name
       if (parent) {
         parent = typeof parent == 'string' ? parent : FS.getPath(parent)
         path = name ? PATH.join2(parent, name) : parent
       }
-      var mode = FS_getMode(canRead, canWrite)
-      var node = FS.create(path, mode)
+      const mode = FS_getMode(canRead, canWrite)
+      const node = FS.create(path, mode)
       if (data) {
         if (typeof data == 'string') {
-          var arr = new Array(data.length)
-          for (var i = 0, len = data.length; i < len; ++i)
+          const arr = new Array(data.length)
+          for (let i = 0, len = data.length; i < len; ++i)
             arr[i] = data.charCodeAt(i)
           data = arr
         }
         FS.chmod(node, mode | 146)
-        var stream = FS.open(node, 577)
+        const stream = FS.open(node, 577)
         FS.write(stream, data, 0, data.length, 0, canOwn)
         FS.close(stream)
         FS.chmod(node, mode)
       }
     },
     createDevice(parent, name, input, output) {
-      var path = PATH.join2(
+      const path = PATH.join2(
         typeof parent == 'string' ? parent : FS.getPath(parent),
         name,
       )
-      var mode = FS_getMode(!!input, !!output)
+      const mode = FS_getMode(!!input, !!output)
       FS.createDevice.major ??= 64
-      var dev = FS.makedev(FS.createDevice.major++, 0)
+      const dev = FS.makedev(FS.createDevice.major++, 0)
       FS.registerDevice(dev, {
         open(stream) {
           stream.seekable = false
@@ -7371,9 +7383,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
           }
         },
         read(stream, buffer, offset, length, pos) {
-          var bytesRead = 0
-          for (var i = 0; i < length; i++) {
-            var result
+          let bytesRead = 0
+          for (let i = 0; i < length; i++) {
+            let result
             try {
               result = input()
             } catch (e) {
@@ -7392,7 +7404,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
           return bytesRead
         },
         write(stream, buffer, offset, length, pos) {
-          for (var i = 0; i < length; i++) {
+          let i = 0
+          for (; i < length; i++) {
             try {
               output(buffer[offset + i])
             } catch (e) {
@@ -7441,17 +7454,17 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return node
     },
   }
-  var SYSCALLS = {
+  let SYSCALLS = {
     DEFAULT_POLLMASK: 5,
     calculateAt(dirfd, path, allowEmpty) {
       if (PATH.isAbs(path)) {
         return path
       }
-      var dir
+      let dir
       if (dirfd === -100) {
         dir = FS.cwd()
       } else {
-        var dirstream = SYSCALLS.getStreamFromFD(dirfd)
+        const dirstream = SYSCALLS.getStreamFromFD(dirfd)
         dir = dirstream.path
       }
       if (path.length == 0) {
@@ -7463,7 +7476,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return dir + '/' + path
     },
     doStat(func, path, buf) {
-      var stat = func(path)
+      const stat = func(path)
       HEAP32[buf >> 2] = stat.dev
       HEAP32[(buf + 4) >> 2] = stat.mode
       HEAPU32[(buf + 8) >> 2] = stat.nlink
@@ -7473,9 +7486,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       HEAP64[(buf + 24) >> 3] = BigInt(stat.size)
       HEAP32[(buf + 32) >> 2] = 4096
       HEAP32[(buf + 36) >> 2] = stat.blocks
-      var atime = stat.atime.getTime()
-      var mtime = stat.mtime.getTime()
-      var ctime = stat.ctime.getTime()
+      const atime = stat.atime.getTime()
+      const mtime = stat.mtime.getTime()
+      const ctime = stat.ctime.getTime()
       HEAP64[(buf + 40) >> 3] = BigInt(Math.floor(atime / 1e3))
       HEAPU32[(buf + 48) >> 2] = (atime % 1e3) * 1e3 * 1e3
       HEAP64[(buf + 56) >> 3] = BigInt(Math.floor(mtime / 1e3))
@@ -7492,20 +7505,20 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       if (flags & 2) {
         return 0
       }
-      var buffer = HEAPU8.slice(addr, addr + len)
+      const buffer = HEAPU8.slice(addr, addr + len)
       FS.msync(stream, buffer, offset, len, flags)
     },
     getStreamFromFD(fd) {
-      var stream = FS.getStreamChecked(fd)
+      const stream = FS.getStreamChecked(fd)
       return stream
     },
     varargs: undefined,
     getStr(ptr) {
-      var ret = UTF8ToString(ptr)
+      const ret = UTF8ToString(ptr)
       return ret
     },
   }
-  var ___syscall__newselect = function (
+  const ___syscall__newselect = function (
     nfds,
     readfds,
     writefds,
@@ -7513,39 +7526,39 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     timeout,
   ) {
     try {
-      var total = 0
-      var srcReadLow = readfds ? HEAP32[readfds >> 2] : 0,
+      let total = 0
+      const srcReadLow = readfds ? HEAP32[readfds >> 2] : 0,
         srcReadHigh = readfds ? HEAP32[(readfds + 4) >> 2] : 0
-      var srcWriteLow = writefds ? HEAP32[writefds >> 2] : 0,
+      const srcWriteLow = writefds ? HEAP32[writefds >> 2] : 0,
         srcWriteHigh = writefds ? HEAP32[(writefds + 4) >> 2] : 0
-      var srcExceptLow = exceptfds ? HEAP32[exceptfds >> 2] : 0,
+      const srcExceptLow = exceptfds ? HEAP32[exceptfds >> 2] : 0,
         srcExceptHigh = exceptfds ? HEAP32[(exceptfds + 4) >> 2] : 0
-      var dstReadLow = 0,
+      let dstReadLow = 0,
         dstReadHigh = 0
-      var dstWriteLow = 0,
+      let dstWriteLow = 0,
         dstWriteHigh = 0
-      var dstExceptLow = 0,
+      let dstExceptLow = 0,
         dstExceptHigh = 0
-      var allLow =
+      const allLow =
         (readfds ? HEAP32[readfds >> 2] : 0) |
         (writefds ? HEAP32[writefds >> 2] : 0) |
         (exceptfds ? HEAP32[exceptfds >> 2] : 0)
-      var allHigh =
+      const allHigh =
         (readfds ? HEAP32[(readfds + 4) >> 2] : 0) |
         (writefds ? HEAP32[(writefds + 4) >> 2] : 0) |
         (exceptfds ? HEAP32[(exceptfds + 4) >> 2] : 0)
-      var check = (fd, low, high, val) => (fd < 32 ? low & val : high & val)
-      for (var fd = 0; fd < nfds; fd++) {
-        var mask = 1 << fd % 32
+      const check = (fd, low, high, val) => (fd < 32 ? low & val : high & val)
+      for (let fd = 0; fd < nfds; fd++) {
+        const mask = 1 << fd % 32
         if (!check(fd, allLow, allHigh, mask)) {
           continue
         }
-        var stream = SYSCALLS.getStreamFromFD(fd)
-        var flags = SYSCALLS.DEFAULT_POLLMASK
+        const stream = SYSCALLS.getStreamFromFD(fd)
+        let flags = SYSCALLS.DEFAULT_POLLMASK
         if (stream.stream_ops.poll) {
-          var timeoutInMillis = -1
+          let timeoutInMillis = -1
           if (timeout) {
-            var tv_sec = readfds ? HEAP32[timeout >> 2] : 0,
+            const tv_sec = readfds ? HEAP32[timeout >> 2] : 0,
               tv_usec = readfds ? HEAP32[(timeout + 4) >> 2] : 0
             timeoutInMillis = (tv_sec + tv_usec / 1e6) * 1e3
           }
@@ -7625,7 +7638,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ___syscall_connect.sig = 'iippiii'
   function ___syscall_dup(fd) {
     try {
-      var old = SYSCALLS.getStreamFromFD(fd)
+      const old = SYSCALLS.getStreamFromFD(fd)
       return FS.dupStream(old).fd
     } catch (e) {
       if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
@@ -7635,10 +7648,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ___syscall_dup.sig = 'ii'
   function ___syscall_dup3(fd, newfd, flags) {
     try {
-      var old = SYSCALLS.getStreamFromFD(fd)
+      const old = SYSCALLS.getStreamFromFD(fd)
       if (old.fd === newfd) return -28
       if (newfd < 0 || newfd >= FS.MAX_OPEN_FDS) return -8
-      var existing = FS.getStream(newfd)
+      const existing = FS.getStream(newfd)
       if (existing) FS.close(existing)
       return FS.dupStream(old, newfd).fd
     } catch (e) {
@@ -7654,12 +7667,12 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       if (amode & ~7) {
         return -28
       }
-      var lookup = FS.lookupPath(path, { follow: true })
-      var node = lookup.node
+      const lookup = FS.lookupPath(path, { follow: true })
+      const node = lookup.node
       if (!node) {
         return -44
       }
-      var perms = ''
+      let perms = ''
       if (amode & 4) perms += 'r'
       if (amode & 2) perms += 'w'
       if (amode & 1) perms += 'x'
@@ -7673,18 +7686,18 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   ___syscall_faccessat.sig = 'iipii'
-  var ___syscall_fadvise64 = (fd, offset, len, advice) => 0
+  const ___syscall_fadvise64 = (fd, offset, len, advice) => 0
   ___syscall_fadvise64.sig = 'iijji'
-  var INT53_MAX = 9007199254740992
-  var INT53_MIN = -9007199254740992
-  var bigintToI53Checked = (num) =>
+  const INT53_MAX = 9007199254740992
+  const INT53_MIN = -9007199254740992
+  const bigintToI53Checked = (num) =>
     num < INT53_MIN || num > INT53_MAX ? NaN : Number(num)
   function ___syscall_fallocate(fd, mode, offset, len) {
     offset = bigintToI53Checked(offset)
     len = bigintToI53Checked(len)
     try {
       if (isNaN(offset)) return 61
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       FS.allocate(stream, offset, len)
       return 0
     } catch (e) {
@@ -7705,7 +7718,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ___syscall_fchmod.sig = 'iii'
   function ___syscall_fchmodat2(dirfd, path, mode, flags) {
     try {
-      var nofollow = flags & 256
+      const nofollow = flags & 256
       path = SYSCALLS.getStr(path)
       path = SYSCALLS.calculateAt(dirfd, path)
       FS.chmod(path, mode, nofollow)
@@ -7729,7 +7742,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   function ___syscall_fchownat(dirfd, path, owner, group, flags) {
     try {
       path = SYSCALLS.getStr(path)
-      var nofollow = flags & 256
+      const nofollow = flags & 256
       flags = flags & ~256
       path = SYSCALLS.calculateAt(dirfd, path)
       ;(nofollow ? FS.lchown : FS.chown)(path, owner, group)
@@ -7740,26 +7753,26 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   ___syscall_fchownat.sig = 'iipiii'
-  var syscallGetVarargI = () => {
-    var ret = HEAP32[+SYSCALLS.varargs >> 2]
+  const syscallGetVarargI = () => {
+    const ret = HEAP32[+SYSCALLS.varargs >> 2]
     SYSCALLS.varargs += 4
     return ret
   }
-  var syscallGetVarargP = syscallGetVarargI
+  const syscallGetVarargP = syscallGetVarargI
   function ___syscall_fcntl64(fd, cmd, varargs) {
     SYSCALLS.varargs = varargs
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       switch (cmd) {
         case 0: {
-          var arg = syscallGetVarargI()
+          let arg = syscallGetVarargI()
           if (arg < 0) {
             return -28
           }
           while (FS.streams[arg]) {
             arg++
           }
-          var newStream
+          let newStream
           newStream = FS.dupStream(stream, arg)
           return newStream.fd
         }
@@ -7769,13 +7782,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         case 3:
           return stream.flags
         case 4: {
-          var arg = syscallGetVarargI()
+          let arg = syscallGetVarargI()
           stream.flags |= arg
           return 0
         }
         case 12: {
-          var arg = syscallGetVarargP()
-          var offset = 0
+          let arg = syscallGetVarargP()
+          const offset = 0
           HEAP16[(arg + offset) >> 1] = 2
           return 0
         }
@@ -7792,7 +7805,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ___syscall_fcntl64.sig = 'iiip'
   function ___syscall_fdatasync(fd) {
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       return 0
     } catch (e) {
       if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
@@ -7802,7 +7815,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ___syscall_fdatasync.sig = 'ii'
   function ___syscall_fstat64(fd, buf) {
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       return SYSCALLS.doStat(FS.stat, stream.path, buf)
     } catch (e) {
       if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
@@ -7822,13 +7835,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   ___syscall_ftruncate64.sig = 'iij'
-  var stringToUTF8 = (str, outPtr, maxBytesToWrite) =>
+  const stringToUTF8 = (str, outPtr, maxBytesToWrite) =>
     stringToUTF8Array(str, HEAPU8, outPtr, maxBytesToWrite)
   function ___syscall_getcwd(buf, size) {
     try {
       if (size === 0) return -28
-      var cwd = FS.cwd()
-      var cwdLengthInBytes = lengthBytesUTF8(cwd) + 1
+      const cwd = FS.cwd()
+      const cwdLengthInBytes = lengthBytesUTF8(cwd) + 1
       if (size < cwdLengthInBytes) return -68
       stringToUTF8(cwd, buf, size)
       return cwdLengthInBytes
@@ -7840,29 +7853,30 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ___syscall_getcwd.sig = 'ipp'
   function ___syscall_getdents64(fd, dirp, count) {
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       stream.getdents ||= FS.readdir(stream.path)
-      var struct_size = 280
-      var pos = 0
-      var off = FS.llseek(stream, 0, 1)
-      var startIdx = Math.floor(off / struct_size)
-      var endIdx = Math.min(
+      const struct_size = 280
+      let pos = 0
+      const off = FS.llseek(stream, 0, 1)
+      const startIdx = Math.floor(off / struct_size)
+      const endIdx = Math.min(
         stream.getdents.length,
         startIdx + Math.floor(count / struct_size),
       )
-      for (var idx = startIdx; idx < endIdx; idx++) {
-        var id
-        var type
-        var name = stream.getdents[idx]
+      let idx = startIdx
+      for (; idx < endIdx; idx++) {
+        let id
+        let type
+        const name = stream.getdents[idx]
         if (name === '.') {
           id = stream.node.id
           type = 4
         } else if (name === '..') {
-          var lookup = FS.lookupPath(stream.path, { parent: true })
+          const lookup = FS.lookupPath(stream.path, { parent: true })
           id = lookup.node.id
           type = 4
         } else {
-          var child
+          let child
           try {
             child = FS.lookupNode(stream.node, name)
           } catch (e) {
@@ -7898,7 +7912,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   function ___syscall_ioctl(fd, op, varargs) {
     SYSCALLS.varargs = varargs
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       switch (op) {
         case 21509: {
           if (!stream.tty) return -59
@@ -7907,13 +7921,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         case 21505: {
           if (!stream.tty) return -59
           if (stream.tty.ops.ioctl_tcgets) {
-            var termios = stream.tty.ops.ioctl_tcgets(stream)
-            var argp = syscallGetVarargP()
+            const termios = stream.tty.ops.ioctl_tcgets(stream)
+            let argp = syscallGetVarargP()
             HEAP32[argp >> 2] = termios.c_iflag || 0
             HEAP32[(argp + 4) >> 2] = termios.c_oflag || 0
             HEAP32[(argp + 8) >> 2] = termios.c_cflag || 0
             HEAP32[(argp + 12) >> 2] = termios.c_lflag || 0
-            for (var i = 0; i < 32; i++) {
+            for (let i = 0; i < 32; i++) {
               HEAP8[argp + i + 17] = termios.c_cc[i] || 0
             }
             return 0
@@ -7931,13 +7945,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         case 21508: {
           if (!stream.tty) return -59
           if (stream.tty.ops.ioctl_tcsets) {
-            var argp = syscallGetVarargP()
-            var c_iflag = HEAP32[argp >> 2]
-            var c_oflag = HEAP32[(argp + 4) >> 2]
-            var c_cflag = HEAP32[(argp + 8) >> 2]
-            var c_lflag = HEAP32[(argp + 12) >> 2]
-            var c_cc = []
-            for (var i = 0; i < 32; i++) {
+            let argp = syscallGetVarargP()
+            const c_iflag = HEAP32[argp >> 2]
+            const c_oflag = HEAP32[(argp + 4) >> 2]
+            const c_cflag = HEAP32[(argp + 8) >> 2]
+            const c_lflag = HEAP32[(argp + 12) >> 2]
+            const c_cc = []
+            for (let i = 0; i < 32; i++) {
               c_cc.push(HEAP8[argp + i + 17])
             }
             return stream.tty.ops.ioctl_tcsets(stream.tty, op, {
@@ -7952,7 +7966,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         }
         case 21519: {
           if (!stream.tty) return -59
-          var argp = syscallGetVarargP()
+          let argp = syscallGetVarargP()
           HEAP32[argp >> 2] = 0
           return 0
         }
@@ -7961,14 +7975,14 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
           return -28
         }
         case 21531: {
-          var argp = syscallGetVarargP()
+          let argp = syscallGetVarargP()
           return FS.ioctl(stream, op, argp)
         }
         case 21523: {
           if (!stream.tty) return -59
           if (stream.tty.ops.ioctl_tiocgwinsz) {
-            var winsize = stream.tty.ops.ioctl_tiocgwinsz(stream.tty)
-            var argp = syscallGetVarargP()
+            const winsize = stream.tty.ops.ioctl_tiocgwinsz(stream.tty)
+            let argp = syscallGetVarargP()
             HEAP16[argp >> 1] = winsize[0]
             HEAP16[(argp + 2) >> 1] = winsize[1]
           }
@@ -8020,8 +8034,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   function ___syscall_newfstatat(dirfd, path, buf, flags) {
     try {
       path = SYSCALLS.getStr(path)
-      var nofollow = flags & 256
-      var allowEmpty = flags & 4096
+      const nofollow = flags & 256
+      const allowEmpty = flags & 4096
       flags = flags & ~6400
       path = SYSCALLS.calculateAt(dirfd, path, allowEmpty)
       return SYSCALLS.doStat(nofollow ? FS.lstat : FS.stat, path, buf)
@@ -8036,7 +8050,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     try {
       path = SYSCALLS.getStr(path)
       path = SYSCALLS.calculateAt(dirfd, path)
-      var mode = varargs ? syscallGetVarargI() : 0
+      const mode = varargs ? syscallGetVarargI() : 0
       return FS.open(path, flags, mode).fd
     } catch (e) {
       if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
@@ -8044,25 +8058,25 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   ___syscall_openat.sig = 'iipip'
-  var PIPEFS = {
+  let PIPEFS = {
     BUCKET_BUFFER_SIZE: 8192,
     mount(mount) {
       return FS.createNode(null, '/', 16384 | 511, 0)
     },
     createPipe() {
-      var pipe = { buckets: [], refcnt: 2 }
+      const pipe = { buckets: [], refcnt: 2 }
       pipe.buckets.push({
         buffer: new Uint8Array(PIPEFS.BUCKET_BUFFER_SIZE),
         offset: 0,
         roffset: 0,
       })
-      var rName = PIPEFS.nextname()
-      var wName = PIPEFS.nextname()
-      var rNode = FS.createNode(PIPEFS.root, rName, 4096, 0)
-      var wNode = FS.createNode(PIPEFS.root, wName, 4096, 0)
+      const rName = PIPEFS.nextname()
+      const wName = PIPEFS.nextname()
+      const rNode = FS.createNode(PIPEFS.root, rName, 4096, 0)
+      const wNode = FS.createNode(PIPEFS.root, wName, 4096, 0)
       rNode.pipe = pipe
       wNode.pipe = pipe
-      var readableStream = FS.createStream({
+      const readableStream = FS.createStream({
         path: rName,
         node: rNode,
         flags: 0,
@@ -8070,7 +8084,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         stream_ops: PIPEFS.stream_ops,
       })
       rNode.stream = readableStream
-      var writableStream = FS.createStream({
+      const writableStream = FS.createStream({
         path: wName,
         node: wNode,
         flags: 1,
@@ -8082,13 +8096,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     },
     stream_ops: {
       poll(stream) {
-        var pipe = stream.node.pipe
+        const pipe = stream.node.pipe
         if ((stream.flags & 2097155) === 1) {
           return 256 | 4
         }
         if (pipe.buckets.length > 0) {
-          for (var i = 0; i < pipe.buckets.length; i++) {
-            var bucket = pipe.buckets[i]
+          for (let i = 0; i < pipe.buckets.length; i++) {
+            const bucket = pipe.buckets[i]
             if (bucket.offset - bucket.roffset > 0) {
               return 64 | 1
             }
@@ -8103,27 +8117,27 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         return 28
       },
       read(stream, buffer, offset, length, position) {
-        var pipe = stream.node.pipe
-        var currentLength = 0
-        for (var i = 0; i < pipe.buckets.length; i++) {
-          var bucket = pipe.buckets[i]
+        const pipe = stream.node.pipe
+        let currentLength = 0
+        for (let i = 0; i < pipe.buckets.length; i++) {
+          const bucket = pipe.buckets[i]
           currentLength += bucket.offset - bucket.roffset
         }
-        var data = buffer.subarray(offset, offset + length)
+        let data = buffer.subarray(offset, offset + length)
         if (length <= 0) {
           return 0
         }
         if (currentLength == 0) {
           throw new FS.ErrnoError(6)
         }
-        var toRead = Math.min(currentLength, length)
-        var totalRead = toRead
-        var toRemove = 0
-        for (var i = 0; i < pipe.buckets.length; i++) {
-          var currBucket = pipe.buckets[i]
-          var bucketSize = currBucket.offset - currBucket.roffset
+        let toRead = Math.min(currentLength, length)
+        const totalRead = toRead
+        let toRemove = 0
+        for (let i = 0; i < pipe.buckets.length; i++) {
+          const currBucket = pipe.buckets[i]
+          const bucketSize = currBucket.offset - currBucket.roffset
           if (toRead <= bucketSize) {
-            var tmpSlice = currBucket.buffer.subarray(
+            let tmpSlice = currBucket.buffer.subarray(
               currBucket.roffset,
               currBucket.offset,
             )
@@ -8136,7 +8150,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
             data.set(tmpSlice)
             break
           } else {
-            var tmpSlice = currBucket.buffer.subarray(
+            let tmpSlice = currBucket.buffer.subarray(
               currBucket.roffset,
               currBucket.offset,
             )
@@ -8155,13 +8169,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         return totalRead
       },
       write(stream, buffer, offset, length, position) {
-        var pipe = stream.node.pipe
-        var data = buffer.subarray(offset, offset + length)
-        var dataLen = data.byteLength
+        const pipe = stream.node.pipe
+        let data = buffer.subarray(offset, offset + length)
+        const dataLen = data.byteLength
         if (dataLen <= 0) {
           return 0
         }
-        var currBucket = null
+        let currBucket = null
         if (pipe.buckets.length == 0) {
           currBucket = {
             buffer: new Uint8Array(PIPEFS.BUCKET_BUFFER_SIZE),
@@ -8173,7 +8187,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
           currBucket = pipe.buckets[pipe.buckets.length - 1]
         }
         assert(currBucket.offset <= PIPEFS.BUCKET_BUFFER_SIZE)
-        var freeBytesInCurrBuffer =
+        const freeBytesInCurrBuffer =
           PIPEFS.BUCKET_BUFFER_SIZE - currBucket.offset
         if (freeBytesInCurrBuffer >= dataLen) {
           currBucket.buffer.set(data, currBucket.offset)
@@ -8187,10 +8201,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
           currBucket.offset += freeBytesInCurrBuffer
           data = data.subarray(freeBytesInCurrBuffer, data.byteLength)
         }
-        var numBuckets = (data.byteLength / PIPEFS.BUCKET_BUFFER_SIZE) | 0
-        var remElements = data.byteLength % PIPEFS.BUCKET_BUFFER_SIZE
-        for (var i = 0; i < numBuckets; i++) {
-          var newBucket = {
+        const numBuckets = (data.byteLength / PIPEFS.BUCKET_BUFFER_SIZE) | 0
+        const remElements = data.byteLength % PIPEFS.BUCKET_BUFFER_SIZE
+        for (let i = 0; i < numBuckets; i++) {
+          let newBucket = {
             buffer: new Uint8Array(PIPEFS.BUCKET_BUFFER_SIZE),
             offset: PIPEFS.BUCKET_BUFFER_SIZE,
             roffset: 0,
@@ -8200,7 +8214,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
           data = data.subarray(PIPEFS.BUCKET_BUFFER_SIZE, data.byteLength)
         }
         if (remElements > 0) {
-          var newBucket = {
+          let newBucket = {
             buffer: new Uint8Array(PIPEFS.BUCKET_BUFFER_SIZE),
             offset: data.byteLength,
             roffset: 0,
@@ -8211,7 +8225,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         return dataLen
       },
       close(stream) {
-        var pipe = stream.node.pipe
+        const pipe = stream.node.pipe
         pipe.refcnt--
         if (pipe.refcnt === 0) {
           pipe.buckets = null
@@ -8230,7 +8244,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       if (fdPtr == 0) {
         throw new FS.ErrnoError(21)
       }
-      var res = PIPEFS.createPipe()
+      const res = PIPEFS.createPipe()
       HEAP32[fdPtr >> 2] = res.readable_fd
       HEAP32[(fdPtr + 4) >> 2] = res.writable_fd
       return 0
@@ -8245,9 +8259,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       path = SYSCALLS.getStr(path)
       path = SYSCALLS.calculateAt(dirfd, path)
       if (bufsize <= 0) return -28
-      var ret = FS.readlink(path)
-      var len = Math.min(bufsize, lengthBytesUTF8(ret))
-      var endChar = HEAP8[buf + len]
+      const ret = FS.readlink(path)
+      const len = Math.min(bufsize, lengthBytesUTF8(ret))
+      const endChar = HEAP8[buf + len]
       stringToUTF8(ret, buf, bufsize + 1)
       HEAP8[buf + len] = endChar
       return len
@@ -8306,7 +8320,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ___syscall_stat64.sig = 'ipp'
   function ___syscall_statfs64(path, size, buf) {
     try {
-      var stats = FS.statfs(SYSCALLS.getStr(path))
+      const stats = FS.statfs(SYSCALLS.getStr(path))
       HEAP32[(buf + 4) >> 2] = stats.bsize
       HEAP32[(buf + 40) >> 2] = stats.bsize
       HEAP32[(buf + 8) >> 2] = stats.blocks
@@ -8368,21 +8382,21 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   ___syscall_unlinkat.sig = 'iipi'
-  var readI53FromI64 = (ptr) =>
+  const readI53FromI64 = (ptr) =>
     HEAPU32[ptr >> 2] + HEAP32[(ptr + 4) >> 2] * 4294967296
   function ___syscall_utimensat(dirfd, path, times, flags) {
     try {
       path = SYSCALLS.getStr(path)
       path = SYSCALLS.calculateAt(dirfd, path, true)
-      var now = Date.now(),
+      let now = Date.now(),
         atime,
         mtime
       if (!times) {
         atime = now
         mtime = now
       } else {
-        var seconds = readI53FromI64(times)
-        var nanoseconds = HEAP32[(times + 8) >> 2]
+        let seconds = readI53FromI64(times)
+        let nanoseconds = HEAP32[(times + 8) >> 2]
         if (nanoseconds == 1073741823) {
           atime = now
         } else if (nanoseconds == 1073741822) {
@@ -8411,34 +8425,34 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   ___syscall_utimensat.sig = 'iippi'
-  var ___table_base = new WebAssembly.Global(
+  const ___table_base = new WebAssembly.Global(
     { value: 'i32', mutable: false },
     1,
   )
   Module['___table_base'] = ___table_base
-  var __abort_js = () => abort('')
+  const __abort_js = () => abort('')
   __abort_js.sig = 'v'
-  var ENV = {}
-  var stackAlloc = (sz) => __emscripten_stack_alloc(sz)
-  var stringToUTF8OnStack = (str) => {
-    var size = lengthBytesUTF8(str) + 1
-    var ret = stackAlloc(size)
+  const ENV = {}
+  const stackAlloc = (sz) => __emscripten_stack_alloc(sz)
+  const stringToUTF8OnStack = (str) => {
+    const size = lengthBytesUTF8(str) + 1
+    const ret = stackAlloc(size)
     stringToUTF8(str, ret, size)
     return ret
   }
-  var dlSetError = (msg) => {
-    var sp = stackSave()
-    var cmsg = stringToUTF8OnStack(msg)
+  const dlSetError = (msg) => {
+    const sp = stackSave()
+    const cmsg = stringToUTF8OnStack(msg)
     ___dl_seterr(cmsg, 0)
     stackRestore(sp)
   }
-  var dlopenInternal = (handle, jsflags) => {
-    var filename = UTF8ToString(handle + 36)
-    var flags = HEAP32[(handle + 4) >> 2]
+  const dlopenInternal = (handle, jsflags) => {
+    let filename = UTF8ToString(handle + 36)
+    const flags = HEAP32[(handle + 4) >> 2]
     filename = PATH.normalize(filename)
-    var global = Boolean(flags & 256)
-    var localScope = global ? null : {}
-    var combinedFlags = {
+    const global = Boolean(flags & 256)
+    const localScope = global ? null : {}
+    const combinedFlags = {
       global,
       nodelete: Boolean(flags & 4096),
       loadAsync: jsflags.loadAsync,
@@ -8453,13 +8467,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return 0
     }
   }
-  var __dlopen_js = (handle) => dlopenInternal(handle, { loadAsync: false })
+  const __dlopen_js = (handle) => dlopenInternal(handle, { loadAsync: false })
   __dlopen_js.sig = 'pp'
-  var __dlsym_js = (handle, symbol, symbolIndex) => {
+  const __dlsym_js = (handle, symbol, symbolIndex) => {
     symbol = UTF8ToString(symbol)
-    var result
-    var newSymIndex
-    var lib = LDSO.loadedLibsByHandle[handle]
+    let result
+    let newSymIndex
+    const lib = LDSO.loadedLibsByHandle[handle]
     if (!lib.exports.hasOwnProperty(symbol) || lib.exports[symbol].stub) {
       dlSetError(
         `Tried to lookup unknown symbol "${symbol}" in dynamic lib: ${lib.name}`,
@@ -8469,7 +8483,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     newSymIndex = Object.keys(lib.exports).indexOf(symbol)
     result = lib.exports[symbol]
     if (typeof result == 'function') {
-      var addr = getFunctionAddress(result)
+      const addr = getFunctionAddress(result)
       if (addr) {
         result = addr
       } else {
@@ -8480,19 +8494,19 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     return result
   }
   __dlsym_js.sig = 'pppp'
-  var runtimeKeepaliveCounter = 0
-  var __emscripten_runtime_keepalive_clear = () => {
+  let runtimeKeepaliveCounter = 0
+  const __emscripten_runtime_keepalive_clear = () => {
     noExitRuntime = false
     runtimeKeepaliveCounter = 0
   }
   __emscripten_runtime_keepalive_clear.sig = 'v'
-  var __emscripten_throw_longjmp = () => {
+  const __emscripten_throw_longjmp = () => {
     throw Infinity
   }
   __emscripten_throw_longjmp.sig = 'v'
   function __gmtime_js(time, tmPtr) {
     time = bigintToI53Checked(time)
-    var date = new Date(time * 1e3)
+    const date = new Date(time * 1e3)
     HEAP32[tmPtr >> 2] = date.getUTCSeconds()
     HEAP32[(tmPtr + 4) >> 2] = date.getUTCMinutes()
     HEAP32[(tmPtr + 8) >> 2] = date.getUTCHours()
@@ -8500,30 +8514,30 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     HEAP32[(tmPtr + 16) >> 2] = date.getUTCMonth()
     HEAP32[(tmPtr + 20) >> 2] = date.getUTCFullYear() - 1900
     HEAP32[(tmPtr + 24) >> 2] = date.getUTCDay()
-    var start = Date.UTC(date.getUTCFullYear(), 0, 1, 0, 0, 0, 0)
-    var yday = ((date.getTime() - start) / (1e3 * 60 * 60 * 24)) | 0
+    const start = Date.UTC(date.getUTCFullYear(), 0, 1, 0, 0, 0, 0)
+    const yday = ((date.getTime() - start) / (1e3 * 60 * 60 * 24)) | 0
     HEAP32[(tmPtr + 28) >> 2] = yday
   }
   __gmtime_js.sig = 'vjp'
-  var isLeapYear = (year) =>
+  const isLeapYear = (year) =>
     year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)
-  var MONTH_DAYS_LEAP_CUMULATIVE = [
+  const MONTH_DAYS_LEAP_CUMULATIVE = [
     0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335,
   ]
-  var MONTH_DAYS_REGULAR_CUMULATIVE = [
+  const MONTH_DAYS_REGULAR_CUMULATIVE = [
     0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334,
   ]
-  var ydayFromDate = (date) => {
-    var leap = isLeapYear(date.getFullYear())
-    var monthDaysCumulative = leap
+  const ydayFromDate = (date) => {
+    const leap = isLeapYear(date.getFullYear())
+    const monthDaysCumulative = leap
       ? MONTH_DAYS_LEAP_CUMULATIVE
       : MONTH_DAYS_REGULAR_CUMULATIVE
-    var yday = monthDaysCumulative[date.getMonth()] + date.getDate() - 1
+    const yday = monthDaysCumulative[date.getMonth()] + date.getDate() - 1
     return yday
   }
   function __localtime_js(time, tmPtr) {
     time = bigintToI53Checked(time)
-    var date = new Date(time * 1e3)
+    const date = new Date(time * 1e3)
     HEAP32[tmPtr >> 2] = date.getSeconds()
     HEAP32[(tmPtr + 4) >> 2] = date.getMinutes()
     HEAP32[(tmPtr + 8) >> 2] = date.getHours()
@@ -8531,13 +8545,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     HEAP32[(tmPtr + 16) >> 2] = date.getMonth()
     HEAP32[(tmPtr + 20) >> 2] = date.getFullYear() - 1900
     HEAP32[(tmPtr + 24) >> 2] = date.getDay()
-    var yday = ydayFromDate(date) | 0
+    const yday = ydayFromDate(date) | 0
     HEAP32[(tmPtr + 28) >> 2] = yday
     HEAP32[(tmPtr + 36) >> 2] = -(date.getTimezoneOffset() * 60)
-    var start = new Date(date.getFullYear(), 0, 1)
-    var summerOffset = new Date(date.getFullYear(), 6, 1).getTimezoneOffset()
-    var winterOffset = start.getTimezoneOffset()
-    var dst =
+    const start = new Date(date.getFullYear(), 0, 1)
+    const summerOffset = new Date(date.getFullYear(), 6, 1).getTimezoneOffset()
+    const winterOffset = start.getTimezoneOffset()
+    const dst =
       (summerOffset != winterOffset &&
         date.getTimezoneOffset() == Math.min(winterOffset, summerOffset)) | 0
     HEAP32[(tmPtr + 32) >> 2] = dst
@@ -8547,9 +8561,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     offset = bigintToI53Checked(offset)
     try {
       if (isNaN(offset)) return 61
-      var stream = SYSCALLS.getStreamFromFD(fd)
-      var res = FS.mmap(stream, len, offset, prot, flags)
-      var ptr = res.ptr
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      const res = FS.mmap(stream, len, offset, prot, flags)
+      const ptr = res.ptr
       HEAP32[allocated >> 2] = res.allocated
       HEAPU32[addr >> 2] = ptr
       return 0
@@ -8562,7 +8576,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   function __munmap_js(addr, len, prot, flags, fd, offset) {
     offset = bigintToI53Checked(offset)
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       if (prot & 2) {
         SYSCALLS.doMsync(addr, stream, len, flags, offset)
       }
@@ -8572,15 +8586,15 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   __munmap_js.sig = 'ippiiij'
-  var timers = {}
-  var handleException = (e) => {
+  const timers = {}
+  const handleException = (e) => {
     if (e instanceof ExitStatus || e == 'unwind') {
       return EXITSTATUS
     }
     quit_(1, e)
   }
-  var keepRuntimeAlive = () => noExitRuntime || runtimeKeepaliveCounter > 0
-  var _proc_exit = (code) => {
+  const keepRuntimeAlive = () => noExitRuntime || runtimeKeepaliveCounter > 0
+  const _proc_exit = (code) => {
     EXITSTATUS = code
     if (!keepRuntimeAlive()) {
       Module['onExit']?.(code)
@@ -8589,17 +8603,17 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     quit_(code, new ExitStatus(code))
   }
   _proc_exit.sig = 'vi'
-  var exitJS = (status, implicit) => {
+  const exitJS = (status, implicit) => {
     EXITSTATUS = status
     if (!keepRuntimeAlive()) {
       exitRuntime()
     }
     _proc_exit(status)
   }
-  var _exit = exitJS
+  const _exit = exitJS
   Module['_exit'] = _exit
   _exit.sig = 'vi'
-  var maybeExit = () => {
+  const maybeExit = () => {
     if (runtimeExited) {
       return
     }
@@ -8611,7 +8625,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       }
     }
   }
-  var callUserCallback = (func) => {
+  const callUserCallback = (func) => {
     if (runtimeExited || ABORT) {
       return
     }
@@ -8622,15 +8636,15 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       handleException(e)
     }
   }
-  var _emscripten_get_now = () => performance.now()
+  const _emscripten_get_now = () => performance.now()
   _emscripten_get_now.sig = 'd'
-  var __setitimer_js = (which, timeout_ms) => {
+  const __setitimer_js = (which, timeout_ms) => {
     if (timers[which]) {
       clearTimeout(timers[which].id)
       delete timers[which]
     }
     if (!timeout_ms) return 0
-    var id = setTimeout(() => {
+    const id = setTimeout(() => {
       delete timers[which]
       callUserCallback(() => __emscripten_timeout(which, _emscripten_get_now()))
     }, timeout_ms)
@@ -8638,24 +8652,24 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     return 0
   }
   __setitimer_js.sig = 'iid'
-  var __tzset_js = (timezone, daylight, std_name, dst_name) => {
-    var currentYear = new Date().getFullYear()
-    var winter = new Date(currentYear, 0, 1)
-    var summer = new Date(currentYear, 6, 1)
-    var winterOffset = winter.getTimezoneOffset()
-    var summerOffset = summer.getTimezoneOffset()
-    var stdTimezoneOffset = Math.max(winterOffset, summerOffset)
+  const __tzset_js = (timezone, daylight, std_name, dst_name) => {
+    const currentYear = new Date().getFullYear()
+    const winter = new Date(currentYear, 0, 1)
+    const summer = new Date(currentYear, 6, 1)
+    const winterOffset = winter.getTimezoneOffset()
+    const summerOffset = summer.getTimezoneOffset()
+    const stdTimezoneOffset = Math.max(winterOffset, summerOffset)
     HEAPU32[timezone >> 2] = stdTimezoneOffset * 60
     HEAP32[daylight >> 2] = Number(winterOffset != summerOffset)
-    var extractZone = (timezoneOffset) => {
-      var sign = timezoneOffset >= 0 ? '-' : '+'
-      var absOffset = Math.abs(timezoneOffset)
-      var hours = String(Math.floor(absOffset / 60)).padStart(2, '0')
-      var minutes = String(absOffset % 60).padStart(2, '0')
+    const extractZone = (timezoneOffset) => {
+      const sign = timezoneOffset >= 0 ? '-' : '+'
+      const absOffset = Math.abs(timezoneOffset)
+      const hours = String(Math.floor(absOffset / 60)).padStart(2, '0')
+      const minutes = String(absOffset % 60).padStart(2, '0')
       return `UTC${sign}${hours}${minutes}`
     }
-    var winterName = extractZone(winterOffset)
-    var summerName = extractZone(summerOffset)
+    const winterName = extractZone(winterOffset)
+    const summerName = extractZone(summerOffset)
     if (summerOffset < winterOffset) {
       stringToUTF8(winterName, std_name, 17)
       stringToUTF8(summerName, dst_name, 17)
@@ -8665,16 +8679,16 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   __tzset_js.sig = 'vpppp'
-  var _emscripten_date_now = () => Date.now()
+  const _emscripten_date_now = () => Date.now()
   _emscripten_date_now.sig = 'd'
-  var nowIsMonotonic = 1
-  var checkWasiClock = (clock_id) => clock_id >= 0 && clock_id <= 3
+  const nowIsMonotonic = 1
+  const checkWasiClock = (clock_id) => clock_id >= 0 && clock_id <= 3
   function _clock_time_get(clk_id, ignored_precision, ptime) {
     ignored_precision = bigintToI53Checked(ignored_precision)
     if (!checkWasiClock(clk_id)) {
       return 28
     }
-    var now
+    let now
     if (clk_id === 0) {
       now = _emscripten_date_now()
     } else if (nowIsMonotonic) {
@@ -8682,38 +8696,38 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     } else {
       return 52
     }
-    var nsec = Math.round(now * 1e3 * 1e3)
+    const nsec = Math.round(now * 1e3 * 1e3)
     HEAP64[ptime >> 3] = BigInt(nsec)
     return 0
   }
   _clock_time_get.sig = 'iijp'
-  var getHeapMax = () => 2147483648
-  var _emscripten_get_heap_max = () => getHeapMax()
+  const getHeapMax = () => 2147483648
+  const _emscripten_get_heap_max = () => getHeapMax()
   _emscripten_get_heap_max.sig = 'p'
-  var growMemory = (size) => {
-    var b = wasmMemory.buffer
-    var pages = ((size - b.byteLength + 65535) / 65536) | 0
+  const growMemory = (size) => {
+    const b = wasmMemory.buffer
+    const pages = ((size - b.byteLength + 65535) / 65536) | 0
     try {
       wasmMemory.grow(pages)
       updateMemoryViews()
       return 1
     } catch (e) {}
   }
-  var _emscripten_resize_heap = (requestedSize) => {
-    var oldSize = HEAPU8.length
+  const _emscripten_resize_heap = (requestedSize) => {
+    const oldSize = HEAPU8.length
     requestedSize >>>= 0
-    var maxHeapSize = getHeapMax()
+    const maxHeapSize = getHeapMax()
     if (requestedSize > maxHeapSize) {
       return false
     }
-    for (var cutDown = 1; cutDown <= 4; cutDown *= 2) {
-      var overGrownHeapSize = oldSize * (1 + 0.2 / cutDown)
+    for (let cutDown = 1; cutDown <= 4; cutDown *= 2) {
+      let overGrownHeapSize = oldSize * (1 + 0.2 / cutDown)
       overGrownHeapSize = Math.min(overGrownHeapSize, requestedSize + 100663296)
-      var newSize = Math.min(
+      const newSize = Math.min(
         maxHeapSize,
         alignMemory(Math.max(requestedSize, overGrownHeapSize), 65536),
       )
-      var replacement = growMemory(newSize)
+      const replacement = growMemory(newSize)
       if (replacement) {
         return true
       }
@@ -8721,11 +8735,11 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     return false
   }
   _emscripten_resize_heap.sig = 'ip'
-  var getExecutableName = () => thisProgram || './this.program'
-  var getEnvStrings = () => {
+  const getExecutableName = () => thisProgram || './this.program'
+  const getEnvStrings = () => {
     if (!getEnvStrings.strings) {
-      var lang = 'C'.replace('-', '_') + '.UTF-8'
-      var env = {
+      const lang = 'C'.replace('-', '_') + '.UTF-8'
+      const env = {
         USER: 'web_user',
         LOGNAME: 'web_user',
         PATH: '/',
@@ -8734,28 +8748,28 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         LANG: lang,
         _: getExecutableName(),
       }
-      for (var x in ENV) {
+      for (let x in ENV) {
         if (ENV[x] === undefined) delete env[x]
         else env[x] = ENV[x]
       }
-      var strings = []
-      for (var x in env) {
+      const strings = []
+      for (let x in env) {
         strings.push(`${x}=${env[x]}`)
       }
       getEnvStrings.strings = strings
     }
     return getEnvStrings.strings
   }
-  var stringToAscii = (str, buffer) => {
-    for (var i = 0; i < str.length; ++i) {
+  const stringToAscii = (str, buffer) => {
+    for (let i = 0; i < str.length; ++i) {
       HEAP8[buffer++] = str.charCodeAt(i)
     }
     HEAP8[buffer] = 0
   }
-  var _environ_get = (__environ, environ_buf) => {
-    var bufSize = 0
+  const _environ_get = (__environ, environ_buf) => {
+    let bufSize = 0
     getEnvStrings().forEach((string, i) => {
-      var ptr = environ_buf + bufSize
+      const ptr = environ_buf + bufSize
       HEAPU32[(__environ + i * 4) >> 2] = ptr
       stringToAscii(string, ptr)
       bufSize += string.length + 1
@@ -8763,10 +8777,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     return 0
   }
   _environ_get.sig = 'ipp'
-  var _environ_sizes_get = (penviron_count, penviron_buf_size) => {
-    var strings = getEnvStrings()
+  const _environ_sizes_get = (penviron_count, penviron_buf_size) => {
+    const strings = getEnvStrings()
     HEAPU32[penviron_count >> 2] = strings.length
-    var bufSize = 0
+    let bufSize = 0
     strings.forEach((string) => (bufSize += string.length + 1))
     HEAPU32[penviron_buf_size >> 2] = bufSize
     return 0
@@ -8774,7 +8788,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   _environ_sizes_get.sig = 'ipp'
   function _fd_close(fd) {
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       FS.close(stream)
       return 0
     } catch (e) {
@@ -8785,19 +8799,17 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   _fd_close.sig = 'ii'
   function _fd_fdstat_get(fd, pbuf) {
     try {
-      var rightsBase = 0
-      var rightsInheriting = 0
-      var flags = 0
-      {
-        var stream = SYSCALLS.getStreamFromFD(fd)
-        var type = stream.tty
-          ? 2
-          : FS.isDir(stream.mode)
-            ? 3
-            : FS.isLink(stream.mode)
-              ? 7
-              : 4
-      }
+      const rightsBase = 0
+      const rightsInheriting = 0
+      const flags = 0
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      const type = stream.tty
+        ? 2
+        : FS.isDir(stream.mode)
+          ? 3
+          : FS.isLink(stream.mode)
+            ? 7
+            : 4
       HEAP8[pbuf] = type
       HEAP16[(pbuf + 2) >> 1] = flags
       HEAP64[(pbuf + 8) >> 3] = BigInt(rightsBase)
@@ -8809,13 +8821,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   _fd_fdstat_get.sig = 'iip'
-  var doReadv = (stream, iov, iovcnt, offset) => {
-    var ret = 0
-    for (var i = 0; i < iovcnt; i++) {
-      var ptr = HEAPU32[iov >> 2]
-      var len = HEAPU32[(iov + 4) >> 2]
+  const doReadv = (stream, iov, iovcnt, offset) => {
+    let ret = 0
+    for (let i = 0; i < iovcnt; i++) {
+      const ptr = HEAPU32[iov >> 2]
+      const len = HEAPU32[(iov + 4) >> 2]
       iov += 8
-      var curr = FS.read(stream, HEAP8, ptr, len, offset)
+      const curr = FS.read(stream, HEAP8, ptr, len, offset)
       if (curr < 0) return -1
       ret += curr
       if (curr < len) break
@@ -8829,8 +8841,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     offset = bigintToI53Checked(offset)
     try {
       if (isNaN(offset)) return 61
-      var stream = SYSCALLS.getStreamFromFD(fd)
-      var num = doReadv(stream, iov, iovcnt, offset)
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      const num = doReadv(stream, iov, iovcnt, offset)
       HEAPU32[pnum >> 2] = num
       return 0
     } catch (e) {
@@ -8839,13 +8851,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   _fd_pread.sig = 'iippjp'
-  var doWritev = (stream, iov, iovcnt, offset) => {
-    var ret = 0
-    for (var i = 0; i < iovcnt; i++) {
-      var ptr = HEAPU32[iov >> 2]
-      var len = HEAPU32[(iov + 4) >> 2]
+  const doWritev = (stream, iov, iovcnt, offset) => {
+    let ret = 0
+    for (let i = 0; i < iovcnt; i++) {
+      const ptr = HEAPU32[iov >> 2]
+      const len = HEAPU32[(iov + 4) >> 2]
       iov += 8
-      var curr = FS.write(stream, HEAP8, ptr, len, offset)
+      const curr = FS.write(stream, HEAP8, ptr, len, offset)
       if (curr < 0) return -1
       ret += curr
       if (curr < len) {
@@ -8861,8 +8873,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     offset = bigintToI53Checked(offset)
     try {
       if (isNaN(offset)) return 61
-      var stream = SYSCALLS.getStreamFromFD(fd)
-      var num = doWritev(stream, iov, iovcnt, offset)
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      const num = doWritev(stream, iov, iovcnt, offset)
       HEAPU32[pnum >> 2] = num
       return 0
     } catch (e) {
@@ -8873,8 +8885,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   _fd_pwrite.sig = 'iippjp'
   function _fd_read(fd, iov, iovcnt, pnum) {
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
-      var num = doReadv(stream, iov, iovcnt)
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      const num = doReadv(stream, iov, iovcnt)
       HEAPU32[pnum >> 2] = num
       return 0
     } catch (e) {
@@ -8887,7 +8899,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     offset = bigintToI53Checked(offset)
     try {
       if (isNaN(offset)) return 61
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       FS.llseek(stream, offset, whence)
       HEAP64[newOffset >> 3] = BigInt(stream.position)
       if (stream.getdents && offset === 0 && whence === 0)
@@ -8901,7 +8913,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   _fd_seek.sig = 'iijip'
   function _fd_sync(fd) {
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
+      const stream = SYSCALLS.getStreamFromFD(fd)
       if (stream.stream_ops?.fsync) {
         return stream.stream_ops.fsync(stream)
       }
@@ -8914,8 +8926,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   _fd_sync.sig = 'ii'
   function _fd_write(fd, iov, iovcnt, pnum) {
     try {
-      var stream = SYSCALLS.getStreamFromFD(fd)
-      var num = doWritev(stream, iov, iovcnt)
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      const num = doWritev(stream, iov, iovcnt)
       HEAPU32[pnum >> 2] = num
       return 0
     } catch (e) {
@@ -8924,31 +8936,31 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   _fd_write.sig = 'iippp'
-  var _getaddrinfo = (node, service, hint, out) => {
-    var family = hint ? HEAP32[(hint + 4) >> 2] : 0
-    var type = hint ? HEAP32[(hint + 8) >> 2] : 0
-    var proto = hint ? HEAP32[(hint + 12) >> 2] : 0
+  const _getaddrinfo = (node, service, hint, out) => {
+    let family = hint ? HEAP32[(hint + 4) >> 2] : 0
+    let type = hint ? HEAP32[(hint + 8) >> 2] : 0
+    let proto = hint ? HEAP32[(hint + 12) >> 2] : 0
 
     if (family === 0) family = 2
     if (family !== 2) return -6
     if (!type) type = 1
     if (!proto) proto = 6
 
-    var port = 0
+    let port = 0
     if (service) {
       port = Number.parseInt(UTF8ToString(service), 10)
       if (!Number.isFinite(port)) return -8
     }
 
-    var address = 0
+    let address = 0
     if (node) {
-      var hostname = UTF8ToString(node)
+      let hostname = UTF8ToString(node)
       if (hostname === 'localhost') {
         hostname = '127.0.0.1'
       }
-      var parts = hostname.split('.')
+      const parts = hostname.split('.')
       if (parts.length !== 4) return -2
-      var octets = parts.map((part) => Number.parseInt(part, 10))
+      const octets = parts.map((part) => Number.parseInt(part, 10))
       if (
         octets.some(
           (octet) => !Number.isInteger(octet) || octet < 0 || octet > 255,
@@ -8960,14 +8972,14 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
         octets[0] | (octets[1] << 8) | (octets[2] << 16) | (octets[3] << 24)
     }
 
-    var sockaddr = _malloc(16)
+    const sockaddr = _malloc(16)
     HEAP16[sockaddr >> 1] = 2
     HEAPU16[(sockaddr + 2) >> 1] = ((port & 255) << 8) | (port >> 8)
     HEAP32[(sockaddr + 4) >> 2] = address
     HEAP32[(sockaddr + 8) >> 2] = 0
     HEAP32[(sockaddr + 12) >> 2] = 0
 
-    var addrinfo = _malloc(32)
+    const addrinfo = _malloc(32)
     HEAP32[(addrinfo + 4) >> 2] = family
     HEAP32[(addrinfo + 8) >> 2] = type
     HEAP32[(addrinfo + 12) >> 2] = proto
@@ -8979,7 +8991,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     return 0
   }
   _getaddrinfo.sig = 'ipppp'
-  var _getnameinfo = () => -6
+  const _getnameinfo = () => -6
   _getnameinfo.sig = 'ipipipii'
   function _random_get(buffer, size) {
     try {
@@ -8991,37 +9003,37 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   _random_get.sig = 'ipp'
-  var stringToNewUTF8 = (str) => {
-    var size = lengthBytesUTF8(str) + 1
-    var ret = _malloc(size)
+  const stringToNewUTF8 = (str) => {
+    const size = lengthBytesUTF8(str) + 1
+    const ret = _malloc(size)
     if (ret) stringToUTF8(str, ret, size)
     return ret
   }
-  var removeFunction = (index) => {
+  const removeFunction = (index) => {
     functionsInTableMap.delete(getWasmTableEntry(index))
     setWasmTableEntry(index, null)
     freeTableIndexes.push(index)
   }
-  var FS_createPath = FS.createPath
-  var FS_unlink = (path) => FS.unlink(path)
-  var FS_createLazyFile = FS.createLazyFile
-  var FS_createDevice = FS.createDevice
-  var setTempRet0 = (val) => __emscripten_tempret_set(val)
-  var _setTempRet0 = setTempRet0
+  const FS_createPath = FS.createPath
+  const FS_unlink = (path) => FS.unlink(path)
+  const FS_createLazyFile = FS.createLazyFile
+  const FS_createDevice = FS.createDevice
+  const setTempRet0 = (val) => __emscripten_tempret_set(val)
+  const _setTempRet0 = setTempRet0
   Module['_setTempRet0'] = _setTempRet0
-  var getTempRet0 = (val) => __emscripten_tempret_get()
-  var _getTempRet0 = getTempRet0
+  const getTempRet0 = (val) => __emscripten_tempret_get()
+  const _getTempRet0 = getTempRet0
   Module['_getTempRet0'] = _getTempRet0
-  var _emscripten_force_exit = (status) => {
+  const _emscripten_force_exit = (status) => {
     __emscripten_runtime_keepalive_clear()
     _exit(status)
   }
   Module['_emscripten_force_exit'] = _emscripten_force_exit
   _emscripten_force_exit.sig = 'vi'
-  var _sched_yield = () => 0
+  const _sched_yield = () => 0
   Module['_sched_yield'] = _sched_yield
   _sched_yield.sig = 'i'
-  var exceptionLast = 0
+  let exceptionLast = 0
   class ExceptionInfo {
     constructor(excPtr) {
       this.excPtr = excPtr
@@ -9065,7 +9077,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       return HEAPU32[(this.ptr + 16) >> 2]
     }
   }
-  var ___resumeException = (ptr) => {
+  const ___resumeException = (ptr) => {
     if (!exceptionLast) {
       exceptionLast = ptr
     }
@@ -9073,24 +9085,24 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   }
   Module['___resumeException'] = ___resumeException
   ___resumeException.sig = 'vp'
-  var findMatchingCatch = (args) => {
-    var thrown = exceptionLast
+  const findMatchingCatch = (args) => {
+    const thrown = exceptionLast
     if (!thrown) {
       setTempRet0(0)
       return 0
     }
-    var info = new ExceptionInfo(thrown)
+    const info = new ExceptionInfo(thrown)
     info.set_adjusted_ptr(thrown)
-    var thrownType = info.get_type()
+    const thrownType = info.get_type()
     if (!thrownType) {
       setTempRet0(0)
       return thrown
     }
-    for (var caughtType of args) {
+    for (const caughtType of args) {
       if (caughtType === 0 || caughtType === thrownType) {
         break
       }
-      var adjusted_ptr_addr = info.ptr + 16
+      const adjusted_ptr_addr = info.ptr + 16
       if (___cxa_can_catch(caughtType, thrownType, adjusted_ptr_addr)) {
         setTempRet0(caughtType)
         return thrown
@@ -9099,15 +9111,15 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     setTempRet0(thrownType)
     return thrown
   }
-  var ___cxa_find_matching_catch_2 = () => findMatchingCatch([])
+  const ___cxa_find_matching_catch_2 = () => findMatchingCatch([])
   Module['___cxa_find_matching_catch_2'] = ___cxa_find_matching_catch_2
   ___cxa_find_matching_catch_2.sig = 'p'
-  var ___cxa_find_matching_catch_3 = (arg0) => findMatchingCatch([arg0])
+  const ___cxa_find_matching_catch_3 = (arg0) => findMatchingCatch([arg0])
   Module['___cxa_find_matching_catch_3'] = ___cxa_find_matching_catch_3
   ___cxa_find_matching_catch_3.sig = 'pp'
-  var uncaughtExceptionCount = 0
-  var ___cxa_throw = (ptr, type, destructor) => {
-    var info = new ExceptionInfo(ptr)
+  let uncaughtExceptionCount = 0
+  const ___cxa_throw = (ptr, type, destructor) => {
+    const info = new ExceptionInfo(ptr)
     info.init(type, destructor)
     exceptionLast = ptr
     uncaughtExceptionCount++
@@ -9115,13 +9127,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   }
   Module['___cxa_throw'] = ___cxa_throw
   ___cxa_throw.sig = 'vppp'
-  var exceptionCaught = []
-  var ___cxa_rethrow = () => {
-    var info = exceptionCaught.pop()
+  const exceptionCaught = []
+  const ___cxa_rethrow = () => {
+    const info = exceptionCaught.pop()
     if (!info) {
       abort('no exception to throw')
     }
-    var ptr = info.excPtr
+    const ptr = info.excPtr
     if (!info.get_rethrown()) {
       exceptionCaught.push(info)
       info.set_rethrown(true)
@@ -9133,8 +9145,8 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   }
   Module['___cxa_rethrow'] = ___cxa_rethrow
   ___cxa_rethrow.sig = 'v'
-  var ___cxa_begin_catch = (ptr) => {
-    var info = new ExceptionInfo(ptr)
+  const ___cxa_begin_catch = (ptr) => {
+    const info = new ExceptionInfo(ptr)
     if (!info.get_caught()) {
       info.set_caught(true)
       uncaughtExceptionCount--
@@ -9146,30 +9158,30 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   }
   Module['___cxa_begin_catch'] = ___cxa_begin_catch
   ___cxa_begin_catch.sig = 'pp'
-  var ___cxa_end_catch = () => {
+  const ___cxa_end_catch = () => {
     _setThrew(0, 0)
-    var info = exceptionCaught.pop()
+    const info = exceptionCaught.pop()
     ___cxa_decrement_exception_refcount(info.excPtr)
     exceptionLast = 0
   }
   Module['___cxa_end_catch'] = ___cxa_end_catch
   ___cxa_end_catch.sig = 'v'
-  var ___cxa_uncaught_exceptions = () => uncaughtExceptionCount
+  const ___cxa_uncaught_exceptions = () => uncaughtExceptionCount
   Module['___cxa_uncaught_exceptions'] = ___cxa_uncaught_exceptions
   ___cxa_uncaught_exceptions.sig = 'i'
-  var ___cxa_current_primary_exception = () => {
+  const ___cxa_current_primary_exception = () => {
     if (!exceptionCaught.length) {
       return 0
     }
-    var info = exceptionCaught[exceptionCaught.length - 1]
+    const info = exceptionCaught[exceptionCaught.length - 1]
     ___cxa_increment_exception_refcount(info.excPtr)
     return info.excPtr
   }
   Module['___cxa_current_primary_exception'] = ___cxa_current_primary_exception
   ___cxa_current_primary_exception.sig = 'p'
-  var ___cxa_rethrow_primary_exception = (ptr) => {
+  const ___cxa_rethrow_primary_exception = (ptr) => {
     if (!ptr) return
-    var info = new ExceptionInfo(ptr)
+    const info = new ExceptionInfo(ptr)
     exceptionCaught.push(info)
     info.set_rethrown(true)
     ___cxa_rethrow()
@@ -9190,7 +9202,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   if (ENVIRONMENT_IS_NODE) {
     NODEFS.staticInit()
   }
-  var wasmImports = {
+  let wasmImports = {
     __assert_fail: ___assert_fail,
     __call_sighandler: ___call_sighandler,
     __cxa_begin_catch: ___cxa_begin_catch,
@@ -9341,183 +9353,183 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     sched_yield: _sched_yield,
     setTempRet0: _setTempRet0,
   }
-  var wasmExports
+  let wasmExports
   createWasm()
-  var ___wasm_call_ctors = () =>
+  let ___wasm_call_ctors = () =>
     (___wasm_call_ctors = wasmExports['__wasm_call_ctors'])()
-  var _palloc0 = (Module['_palloc0'] = (a0) =>
+  let _palloc0 = (Module['_palloc0'] = (a0) =>
     (_palloc0 = Module['_palloc0'] = wasmExports['palloc0'])(a0))
-  var _RelationGetNumberOfBlocksInFork = (Module[
+  let _RelationGetNumberOfBlocksInFork = (Module[
     '_RelationGetNumberOfBlocksInFork'
   ] = (a0, a1) =>
     (_RelationGetNumberOfBlocksInFork = Module[
       '_RelationGetNumberOfBlocksInFork'
     ] =
       wasmExports['RelationGetNumberOfBlocksInFork'])(a0, a1))
-  var _ExtendBufferedRel = (Module['_ExtendBufferedRel'] = (a0, a1, a2, a3) =>
+  let _ExtendBufferedRel = (Module['_ExtendBufferedRel'] = (a0, a1, a2, a3) =>
     (_ExtendBufferedRel = Module['_ExtendBufferedRel'] =
       wasmExports['ExtendBufferedRel'])(a0, a1, a2, a3))
-  var _MarkBufferDirty = (Module['_MarkBufferDirty'] = (a0) =>
+  let _MarkBufferDirty = (Module['_MarkBufferDirty'] = (a0) =>
     (_MarkBufferDirty = Module['_MarkBufferDirty'] =
       wasmExports['MarkBufferDirty'])(a0))
-  var _XLogBeginInsert = (Module['_XLogBeginInsert'] = () =>
+  let _XLogBeginInsert = (Module['_XLogBeginInsert'] = () =>
     (_XLogBeginInsert = Module['_XLogBeginInsert'] =
       wasmExports['XLogBeginInsert'])())
-  var _XLogRegisterData = (Module['_XLogRegisterData'] = (a0, a1) =>
+  let _XLogRegisterData = (Module['_XLogRegisterData'] = (a0, a1) =>
     (_XLogRegisterData = Module['_XLogRegisterData'] =
       wasmExports['XLogRegisterData'])(a0, a1))
-  var _XLogInsert = (Module['_XLogInsert'] = (a0, a1) =>
+  let _XLogInsert = (Module['_XLogInsert'] = (a0, a1) =>
     (_XLogInsert = Module['_XLogInsert'] = wasmExports['XLogInsert'])(a0, a1))
-  var _UnlockReleaseBuffer = (Module['_UnlockReleaseBuffer'] = (a0) =>
+  let _UnlockReleaseBuffer = (Module['_UnlockReleaseBuffer'] = (a0) =>
     (_UnlockReleaseBuffer = Module['_UnlockReleaseBuffer'] =
       wasmExports['UnlockReleaseBuffer'])(a0))
-  var _palloc = (Module['_palloc'] = (a0) =>
+  let _palloc = (Module['_palloc'] = (a0) =>
     (_palloc = Module['_palloc'] = wasmExports['palloc'])(a0))
-  var _brin_build_desc = (Module['_brin_build_desc'] = (a0) =>
+  let _brin_build_desc = (Module['_brin_build_desc'] = (a0) =>
     (_brin_build_desc = Module['_brin_build_desc'] =
       wasmExports['brin_build_desc'])(a0))
-  var _EnterParallelMode = (Module['_EnterParallelMode'] = () =>
+  let _EnterParallelMode = (Module['_EnterParallelMode'] = () =>
     (_EnterParallelMode = Module['_EnterParallelMode'] =
       wasmExports['EnterParallelMode'])())
-  var _CreateParallelContext = (Module['_CreateParallelContext'] = (
+  let _CreateParallelContext = (Module['_CreateParallelContext'] = (
     a0,
     a1,
     a2,
   ) =>
     (_CreateParallelContext = Module['_CreateParallelContext'] =
       wasmExports['CreateParallelContext'])(a0, a1, a2))
-  var _GetTransactionSnapshot = (Module['_GetTransactionSnapshot'] = () =>
+  let _GetTransactionSnapshot = (Module['_GetTransactionSnapshot'] = () =>
     (_GetTransactionSnapshot = Module['_GetTransactionSnapshot'] =
       wasmExports['GetTransactionSnapshot'])())
-  var _RegisterSnapshot = (Module['_RegisterSnapshot'] = (a0) =>
+  let _RegisterSnapshot = (Module['_RegisterSnapshot'] = (a0) =>
     (_RegisterSnapshot = Module['_RegisterSnapshot'] =
       wasmExports['RegisterSnapshot'])(a0))
-  var _table_parallelscan_estimate = (Module['_table_parallelscan_estimate'] = (
+  let _table_parallelscan_estimate = (Module['_table_parallelscan_estimate'] = (
     a0,
     a1,
   ) =>
     (_table_parallelscan_estimate = Module['_table_parallelscan_estimate'] =
       wasmExports['table_parallelscan_estimate'])(a0, a1))
-  var _add_size = (Module['_add_size'] = (a0, a1) =>
+  let _add_size = (Module['_add_size'] = (a0, a1) =>
     (_add_size = Module['_add_size'] = wasmExports['add_size'])(a0, a1))
-  var _tuplesort_estimate_shared = (Module['_tuplesort_estimate_shared'] = (
+  let _tuplesort_estimate_shared = (Module['_tuplesort_estimate_shared'] = (
     a0,
   ) =>
     (_tuplesort_estimate_shared = Module['_tuplesort_estimate_shared'] =
       wasmExports['tuplesort_estimate_shared'])(a0))
-  var _strlen = (Module['_strlen'] = (a0) =>
+  let _strlen = (Module['_strlen'] = (a0) =>
     (_strlen = Module['_strlen'] = wasmExports['strlen'])(a0))
-  var _InitializeParallelDSM = (Module['_InitializeParallelDSM'] = (a0) =>
+  let _InitializeParallelDSM = (Module['_InitializeParallelDSM'] = (a0) =>
     (_InitializeParallelDSM = Module['_InitializeParallelDSM'] =
       wasmExports['InitializeParallelDSM'])(a0))
-  var _UnregisterSnapshot = (Module['_UnregisterSnapshot'] = (a0) =>
+  let _UnregisterSnapshot = (Module['_UnregisterSnapshot'] = (a0) =>
     (_UnregisterSnapshot = Module['_UnregisterSnapshot'] =
       wasmExports['UnregisterSnapshot'])(a0))
-  var _DestroyParallelContext = (Module['_DestroyParallelContext'] = (a0) =>
+  let _DestroyParallelContext = (Module['_DestroyParallelContext'] = (a0) =>
     (_DestroyParallelContext = Module['_DestroyParallelContext'] =
       wasmExports['DestroyParallelContext'])(a0))
-  var _ExitParallelMode = (Module['_ExitParallelMode'] = () =>
+  let _ExitParallelMode = (Module['_ExitParallelMode'] = () =>
     (_ExitParallelMode = Module['_ExitParallelMode'] =
       wasmExports['ExitParallelMode'])())
-  var _shm_toc_allocate = (Module['_shm_toc_allocate'] = (a0, a1) =>
+  let _shm_toc_allocate = (Module['_shm_toc_allocate'] = (a0, a1) =>
     (_shm_toc_allocate = Module['_shm_toc_allocate'] =
       wasmExports['shm_toc_allocate'])(a0, a1))
-  var _ConditionVariableInit = (Module['_ConditionVariableInit'] = (a0) =>
+  let _ConditionVariableInit = (Module['_ConditionVariableInit'] = (a0) =>
     (_ConditionVariableInit = Module['_ConditionVariableInit'] =
       wasmExports['ConditionVariableInit'])(a0))
-  var _table_parallelscan_initialize = (Module[
+  let _table_parallelscan_initialize = (Module[
     '_table_parallelscan_initialize'
   ] = (a0, a1, a2) =>
     (_table_parallelscan_initialize = Module['_table_parallelscan_initialize'] =
       wasmExports['table_parallelscan_initialize'])(a0, a1, a2))
-  var _tuplesort_initialize_shared = (Module['_tuplesort_initialize_shared'] = (
+  let _tuplesort_initialize_shared = (Module['_tuplesort_initialize_shared'] = (
     a0,
     a1,
     a2,
   ) =>
     (_tuplesort_initialize_shared = Module['_tuplesort_initialize_shared'] =
       wasmExports['tuplesort_initialize_shared'])(a0, a1, a2))
-  var _shm_toc_insert = (Module['_shm_toc_insert'] = (a0, a1, a2) =>
+  let _shm_toc_insert = (Module['_shm_toc_insert'] = (a0, a1, a2) =>
     (_shm_toc_insert = Module['_shm_toc_insert'] =
       wasmExports['shm_toc_insert'])(a0, a1, a2))
-  var _memcpy = (Module['_memcpy'] = (a0, a1, a2) =>
+  let _memcpy = (Module['_memcpy'] = (a0, a1, a2) =>
     (_memcpy = Module['_memcpy'] = wasmExports['memcpy'])(a0, a1, a2))
-  var _LaunchParallelWorkers = (Module['_LaunchParallelWorkers'] = (a0) =>
+  let _LaunchParallelWorkers = (Module['_LaunchParallelWorkers'] = (a0) =>
     (_LaunchParallelWorkers = Module['_LaunchParallelWorkers'] =
       wasmExports['LaunchParallelWorkers'])(a0))
-  var _WaitForParallelWorkersToAttach = (Module[
+  let _WaitForParallelWorkersToAttach = (Module[
     '_WaitForParallelWorkersToAttach'
   ] = (a0) =>
     (_WaitForParallelWorkersToAttach = Module[
       '_WaitForParallelWorkersToAttach'
     ] =
       wasmExports['WaitForParallelWorkersToAttach'])(a0))
-  var _s_lock = (Module['_s_lock'] = (a0, a1, a2, a3) =>
+  let _s_lock = (Module['_s_lock'] = (a0, a1, a2, a3) =>
     (_s_lock = Module['_s_lock'] = wasmExports['s_lock'])(a0, a1, a2, a3))
-  var _ConditionVariableSleep = (Module['_ConditionVariableSleep'] = (a0, a1) =>
+  let _ConditionVariableSleep = (Module['_ConditionVariableSleep'] = (a0, a1) =>
     (_ConditionVariableSleep = Module['_ConditionVariableSleep'] =
       wasmExports['ConditionVariableSleep'])(a0, a1))
-  var _ConditionVariableCancelSleep = (Module['_ConditionVariableCancelSleep'] =
+  let _ConditionVariableCancelSleep = (Module['_ConditionVariableCancelSleep'] =
     () =>
       (_ConditionVariableCancelSleep = Module['_ConditionVariableCancelSleep'] =
         wasmExports['ConditionVariableCancelSleep'])())
-  var _tuplesort_performsort = (Module['_tuplesort_performsort'] = (a0) =>
+  let _tuplesort_performsort = (Module['_tuplesort_performsort'] = (a0) =>
     (_tuplesort_performsort = Module['_tuplesort_performsort'] =
       wasmExports['tuplesort_performsort'])(a0))
-  var _AllocSetContextCreateInternal = (Module[
+  let _AllocSetContextCreateInternal = (Module[
     '_AllocSetContextCreateInternal'
   ] = (a0, a1, a2, a3, a4) =>
     (_AllocSetContextCreateInternal = Module['_AllocSetContextCreateInternal'] =
       wasmExports['AllocSetContextCreateInternal'])(a0, a1, a2, a3, a4))
-  var _tuplesort_end = (Module['_tuplesort_end'] = (a0) =>
+  let _tuplesort_end = (Module['_tuplesort_end'] = (a0) =>
     (_tuplesort_end = Module['_tuplesort_end'] = wasmExports['tuplesort_end'])(
       a0,
     ))
-  var _MemoryContextReset = (Module['_MemoryContextReset'] = (a0) =>
+  let _MemoryContextReset = (Module['_MemoryContextReset'] = (a0) =>
     (_MemoryContextReset = Module['_MemoryContextReset'] =
       wasmExports['MemoryContextReset'])(a0))
-  var _brin_deform_tuple = (Module['_brin_deform_tuple'] = (a0, a1, a2) =>
+  let _brin_deform_tuple = (Module['_brin_deform_tuple'] = (a0, a1, a2) =>
     (_brin_deform_tuple = Module['_brin_deform_tuple'] =
       wasmExports['brin_deform_tuple'])(a0, a1, a2))
-  var _pfree = (Module['_pfree'] = (a0) =>
+  let _pfree = (Module['_pfree'] = (a0) =>
     (_pfree = Module['_pfree'] = wasmExports['pfree'])(a0))
-  var _MemoryContextDelete = (Module['_MemoryContextDelete'] = (a0) =>
+  let _MemoryContextDelete = (Module['_MemoryContextDelete'] = (a0) =>
     (_MemoryContextDelete = Module['_MemoryContextDelete'] =
       wasmExports['MemoryContextDelete'])(a0))
-  var _errstart_cold = (Module['_errstart_cold'] = (a0, a1) =>
+  let _errstart_cold = (Module['_errstart_cold'] = (a0, a1) =>
     (_errstart_cold = Module['_errstart_cold'] = wasmExports['errstart_cold'])(
       a0,
       a1,
     ))
-  var _errmsg_internal = (Module['_errmsg_internal'] = (a0, a1) =>
+  let _errmsg_internal = (Module['_errmsg_internal'] = (a0, a1) =>
     (_errmsg_internal = Module['_errmsg_internal'] =
       wasmExports['errmsg_internal'])(a0, a1))
-  var _errfinish = (Module['_errfinish'] = (a0, a1, a2) =>
+  let _errfinish = (Module['_errfinish'] = (a0, a1, a2) =>
     (_errfinish = Module['_errfinish'] = wasmExports['errfinish'])(a0, a1, a2))
-  var _log_newpage_buffer = (Module['_log_newpage_buffer'] = (a0, a1) =>
+  let _log_newpage_buffer = (Module['_log_newpage_buffer'] = (a0, a1) =>
     (_log_newpage_buffer = Module['_log_newpage_buffer'] =
       wasmExports['log_newpage_buffer'])(a0, a1))
-  var _ProcessInterrupts = (Module['_ProcessInterrupts'] = () =>
+  let _ProcessInterrupts = (Module['_ProcessInterrupts'] = () =>
     (_ProcessInterrupts = Module['_ProcessInterrupts'] =
       wasmExports['ProcessInterrupts'])())
-  var _errstart = (Module['_errstart'] = (a0, a1) =>
+  let _errstart = (Module['_errstart'] = (a0, a1) =>
     (_errstart = Module['_errstart'] = wasmExports['errstart'])(a0, a1))
-  var _errcode = (Module['_errcode'] = (a0) =>
+  let _errcode = (Module['_errcode'] = (a0) =>
     (_errcode = Module['_errcode'] = wasmExports['errcode'])(a0))
-  var _errmsg = (Module['_errmsg'] = (a0, a1) =>
+  let _errmsg = (Module['_errmsg'] = (a0, a1) =>
     (_errmsg = Module['_errmsg'] = wasmExports['errmsg'])(a0, a1))
-  var _LockBuffer = (Module['_LockBuffer'] = (a0, a1) =>
+  let _LockBuffer = (Module['_LockBuffer'] = (a0, a1) =>
     (_LockBuffer = Module['_LockBuffer'] = wasmExports['LockBuffer'])(a0, a1))
-  var _ReleaseBuffer = (Module['_ReleaseBuffer'] = (a0) =>
+  let _ReleaseBuffer = (Module['_ReleaseBuffer'] = (a0) =>
     (_ReleaseBuffer = Module['_ReleaseBuffer'] = wasmExports['ReleaseBuffer'])(
       a0,
     ))
-  var _IndexGetRelation = (Module['_IndexGetRelation'] = (a0, a1) =>
+  let _IndexGetRelation = (Module['_IndexGetRelation'] = (a0, a1) =>
     (_IndexGetRelation = Module['_IndexGetRelation'] =
       wasmExports['IndexGetRelation'])(a0, a1))
-  var _table_open = (Module['_table_open'] = (a0, a1) =>
+  let _table_open = (Module['_table_open'] = (a0, a1) =>
     (_table_open = Module['_table_open'] = wasmExports['table_open'])(a0, a1))
-  var _ReadBufferExtended = (Module['_ReadBufferExtended'] = (
+  let _ReadBufferExtended = (Module['_ReadBufferExtended'] = (
     a0,
     a1,
     a2,
@@ -9526,12 +9538,12 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_ReadBufferExtended = Module['_ReadBufferExtended'] =
       wasmExports['ReadBufferExtended'])(a0, a1, a2, a3, a4))
-  var _table_close = (Module['_table_close'] = (a0, a1) =>
+  let _table_close = (Module['_table_close'] = (a0, a1) =>
     (_table_close = Module['_table_close'] = wasmExports['table_close'])(
       a0,
       a1,
     ))
-  var _build_reloptions = (Module['_build_reloptions'] = (
+  let _build_reloptions = (Module['_build_reloptions'] = (
     a0,
     a1,
     a2,
@@ -9541,21 +9553,21 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_build_reloptions = Module['_build_reloptions'] =
       wasmExports['build_reloptions'])(a0, a1, a2, a3, a4, a5))
-  var _RelationGetIndexScan = (Module['_RelationGetIndexScan'] = (a0, a1, a2) =>
+  let _RelationGetIndexScan = (Module['_RelationGetIndexScan'] = (a0, a1, a2) =>
     (_RelationGetIndexScan = Module['_RelationGetIndexScan'] =
       wasmExports['RelationGetIndexScan'])(a0, a1, a2))
-  var _pgstat_assoc_relation = (Module['_pgstat_assoc_relation'] = (a0) =>
+  let _pgstat_assoc_relation = (Module['_pgstat_assoc_relation'] = (a0) =>
     (_pgstat_assoc_relation = Module['_pgstat_assoc_relation'] =
       wasmExports['pgstat_assoc_relation'])(a0))
-  var _memset = (Module['_memset'] = (a0, a1, a2) =>
+  let _memset = (Module['_memset'] = (a0, a1, a2) =>
     (_memset = Module['_memset'] = wasmExports['memset'])(a0, a1, a2))
-  var _index_getprocinfo = (Module['_index_getprocinfo'] = (a0, a1, a2) =>
+  let _index_getprocinfo = (Module['_index_getprocinfo'] = (a0, a1, a2) =>
     (_index_getprocinfo = Module['_index_getprocinfo'] =
       wasmExports['index_getprocinfo'])(a0, a1, a2))
-  var _fmgr_info_copy = (Module['_fmgr_info_copy'] = (a0, a1, a2) =>
+  let _fmgr_info_copy = (Module['_fmgr_info_copy'] = (a0, a1, a2) =>
     (_fmgr_info_copy = Module['_fmgr_info_copy'] =
       wasmExports['fmgr_info_copy'])(a0, a1, a2))
-  var _FunctionCall4Coll = (Module['_FunctionCall4Coll'] = (
+  let _FunctionCall4Coll = (Module['_FunctionCall4Coll'] = (
     a0,
     a1,
     a2,
@@ -9565,33 +9577,33 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_FunctionCall4Coll = Module['_FunctionCall4Coll'] =
       wasmExports['FunctionCall4Coll'])(a0, a1, a2, a3, a4, a5))
-  var _FunctionCall1Coll = (Module['_FunctionCall1Coll'] = (a0, a1, a2) =>
+  let _FunctionCall1Coll = (Module['_FunctionCall1Coll'] = (a0, a1, a2) =>
     (_FunctionCall1Coll = Module['_FunctionCall1Coll'] =
       wasmExports['FunctionCall1Coll'])(a0, a1, a2))
-  var _brin_free_desc = (Module['_brin_free_desc'] = (a0) =>
+  let _brin_free_desc = (Module['_brin_free_desc'] = (a0) =>
     (_brin_free_desc = Module['_brin_free_desc'] =
       wasmExports['brin_free_desc'])(a0))
-  var _WaitForParallelWorkersToFinish = (Module[
+  let _WaitForParallelWorkersToFinish = (Module[
     '_WaitForParallelWorkersToFinish'
   ] = (a0) =>
     (_WaitForParallelWorkersToFinish = Module[
       '_WaitForParallelWorkersToFinish'
     ] =
       wasmExports['WaitForParallelWorkersToFinish'])(a0))
-  var _PageGetFreeSpace = (Module['_PageGetFreeSpace'] = (a0) =>
+  let _PageGetFreeSpace = (Module['_PageGetFreeSpace'] = (a0) =>
     (_PageGetFreeSpace = Module['_PageGetFreeSpace'] =
       wasmExports['PageGetFreeSpace'])(a0))
-  var _BufferGetBlockNumber = (Module['_BufferGetBlockNumber'] = (a0) =>
+  let _BufferGetBlockNumber = (Module['_BufferGetBlockNumber'] = (a0) =>
     (_BufferGetBlockNumber = Module['_BufferGetBlockNumber'] =
       wasmExports['BufferGetBlockNumber'])(a0))
-  var _BuildIndexInfo = (Module['_BuildIndexInfo'] = (a0) =>
+  let _BuildIndexInfo = (Module['_BuildIndexInfo'] = (a0) =>
     (_BuildIndexInfo = Module['_BuildIndexInfo'] =
       wasmExports['BuildIndexInfo'])(a0))
-  var _Int64GetDatum = (Module['_Int64GetDatum'] = (a0) =>
+  let _Int64GetDatum = (Module['_Int64GetDatum'] = (a0) =>
     (_Int64GetDatum = Module['_Int64GetDatum'] = wasmExports['Int64GetDatum'])(
       a0,
     ))
-  var _DirectFunctionCall2Coll = (Module['_DirectFunctionCall2Coll'] = (
+  let _DirectFunctionCall2Coll = (Module['_DirectFunctionCall2Coll'] = (
     a0,
     a1,
     a2,
@@ -9599,149 +9611,149 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_DirectFunctionCall2Coll = Module['_DirectFunctionCall2Coll'] =
       wasmExports['DirectFunctionCall2Coll'])(a0, a1, a2, a3))
-  var _RecoveryInProgress = (Module['_RecoveryInProgress'] = () =>
+  let _RecoveryInProgress = (Module['_RecoveryInProgress'] = () =>
     (_RecoveryInProgress = Module['_RecoveryInProgress'] =
       wasmExports['RecoveryInProgress'])())
-  var _GetUserIdAndSecContext = (Module['_GetUserIdAndSecContext'] = (a0, a1) =>
+  let _GetUserIdAndSecContext = (Module['_GetUserIdAndSecContext'] = (a0, a1) =>
     (_GetUserIdAndSecContext = Module['_GetUserIdAndSecContext'] =
       wasmExports['GetUserIdAndSecContext'])(a0, a1))
-  var _SetUserIdAndSecContext = (Module['_SetUserIdAndSecContext'] = (a0, a1) =>
+  let _SetUserIdAndSecContext = (Module['_SetUserIdAndSecContext'] = (a0, a1) =>
     (_SetUserIdAndSecContext = Module['_SetUserIdAndSecContext'] =
       wasmExports['SetUserIdAndSecContext'])(a0, a1))
-  var _NewGUCNestLevel = (Module['_NewGUCNestLevel'] = () =>
+  let _NewGUCNestLevel = (Module['_NewGUCNestLevel'] = () =>
     (_NewGUCNestLevel = Module['_NewGUCNestLevel'] =
       wasmExports['NewGUCNestLevel'])())
-  var _RestrictSearchPath = (Module['_RestrictSearchPath'] = () =>
+  let _RestrictSearchPath = (Module['_RestrictSearchPath'] = () =>
     (_RestrictSearchPath = Module['_RestrictSearchPath'] =
       wasmExports['RestrictSearchPath'])())
-  var _index_open = (Module['_index_open'] = (a0, a1) =>
+  let _index_open = (Module['_index_open'] = (a0, a1) =>
     (_index_open = Module['_index_open'] = wasmExports['index_open'])(a0, a1))
-  var _object_ownercheck = (Module['_object_ownercheck'] = (a0, a1, a2) =>
+  let _object_ownercheck = (Module['_object_ownercheck'] = (a0, a1, a2) =>
     (_object_ownercheck = Module['_object_ownercheck'] =
       wasmExports['object_ownercheck'])(a0, a1, a2))
-  var _aclcheck_error = (Module['_aclcheck_error'] = (a0, a1, a2) =>
+  let _aclcheck_error = (Module['_aclcheck_error'] = (a0, a1, a2) =>
     (_aclcheck_error = Module['_aclcheck_error'] =
       wasmExports['aclcheck_error'])(a0, a1, a2))
-  var _AtEOXact_GUC = (Module['_AtEOXact_GUC'] = (a0, a1) =>
+  let _AtEOXact_GUC = (Module['_AtEOXact_GUC'] = (a0, a1) =>
     (_AtEOXact_GUC = Module['_AtEOXact_GUC'] = wasmExports['AtEOXact_GUC'])(
       a0,
       a1,
     ))
-  var _relation_close = (Module['_relation_close'] = (a0, a1) =>
+  let _relation_close = (Module['_relation_close'] = (a0, a1) =>
     (_relation_close = Module['_relation_close'] =
       wasmExports['relation_close'])(a0, a1))
-  var _errhint = (Module['_errhint'] = (a0, a1) =>
+  let _errhint = (Module['_errhint'] = (a0, a1) =>
     (_errhint = Module['_errhint'] = wasmExports['errhint'])(a0, a1))
-  var _GetUserId = (Module['_GetUserId'] = () =>
+  let _GetUserId = (Module['_GetUserId'] = () =>
     (_GetUserId = Module['_GetUserId'] = wasmExports['GetUserId'])())
-  var _ReadBuffer = (Module['_ReadBuffer'] = (a0, a1) =>
+  let _ReadBuffer = (Module['_ReadBuffer'] = (a0, a1) =>
     (_ReadBuffer = Module['_ReadBuffer'] = wasmExports['ReadBuffer'])(a0, a1))
-  var _shm_toc_lookup = (Module['_shm_toc_lookup'] = (a0, a1, a2) =>
+  let _shm_toc_lookup = (Module['_shm_toc_lookup'] = (a0, a1, a2) =>
     (_shm_toc_lookup = Module['_shm_toc_lookup'] =
       wasmExports['shm_toc_lookup'])(a0, a1, a2))
-  var _pgstat_report_activity = (Module['_pgstat_report_activity'] = (a0, a1) =>
+  let _pgstat_report_activity = (Module['_pgstat_report_activity'] = (a0, a1) =>
     (_pgstat_report_activity = Module['_pgstat_report_activity'] =
       wasmExports['pgstat_report_activity'])(a0, a1))
-  var _tuplesort_attach_shared = (Module['_tuplesort_attach_shared'] = (
+  let _tuplesort_attach_shared = (Module['_tuplesort_attach_shared'] = (
     a0,
     a1,
   ) =>
     (_tuplesort_attach_shared = Module['_tuplesort_attach_shared'] =
       wasmExports['tuplesort_attach_shared'])(a0, a1))
-  var _index_close = (Module['_index_close'] = (a0, a1) =>
+  let _index_close = (Module['_index_close'] = (a0, a1) =>
     (_index_close = Module['_index_close'] = wasmExports['index_close'])(
       a0,
       a1,
     ))
-  var _table_beginscan_parallel = (Module['_table_beginscan_parallel'] = (
+  let _table_beginscan_parallel = (Module['_table_beginscan_parallel'] = (
     a0,
     a1,
   ) =>
     (_table_beginscan_parallel = Module['_table_beginscan_parallel'] =
       wasmExports['table_beginscan_parallel'])(a0, a1))
-  var _ConditionVariableSignal = (Module['_ConditionVariableSignal'] = (a0) =>
+  let _ConditionVariableSignal = (Module['_ConditionVariableSignal'] = (a0) =>
     (_ConditionVariableSignal = Module['_ConditionVariableSignal'] =
       wasmExports['ConditionVariableSignal'])(a0))
-  var _datumCopy = (Module['_datumCopy'] = (a0, a1, a2) =>
+  let _datumCopy = (Module['_datumCopy'] = (a0, a1, a2) =>
     (_datumCopy = Module['_datumCopy'] = wasmExports['datumCopy'])(a0, a1, a2))
-  var _lookup_type_cache = (Module['_lookup_type_cache'] = (a0, a1) =>
+  let _lookup_type_cache = (Module['_lookup_type_cache'] = (a0, a1) =>
     (_lookup_type_cache = Module['_lookup_type_cache'] =
       wasmExports['lookup_type_cache'])(a0, a1))
-  var _get_fn_opclass_options = (Module['_get_fn_opclass_options'] = (a0) =>
+  let _get_fn_opclass_options = (Module['_get_fn_opclass_options'] = (a0) =>
     (_get_fn_opclass_options = Module['_get_fn_opclass_options'] =
       wasmExports['get_fn_opclass_options'])(a0))
-  var _log = (Module['_log'] = (a0) =>
+  let _log = (Module['_log'] = (a0) =>
     (_log = Module['_log'] = wasmExports['log'])(a0))
-  var _pg_detoast_datum = (Module['_pg_detoast_datum'] = (a0) =>
+  let _pg_detoast_datum = (Module['_pg_detoast_datum'] = (a0) =>
     (_pg_detoast_datum = Module['_pg_detoast_datum'] =
       wasmExports['pg_detoast_datum'])(a0))
-  var _index_getprocid = (Module['_index_getprocid'] = (a0, a1, a2) =>
+  let _index_getprocid = (Module['_index_getprocid'] = (a0, a1, a2) =>
     (_index_getprocid = Module['_index_getprocid'] =
       wasmExports['index_getprocid'])(a0, a1, a2))
-  var _errdetail_internal = (Module['_errdetail_internal'] = (a0, a1) =>
+  let _errdetail_internal = (Module['_errdetail_internal'] = (a0, a1) =>
     (_errdetail_internal = Module['_errdetail_internal'] =
       wasmExports['errdetail_internal'])(a0, a1))
-  var _pg_popcount_optimized = (Module['_pg_popcount_optimized'] = (a0, a1) =>
+  let _pg_popcount_optimized = (Module['_pg_popcount_optimized'] = (a0, a1) =>
     (_pg_popcount_optimized = Module['_pg_popcount_optimized'] =
       wasmExports['pg_popcount_optimized'])(a0, a1))
-  var _init_local_reloptions = (Module['_init_local_reloptions'] = (a0, a1) =>
+  let _init_local_reloptions = (Module['_init_local_reloptions'] = (a0, a1) =>
     (_init_local_reloptions = Module['_init_local_reloptions'] =
       wasmExports['init_local_reloptions'])(a0, a1))
-  var _initStringInfo = (Module['_initStringInfo'] = (a0) =>
+  let _initStringInfo = (Module['_initStringInfo'] = (a0) =>
     (_initStringInfo = Module['_initStringInfo'] =
       wasmExports['initStringInfo'])(a0))
-  var _appendStringInfoChar = (Module['_appendStringInfoChar'] = (a0, a1) =>
+  let _appendStringInfoChar = (Module['_appendStringInfoChar'] = (a0, a1) =>
     (_appendStringInfoChar = Module['_appendStringInfoChar'] =
       wasmExports['appendStringInfoChar'])(a0, a1))
-  var _appendStringInfo = (Module['_appendStringInfo'] = (a0, a1, a2) =>
+  let _appendStringInfo = (Module['_appendStringInfo'] = (a0, a1, a2) =>
     (_appendStringInfo = Module['_appendStringInfo'] =
       wasmExports['appendStringInfo'])(a0, a1, a2))
-  var _FunctionCall2Coll = (Module['_FunctionCall2Coll'] = (a0, a1, a2, a3) =>
+  let _FunctionCall2Coll = (Module['_FunctionCall2Coll'] = (a0, a1, a2, a3) =>
     (_FunctionCall2Coll = Module['_FunctionCall2Coll'] =
       wasmExports['FunctionCall2Coll'])(a0, a1, a2, a3))
-  var _SysCacheGetAttrNotNull = (Module['_SysCacheGetAttrNotNull'] = (
+  let _SysCacheGetAttrNotNull = (Module['_SysCacheGetAttrNotNull'] = (
     a0,
     a1,
     a2,
   ) =>
     (_SysCacheGetAttrNotNull = Module['_SysCacheGetAttrNotNull'] =
       wasmExports['SysCacheGetAttrNotNull'])(a0, a1, a2))
-  var _ReleaseSysCache = (Module['_ReleaseSysCache'] = (a0) =>
+  let _ReleaseSysCache = (Module['_ReleaseSysCache'] = (a0) =>
     (_ReleaseSysCache = Module['_ReleaseSysCache'] =
       wasmExports['ReleaseSysCache'])(a0))
-  var _get_opcode = (Module['_get_opcode'] = (a0) =>
+  let _get_opcode = (Module['_get_opcode'] = (a0) =>
     (_get_opcode = Module['_get_opcode'] = wasmExports['get_opcode'])(a0))
-  var _fmgr_info_cxt = (Module['_fmgr_info_cxt'] = (a0, a1, a2) =>
+  let _fmgr_info_cxt = (Module['_fmgr_info_cxt'] = (a0, a1, a2) =>
     (_fmgr_info_cxt = Module['_fmgr_info_cxt'] = wasmExports['fmgr_info_cxt'])(
       a0,
       a1,
       a2,
     ))
-  var _Float8GetDatum = (Module['_Float8GetDatum'] = (a0) =>
+  let _Float8GetDatum = (Module['_Float8GetDatum'] = (a0) =>
     (_Float8GetDatum = Module['_Float8GetDatum'] =
       wasmExports['Float8GetDatum'])(a0))
-  var _numeric_float8 = (Module['_numeric_float8'] = (a0) =>
+  let _numeric_float8 = (Module['_numeric_float8'] = (a0) =>
     (_numeric_float8 = Module['_numeric_float8'] =
       wasmExports['numeric_float8'])(a0))
-  var _numeric_sub = (Module['_numeric_sub'] = (a0) =>
+  let _numeric_sub = (Module['_numeric_sub'] = (a0) =>
     (_numeric_sub = Module['_numeric_sub'] = wasmExports['numeric_sub'])(a0))
-  var _DirectFunctionCall1Coll = (Module['_DirectFunctionCall1Coll'] = (
+  let _DirectFunctionCall1Coll = (Module['_DirectFunctionCall1Coll'] = (
     a0,
     a1,
     a2,
   ) =>
     (_DirectFunctionCall1Coll = Module['_DirectFunctionCall1Coll'] =
       wasmExports['DirectFunctionCall1Coll'])(a0, a1, a2))
-  var _pg_detoast_datum_packed = (Module['_pg_detoast_datum_packed'] = (a0) =>
+  let _pg_detoast_datum_packed = (Module['_pg_detoast_datum_packed'] = (a0) =>
     (_pg_detoast_datum_packed = Module['_pg_detoast_datum_packed'] =
       wasmExports['pg_detoast_datum_packed'])(a0))
-  var _pg_qsort = (Module['_pg_qsort'] = (a0, a1, a2, a3) =>
+  let _pg_qsort = (Module['_pg_qsort'] = (a0, a1, a2, a3) =>
     (_pg_qsort = Module['_pg_qsort'] = wasmExports['pg_qsort'])(a0, a1, a2, a3))
-  var _get_typbyval = (Module['_get_typbyval'] = (a0) =>
+  let _get_typbyval = (Module['_get_typbyval'] = (a0) =>
     (_get_typbyval = Module['_get_typbyval'] = wasmExports['get_typbyval'])(a0))
-  var _get_typlen = (Module['_get_typlen'] = (a0) =>
+  let _get_typlen = (Module['_get_typlen'] = (a0) =>
     (_get_typlen = Module['_get_typlen'] = wasmExports['get_typlen'])(a0))
-  var _qsort_arg = (Module['_qsort_arg'] = (a0, a1, a2, a3, a4) =>
+  let _qsort_arg = (Module['_qsort_arg'] = (a0, a1, a2, a3, a4) =>
     (_qsort_arg = Module['_qsort_arg'] = wasmExports['qsort_arg'])(
       a0,
       a1,
@@ -9749,9 +9761,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _memmove = (Module['_memmove'] = (a0, a1, a2) =>
+  let _memmove = (Module['_memmove'] = (a0, a1, a2) =>
     (_memmove = Module['_memmove'] = wasmExports['memmove'])(a0, a1, a2))
-  var _add_local_int_reloption = (Module['_add_local_int_reloption'] = (
+  let _add_local_int_reloption = (Module['_add_local_int_reloption'] = (
     a0,
     a1,
     a2,
@@ -9762,36 +9774,36 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_add_local_int_reloption = Module['_add_local_int_reloption'] =
       wasmExports['add_local_int_reloption'])(a0, a1, a2, a3, a4, a5, a6))
-  var _getTypeOutputInfo = (Module['_getTypeOutputInfo'] = (a0, a1, a2) =>
+  let _getTypeOutputInfo = (Module['_getTypeOutputInfo'] = (a0, a1, a2) =>
     (_getTypeOutputInfo = Module['_getTypeOutputInfo'] =
       wasmExports['getTypeOutputInfo'])(a0, a1, a2))
-  var _fmgr_info = (Module['_fmgr_info'] = (a0, a1) =>
+  let _fmgr_info = (Module['_fmgr_info'] = (a0, a1) =>
     (_fmgr_info = Module['_fmgr_info'] = wasmExports['fmgr_info'])(a0, a1))
-  var _OutputFunctionCall = (Module['_OutputFunctionCall'] = (a0, a1) =>
+  let _OutputFunctionCall = (Module['_OutputFunctionCall'] = (a0, a1) =>
     (_OutputFunctionCall = Module['_OutputFunctionCall'] =
       wasmExports['OutputFunctionCall'])(a0, a1))
-  var _cstring_to_text_with_len = (Module['_cstring_to_text_with_len'] = (
+  let _cstring_to_text_with_len = (Module['_cstring_to_text_with_len'] = (
     a0,
     a1,
   ) =>
     (_cstring_to_text_with_len = Module['_cstring_to_text_with_len'] =
       wasmExports['cstring_to_text_with_len'])(a0, a1))
-  var _accumArrayResult = (Module['_accumArrayResult'] = (a0, a1, a2, a3, a4) =>
+  let _accumArrayResult = (Module['_accumArrayResult'] = (a0, a1, a2, a3, a4) =>
     (_accumArrayResult = Module['_accumArrayResult'] =
       wasmExports['accumArrayResult'])(a0, a1, a2, a3, a4))
-  var _makeArrayResult = (Module['_makeArrayResult'] = (a0, a1) =>
+  let _makeArrayResult = (Module['_makeArrayResult'] = (a0, a1) =>
     (_makeArrayResult = Module['_makeArrayResult'] =
       wasmExports['makeArrayResult'])(a0, a1))
-  var _OidOutputFunctionCall = (Module['_OidOutputFunctionCall'] = (a0, a1) =>
+  let _OidOutputFunctionCall = (Module['_OidOutputFunctionCall'] = (a0, a1) =>
     (_OidOutputFunctionCall = Module['_OidOutputFunctionCall'] =
       wasmExports['OidOutputFunctionCall'])(a0, a1))
-  var _cstring_to_text = (Module['_cstring_to_text'] = (a0) =>
+  let _cstring_to_text = (Module['_cstring_to_text'] = (a0) =>
     (_cstring_to_text = Module['_cstring_to_text'] =
       wasmExports['cstring_to_text'])(a0))
-  var _PageGetExactFreeSpace = (Module['_PageGetExactFreeSpace'] = (a0) =>
+  let _PageGetExactFreeSpace = (Module['_PageGetExactFreeSpace'] = (a0) =>
     (_PageGetExactFreeSpace = Module['_PageGetExactFreeSpace'] =
       wasmExports['PageGetExactFreeSpace'])(a0))
-  var _PageIndexTupleOverwrite = (Module['_PageIndexTupleOverwrite'] = (
+  let _PageIndexTupleOverwrite = (Module['_PageIndexTupleOverwrite'] = (
     a0,
     a1,
     a2,
@@ -9799,9 +9811,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_PageIndexTupleOverwrite = Module['_PageIndexTupleOverwrite'] =
       wasmExports['PageIndexTupleOverwrite'])(a0, a1, a2, a3))
-  var _PageInit = (Module['_PageInit'] = (a0, a1, a2) =>
+  let _PageInit = (Module['_PageInit'] = (a0, a1, a2) =>
     (_PageInit = Module['_PageInit'] = wasmExports['PageInit'])(a0, a1, a2))
-  var _PageAddItemExtended = (Module['_PageAddItemExtended'] = (
+  let _PageAddItemExtended = (Module['_PageAddItemExtended'] = (
     a0,
     a1,
     a2,
@@ -9810,32 +9822,32 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_PageAddItemExtended = Module['_PageAddItemExtended'] =
       wasmExports['PageAddItemExtended'])(a0, a1, a2, a3, a4))
-  var _LockRelationForExtension = (Module['_LockRelationForExtension'] = (
+  let _LockRelationForExtension = (Module['_LockRelationForExtension'] = (
     a0,
     a1,
   ) =>
     (_LockRelationForExtension = Module['_LockRelationForExtension'] =
       wasmExports['LockRelationForExtension'])(a0, a1))
-  var _UnlockRelationForExtension = (Module['_UnlockRelationForExtension'] = (
+  let _UnlockRelationForExtension = (Module['_UnlockRelationForExtension'] = (
     a0,
     a1,
   ) =>
     (_UnlockRelationForExtension = Module['_UnlockRelationForExtension'] =
       wasmExports['UnlockRelationForExtension'])(a0, a1))
-  var _smgropen = (Module['_smgropen'] = (a0, a1) =>
+  let _smgropen = (Module['_smgropen'] = (a0, a1) =>
     (_smgropen = Module['_smgropen'] = wasmExports['smgropen'])(a0, a1))
-  var _smgrpin = (Module['_smgrpin'] = (a0) =>
+  let _smgrpin = (Module['_smgrpin'] = (a0) =>
     (_smgrpin = Module['_smgrpin'] = wasmExports['smgrpin'])(a0))
-  var _ItemPointerEquals = (Module['_ItemPointerEquals'] = (a0, a1) =>
+  let _ItemPointerEquals = (Module['_ItemPointerEquals'] = (a0, a1) =>
     (_ItemPointerEquals = Module['_ItemPointerEquals'] =
       wasmExports['ItemPointerEquals'])(a0, a1))
-  var _detoast_external_attr = (Module['_detoast_external_attr'] = (a0) =>
+  let _detoast_external_attr = (Module['_detoast_external_attr'] = (a0) =>
     (_detoast_external_attr = Module['_detoast_external_attr'] =
       wasmExports['detoast_external_attr'])(a0))
-  var _CreateTemplateTupleDesc = (Module['_CreateTemplateTupleDesc'] = (a0) =>
+  let _CreateTemplateTupleDesc = (Module['_CreateTemplateTupleDesc'] = (a0) =>
     (_CreateTemplateTupleDesc = Module['_CreateTemplateTupleDesc'] =
       wasmExports['CreateTemplateTupleDesc'])(a0))
-  var _TupleDescInitEntry = (Module['_TupleDescInitEntry'] = (
+  let _TupleDescInitEntry = (Module['_TupleDescInitEntry'] = (
     a0,
     a1,
     a2,
@@ -9845,17 +9857,17 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_TupleDescInitEntry = Module['_TupleDescInitEntry'] =
       wasmExports['TupleDescInitEntry'])(a0, a1, a2, a3, a4, a5))
-  var _repalloc = (Module['_repalloc'] = (a0, a1) =>
+  let _repalloc = (Module['_repalloc'] = (a0, a1) =>
     (_repalloc = Module['_repalloc'] = wasmExports['repalloc'])(a0, a1))
-  var _memcmp = (Module['_memcmp'] = (a0, a1, a2) =>
+  let _memcmp = (Module['_memcmp'] = (a0, a1, a2) =>
     (_memcmp = Module['_memcmp'] = wasmExports['memcmp'])(a0, a1, a2))
-  var _SearchSysCache1 = (Module['_SearchSysCache1'] = (a0, a1) =>
+  let _SearchSysCache1 = (Module['_SearchSysCache1'] = (a0, a1) =>
     (_SearchSysCache1 = Module['_SearchSysCache1'] =
       wasmExports['SearchSysCache1'])(a0, a1))
-  var _get_opfamily_name = (Module['_get_opfamily_name'] = (a0, a1) =>
+  let _get_opfamily_name = (Module['_get_opfamily_name'] = (a0, a1) =>
     (_get_opfamily_name = Module['_get_opfamily_name'] =
       wasmExports['get_opfamily_name'])(a0, a1))
-  var _SearchSysCacheList = (Module['_SearchSysCacheList'] = (
+  let _SearchSysCacheList = (Module['_SearchSysCacheList'] = (
     a0,
     a1,
     a2,
@@ -9864,7 +9876,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_SearchSysCacheList = Module['_SearchSysCacheList'] =
       wasmExports['SearchSysCacheList'])(a0, a1, a2, a3, a4))
-  var _check_amproc_signature = (Module['_check_amproc_signature'] = (
+  let _check_amproc_signature = (Module['_check_amproc_signature'] = (
     a0,
     a1,
     a2,
@@ -9874,18 +9886,18 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_check_amproc_signature = Module['_check_amproc_signature'] =
       wasmExports['check_amproc_signature'])(a0, a1, a2, a3, a4, a5))
-  var _check_amoptsproc_signature = (Module['_check_amoptsproc_signature'] = (
+  let _check_amoptsproc_signature = (Module['_check_amoptsproc_signature'] = (
     a0,
   ) =>
     (_check_amoptsproc_signature = Module['_check_amoptsproc_signature'] =
       wasmExports['check_amoptsproc_signature'])(a0))
-  var _format_procedure = (Module['_format_procedure'] = (a0) =>
+  let _format_procedure = (Module['_format_procedure'] = (a0) =>
     (_format_procedure = Module['_format_procedure'] =
       wasmExports['format_procedure'])(a0))
-  var _format_operator = (Module['_format_operator'] = (a0) =>
+  let _format_operator = (Module['_format_operator'] = (a0) =>
     (_format_operator = Module['_format_operator'] =
       wasmExports['format_operator'])(a0))
-  var _check_amop_signature = (Module['_check_amop_signature'] = (
+  let _check_amop_signature = (Module['_check_amop_signature'] = (
     a0,
     a1,
     a2,
@@ -9893,66 +9905,66 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_check_amop_signature = Module['_check_amop_signature'] =
       wasmExports['check_amop_signature'])(a0, a1, a2, a3))
-  var _identify_opfamily_groups = (Module['_identify_opfamily_groups'] = (
+  let _identify_opfamily_groups = (Module['_identify_opfamily_groups'] = (
     a0,
     a1,
   ) =>
     (_identify_opfamily_groups = Module['_identify_opfamily_groups'] =
       wasmExports['identify_opfamily_groups'])(a0, a1))
-  var _format_type_be = (Module['_format_type_be'] = (a0) =>
+  let _format_type_be = (Module['_format_type_be'] = (a0) =>
     (_format_type_be = Module['_format_type_be'] =
       wasmExports['format_type_be'])(a0))
-  var _ReleaseCatCacheList = (Module['_ReleaseCatCacheList'] = (a0) =>
+  let _ReleaseCatCacheList = (Module['_ReleaseCatCacheList'] = (a0) =>
     (_ReleaseCatCacheList = Module['_ReleaseCatCacheList'] =
       wasmExports['ReleaseCatCacheList'])(a0))
-  var _format_type_with_typemod = (Module['_format_type_with_typemod'] = (
+  let _format_type_with_typemod = (Module['_format_type_with_typemod'] = (
     a0,
     a1,
   ) =>
     (_format_type_with_typemod = Module['_format_type_with_typemod'] =
       wasmExports['format_type_with_typemod'])(a0, a1))
-  var _errdetail = (Module['_errdetail'] = (a0, a1) =>
+  let _errdetail = (Module['_errdetail'] = (a0, a1) =>
     (_errdetail = Module['_errdetail'] = wasmExports['errdetail'])(a0, a1))
-  var _strcmp = (Module['_strcmp'] = (a0, a1) =>
+  let _strcmp = (Module['_strcmp'] = (a0, a1) =>
     (_strcmp = Module['_strcmp'] = wasmExports['strcmp'])(a0, a1))
-  var _DatumGetEOHP = (Module['_DatumGetEOHP'] = (a0) =>
+  let _DatumGetEOHP = (Module['_DatumGetEOHP'] = (a0) =>
     (_DatumGetEOHP = Module['_DatumGetEOHP'] = wasmExports['DatumGetEOHP'])(a0))
-  var _EOH_get_flat_size = (Module['_EOH_get_flat_size'] = (a0) =>
+  let _EOH_get_flat_size = (Module['_EOH_get_flat_size'] = (a0) =>
     (_EOH_get_flat_size = Module['_EOH_get_flat_size'] =
       wasmExports['EOH_get_flat_size'])(a0))
-  var _EOH_flatten_into = (Module['_EOH_flatten_into'] = (a0, a1, a2) =>
+  let _EOH_flatten_into = (Module['_EOH_flatten_into'] = (a0, a1, a2) =>
     (_EOH_flatten_into = Module['_EOH_flatten_into'] =
       wasmExports['EOH_flatten_into'])(a0, a1, a2))
-  var _toast_raw_datum_size = (Module['_toast_raw_datum_size'] = (a0) =>
+  let _toast_raw_datum_size = (Module['_toast_raw_datum_size'] = (a0) =>
     (_toast_raw_datum_size = Module['_toast_raw_datum_size'] =
       wasmExports['toast_raw_datum_size'])(a0))
-  var _getmissingattr = (Module['_getmissingattr'] = (a0, a1, a2) =>
+  let _getmissingattr = (Module['_getmissingattr'] = (a0, a1, a2) =>
     (_getmissingattr = Module['_getmissingattr'] =
       wasmExports['getmissingattr'])(a0, a1, a2))
-  var _hash_create = (Module['_hash_create'] = (a0, a1, a2, a3) =>
+  let _hash_create = (Module['_hash_create'] = (a0, a1, a2, a3) =>
     (_hash_create = Module['_hash_create'] = wasmExports['hash_create'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _hash_search = (Module['_hash_search'] = (a0, a1, a2, a3) =>
+  let _hash_search = (Module['_hash_search'] = (a0, a1, a2, a3) =>
     (_hash_search = Module['_hash_search'] = wasmExports['hash_search'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _nocachegetattr = (Module['_nocachegetattr'] = (a0, a1, a2) =>
+  let _nocachegetattr = (Module['_nocachegetattr'] = (a0, a1, a2) =>
     (_nocachegetattr = Module['_nocachegetattr'] =
       wasmExports['nocachegetattr'])(a0, a1, a2))
-  var _heap_getsysattr = (Module['_heap_getsysattr'] = (a0, a1, a2, a3) =>
+  let _heap_getsysattr = (Module['_heap_getsysattr'] = (a0, a1, a2, a3) =>
     (_heap_getsysattr = Module['_heap_getsysattr'] =
       wasmExports['heap_getsysattr'])(a0, a1, a2, a3))
-  var _heap_form_tuple = (Module['_heap_form_tuple'] = (a0, a1, a2) =>
+  let _heap_form_tuple = (Module['_heap_form_tuple'] = (a0, a1, a2) =>
     (_heap_form_tuple = Module['_heap_form_tuple'] =
       wasmExports['heap_form_tuple'])(a0, a1, a2))
-  var _heap_modify_tuple = (Module['_heap_modify_tuple'] = (
+  let _heap_modify_tuple = (Module['_heap_modify_tuple'] = (
     a0,
     a1,
     a2,
@@ -9961,10 +9973,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_heap_modify_tuple = Module['_heap_modify_tuple'] =
       wasmExports['heap_modify_tuple'])(a0, a1, a2, a3, a4))
-  var _heap_deform_tuple = (Module['_heap_deform_tuple'] = (a0, a1, a2, a3) =>
+  let _heap_deform_tuple = (Module['_heap_deform_tuple'] = (a0, a1, a2, a3) =>
     (_heap_deform_tuple = Module['_heap_deform_tuple'] =
       wasmExports['heap_deform_tuple'])(a0, a1, a2, a3))
-  var _heap_modify_tuple_by_cols = (Module['_heap_modify_tuple_by_cols'] = (
+  let _heap_modify_tuple_by_cols = (Module['_heap_modify_tuple_by_cols'] = (
     a0,
     a1,
     a2,
@@ -9974,77 +9986,77 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_heap_modify_tuple_by_cols = Module['_heap_modify_tuple_by_cols'] =
       wasmExports['heap_modify_tuple_by_cols'])(a0, a1, a2, a3, a4, a5))
-  var _heap_freetuple = (Module['_heap_freetuple'] = (a0) =>
+  let _heap_freetuple = (Module['_heap_freetuple'] = (a0) =>
     (_heap_freetuple = Module['_heap_freetuple'] =
       wasmExports['heap_freetuple'])(a0))
-  var _hash_bytes = (Module['_hash_bytes'] = (a0, a1) =>
+  let _hash_bytes = (Module['_hash_bytes'] = (a0, a1) =>
     (_hash_bytes = Module['_hash_bytes'] = wasmExports['hash_bytes'])(a0, a1))
-  var _index_form_tuple = (Module['_index_form_tuple'] = (a0, a1, a2) =>
+  let _index_form_tuple = (Module['_index_form_tuple'] = (a0, a1, a2) =>
     (_index_form_tuple = Module['_index_form_tuple'] =
       wasmExports['index_form_tuple'])(a0, a1, a2))
-  var _MemoryContextAllocZero = (Module['_MemoryContextAllocZero'] = (a0, a1) =>
+  let _MemoryContextAllocZero = (Module['_MemoryContextAllocZero'] = (a0, a1) =>
     (_MemoryContextAllocZero = Module['_MemoryContextAllocZero'] =
       wasmExports['MemoryContextAllocZero'])(a0, a1))
-  var _nocache_index_getattr = (Module['_nocache_index_getattr'] = (
+  let _nocache_index_getattr = (Module['_nocache_index_getattr'] = (
     a0,
     a1,
     a2,
   ) =>
     (_nocache_index_getattr = Module['_nocache_index_getattr'] =
       wasmExports['nocache_index_getattr'])(a0, a1, a2))
-  var _index_deform_tuple = (Module['_index_deform_tuple'] = (a0, a1, a2, a3) =>
+  let _index_deform_tuple = (Module['_index_deform_tuple'] = (a0, a1, a2, a3) =>
     (_index_deform_tuple = Module['_index_deform_tuple'] =
       wasmExports['index_deform_tuple'])(a0, a1, a2, a3))
-  var _CopyIndexTuple = (Module['_CopyIndexTuple'] = (a0) =>
+  let _CopyIndexTuple = (Module['_CopyIndexTuple'] = (a0) =>
     (_CopyIndexTuple = Module['_CopyIndexTuple'] =
       wasmExports['CopyIndexTuple'])(a0))
-  var _CreateTupleDescTruncatedCopy = (Module['_CreateTupleDescTruncatedCopy'] =
+  let _CreateTupleDescTruncatedCopy = (Module['_CreateTupleDescTruncatedCopy'] =
     (a0, a1) =>
       (_CreateTupleDescTruncatedCopy = Module['_CreateTupleDescTruncatedCopy'] =
         wasmExports['CreateTupleDescTruncatedCopy'])(a0, a1))
-  var _enlargeStringInfo = (Module['_enlargeStringInfo'] = (a0, a1) =>
+  let _enlargeStringInfo = (Module['_enlargeStringInfo'] = (a0, a1) =>
     (_enlargeStringInfo = Module['_enlargeStringInfo'] =
       wasmExports['enlargeStringInfo'])(a0, a1))
-  var _slot_getsomeattrs_int = (Module['_slot_getsomeattrs_int'] = (a0, a1) =>
+  let _slot_getsomeattrs_int = (Module['_slot_getsomeattrs_int'] = (a0, a1) =>
     (_slot_getsomeattrs_int = Module['_slot_getsomeattrs_int'] =
       wasmExports['slot_getsomeattrs_int'])(a0, a1))
-  var _pg_lltoa = (Module['_pg_lltoa'] = (a0, a1) =>
+  let _pg_lltoa = (Module['_pg_lltoa'] = (a0, a1) =>
     (_pg_lltoa = Module['_pg_lltoa'] = wasmExports['pg_lltoa'])(a0, a1))
-  var _pg_ltoa = (Module['_pg_ltoa'] = (a0, a1) =>
+  let _pg_ltoa = (Module['_pg_ltoa'] = (a0, a1) =>
     (_pg_ltoa = Module['_pg_ltoa'] = wasmExports['pg_ltoa'])(a0, a1))
-  var _pq_sendbytes = (Module['_pq_sendbytes'] = (a0, a1, a2) =>
+  let _pq_sendbytes = (Module['_pq_sendbytes'] = (a0, a1, a2) =>
     (_pq_sendbytes = Module['_pq_sendbytes'] = wasmExports['pq_sendbytes'])(
       a0,
       a1,
       a2,
     ))
-  var _pg_printf = (Module['_pg_printf'] = (a0, a1) =>
+  let _pg_printf = (Module['_pg_printf'] = (a0, a1) =>
     (_pg_printf = Module['_pg_printf'] = wasmExports['pg_printf'])(a0, a1))
-  var _relation_open = (Module['_relation_open'] = (a0, a1) =>
+  let _relation_open = (Module['_relation_open'] = (a0, a1) =>
     (_relation_open = Module['_relation_open'] = wasmExports['relation_open'])(
       a0,
       a1,
     ))
-  var _LockRelationOid = (Module['_LockRelationOid'] = (a0, a1) =>
+  let _LockRelationOid = (Module['_LockRelationOid'] = (a0, a1) =>
     (_LockRelationOid = Module['_LockRelationOid'] =
       wasmExports['LockRelationOid'])(a0, a1))
-  var _RelationIdGetRelation = (Module['_RelationIdGetRelation'] = (a0) =>
+  let _RelationIdGetRelation = (Module['_RelationIdGetRelation'] = (a0) =>
     (_RelationIdGetRelation = Module['_RelationIdGetRelation'] =
       wasmExports['RelationIdGetRelation'])(a0))
-  var _try_relation_open = (Module['_try_relation_open'] = (a0, a1) =>
+  let _try_relation_open = (Module['_try_relation_open'] = (a0, a1) =>
     (_try_relation_open = Module['_try_relation_open'] =
       wasmExports['try_relation_open'])(a0, a1))
-  var _UnlockRelationOid = (Module['_UnlockRelationOid'] = (a0, a1) =>
+  let _UnlockRelationOid = (Module['_UnlockRelationOid'] = (a0, a1) =>
     (_UnlockRelationOid = Module['_UnlockRelationOid'] =
       wasmExports['UnlockRelationOid'])(a0, a1))
-  var _relation_openrv = (Module['_relation_openrv'] = (a0, a1) =>
+  let _relation_openrv = (Module['_relation_openrv'] = (a0, a1) =>
     (_relation_openrv = Module['_relation_openrv'] =
       wasmExports['relation_openrv'])(a0, a1))
-  var _AcceptInvalidationMessages = (Module['_AcceptInvalidationMessages'] =
+  let _AcceptInvalidationMessages = (Module['_AcceptInvalidationMessages'] =
     () =>
       (_AcceptInvalidationMessages = Module['_AcceptInvalidationMessages'] =
         wasmExports['AcceptInvalidationMessages'])())
-  var _RangeVarGetRelidExtended = (Module['_RangeVarGetRelidExtended'] = (
+  let _RangeVarGetRelidExtended = (Module['_RangeVarGetRelidExtended'] = (
     a0,
     a1,
     a2,
@@ -10053,23 +10065,23 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_RangeVarGetRelidExtended = Module['_RangeVarGetRelidExtended'] =
       wasmExports['RangeVarGetRelidExtended'])(a0, a1, a2, a3, a4))
-  var _RelationClose = (Module['_RelationClose'] = (a0) =>
+  let _RelationClose = (Module['_RelationClose'] = (a0) =>
     (_RelationClose = Module['_RelationClose'] = wasmExports['RelationClose'])(
       a0,
     ))
-  var _add_reloption_kind = (Module['_add_reloption_kind'] = () =>
+  let _add_reloption_kind = (Module['_add_reloption_kind'] = () =>
     (_add_reloption_kind = Module['_add_reloption_kind'] =
       wasmExports['add_reloption_kind'])())
-  var _register_reloptions_validator = (Module[
+  let _register_reloptions_validator = (Module[
     '_register_reloptions_validator'
   ] = (a0, a1) =>
     (_register_reloptions_validator = Module['_register_reloptions_validator'] =
       wasmExports['register_reloptions_validator'])(a0, a1))
-  var _lappend = (Module['_lappend'] = (a0, a1) =>
+  let _lappend = (Module['_lappend'] = (a0, a1) =>
     (_lappend = Module['_lappend'] = wasmExports['lappend'])(a0, a1))
-  var _pstrdup = (Module['_pstrdup'] = (a0) =>
+  let _pstrdup = (Module['_pstrdup'] = (a0) =>
     (_pstrdup = Module['_pstrdup'] = wasmExports['pstrdup'])(a0))
-  var _add_int_reloption = (Module['_add_int_reloption'] = (
+  let _add_int_reloption = (Module['_add_int_reloption'] = (
     a0,
     a1,
     a2,
@@ -10080,7 +10092,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_add_int_reloption = Module['_add_int_reloption'] =
       wasmExports['add_int_reloption'])(a0, a1, a2, a3, a4, a5, a6))
-  var _add_real_reloption = (Module['_add_real_reloption'] = (
+  let _add_real_reloption = (Module['_add_real_reloption'] = (
     a0,
     a1,
     a2,
@@ -10091,7 +10103,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_add_real_reloption = Module['_add_real_reloption'] =
       wasmExports['add_real_reloption'])(a0, a1, a2, a3, a4, a5, a6))
-  var _add_string_reloption = (Module['_add_string_reloption'] = (
+  let _add_string_reloption = (Module['_add_string_reloption'] = (
     a0,
     a1,
     a2,
@@ -10101,12 +10113,12 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_add_string_reloption = Module['_add_string_reloption'] =
       wasmExports['add_string_reloption'])(a0, a1, a2, a3, a4, a5))
-  var _strdup = (Module['_strdup'] = (a0) =>
+  let _strdup = (Module['_strdup'] = (a0) =>
     (_strdup = Module['_strdup'] = wasmExports['strdup'])(a0))
-  var _MemoryContextStrdup = (Module['_MemoryContextStrdup'] = (a0, a1) =>
+  let _MemoryContextStrdup = (Module['_MemoryContextStrdup'] = (a0, a1) =>
     (_MemoryContextStrdup = Module['_MemoryContextStrdup'] =
       wasmExports['MemoryContextStrdup'])(a0, a1))
-  var _transformRelOptions = (Module['_transformRelOptions'] = (
+  let _transformRelOptions = (Module['_transformRelOptions'] = (
     a0,
     a1,
     a2,
@@ -10116,7 +10128,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_transformRelOptions = Module['_transformRelOptions'] =
       wasmExports['transformRelOptions'])(a0, a1, a2, a3, a4, a5))
-  var _deconstruct_array_builtin = (Module['_deconstruct_array_builtin'] = (
+  let _deconstruct_array_builtin = (Module['_deconstruct_array_builtin'] = (
     a0,
     a1,
     a2,
@@ -10125,66 +10137,66 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_deconstruct_array_builtin = Module['_deconstruct_array_builtin'] =
       wasmExports['deconstruct_array_builtin'])(a0, a1, a2, a3, a4))
-  var _strncmp = (Module['_strncmp'] = (a0, a1, a2) =>
+  let _strncmp = (Module['_strncmp'] = (a0, a1, a2) =>
     (_strncmp = Module['_strncmp'] = wasmExports['strncmp'])(a0, a1, a2))
-  var _defGetString = (Module['_defGetString'] = (a0) =>
+  let _defGetString = (Module['_defGetString'] = (a0) =>
     (_defGetString = Module['_defGetString'] = wasmExports['defGetString'])(a0))
-  var _strchr = (Module['_strchr'] = (a0, a1) =>
+  let _strchr = (Module['_strchr'] = (a0, a1) =>
     (_strchr = Module['_strchr'] = wasmExports['strchr'])(a0, a1))
-  var _defGetBoolean = (Module['_defGetBoolean'] = (a0) =>
+  let _defGetBoolean = (Module['_defGetBoolean'] = (a0) =>
     (_defGetBoolean = Module['_defGetBoolean'] = wasmExports['defGetBoolean'])(
       a0,
     ))
-  var _pg_sprintf = (Module['_pg_sprintf'] = (a0, a1, a2) =>
+  let _pg_sprintf = (Module['_pg_sprintf'] = (a0, a1, a2) =>
     (_pg_sprintf = Module['_pg_sprintf'] = wasmExports['pg_sprintf'])(
       a0,
       a1,
       a2,
     ))
-  var _untransformRelOptions = (Module['_untransformRelOptions'] = (a0) =>
+  let _untransformRelOptions = (Module['_untransformRelOptions'] = (a0) =>
     (_untransformRelOptions = Module['_untransformRelOptions'] =
       wasmExports['untransformRelOptions'])(a0))
-  var _text_to_cstring = (Module['_text_to_cstring'] = (a0) =>
+  let _text_to_cstring = (Module['_text_to_cstring'] = (a0) =>
     (_text_to_cstring = Module['_text_to_cstring'] =
       wasmExports['text_to_cstring'])(a0))
-  var _makeString = (Module['_makeString'] = (a0) =>
+  let _makeString = (Module['_makeString'] = (a0) =>
     (_makeString = Module['_makeString'] = wasmExports['makeString'])(a0))
-  var _makeDefElem = (Module['_makeDefElem'] = (a0, a1, a2) =>
+  let _makeDefElem = (Module['_makeDefElem'] = (a0, a1, a2) =>
     (_makeDefElem = Module['_makeDefElem'] = wasmExports['makeDefElem'])(
       a0,
       a1,
       a2,
     ))
-  var _heap_reloptions = (Module['_heap_reloptions'] = (a0, a1, a2) =>
+  let _heap_reloptions = (Module['_heap_reloptions'] = (a0, a1, a2) =>
     (_heap_reloptions = Module['_heap_reloptions'] =
       wasmExports['heap_reloptions'])(a0, a1, a2))
-  var _strcpy = (Module['_strcpy'] = (a0, a1) =>
+  let _strcpy = (Module['_strcpy'] = (a0, a1) =>
     (_strcpy = Module['_strcpy'] = wasmExports['strcpy'])(a0, a1))
-  var _MemoryContextAlloc = (Module['_MemoryContextAlloc'] = (a0, a1) =>
+  let _MemoryContextAlloc = (Module['_MemoryContextAlloc'] = (a0, a1) =>
     (_MemoryContextAlloc = Module['_MemoryContextAlloc'] =
       wasmExports['MemoryContextAlloc'])(a0, a1))
-  var _parse_bool = (Module['_parse_bool'] = (a0, a1) =>
+  let _parse_bool = (Module['_parse_bool'] = (a0, a1) =>
     (_parse_bool = Module['_parse_bool'] = wasmExports['parse_bool'])(a0, a1))
-  var _parse_int = (Module['_parse_int'] = (a0, a1, a2, a3) =>
+  let _parse_int = (Module['_parse_int'] = (a0, a1, a2, a3) =>
     (_parse_int = Module['_parse_int'] = wasmExports['parse_int'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _parse_real = (Module['_parse_real'] = (a0, a1, a2, a3) =>
+  let _parse_real = (Module['_parse_real'] = (a0, a1, a2, a3) =>
     (_parse_real = Module['_parse_real'] = wasmExports['parse_real'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _pg_strcasecmp = (Module['_pg_strcasecmp'] = (a0, a1) =>
+  let _pg_strcasecmp = (Module['_pg_strcasecmp'] = (a0, a1) =>
     (_pg_strcasecmp = Module['_pg_strcasecmp'] = wasmExports['pg_strcasecmp'])(
       a0,
       a1,
     ))
-  var _ScanKeyInit = (Module['_ScanKeyInit'] = (a0, a1, a2, a3, a4) =>
+  let _ScanKeyInit = (Module['_ScanKeyInit'] = (a0, a1, a2, a3, a4) =>
     (_ScanKeyInit = Module['_ScanKeyInit'] = wasmExports['ScanKeyInit'])(
       a0,
       a1,
@@ -10192,80 +10204,80 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _dsm_segment_handle = (Module['_dsm_segment_handle'] = (a0) =>
+  let _dsm_segment_handle = (Module['_dsm_segment_handle'] = (a0) =>
     (_dsm_segment_handle = Module['_dsm_segment_handle'] =
       wasmExports['dsm_segment_handle'])(a0))
-  var _dsm_create = (Module['_dsm_create'] = (a0, a1) =>
+  let _dsm_create = (Module['_dsm_create'] = (a0, a1) =>
     (_dsm_create = Module['_dsm_create'] = wasmExports['dsm_create'])(a0, a1))
-  var _dsm_segment_address = (Module['_dsm_segment_address'] = (a0) =>
+  let _dsm_segment_address = (Module['_dsm_segment_address'] = (a0) =>
     (_dsm_segment_address = Module['_dsm_segment_address'] =
       wasmExports['dsm_segment_address'])(a0))
-  var _dsa_pin_mapping = (Module['_dsa_pin_mapping'] = (a0) =>
+  let _dsa_pin_mapping = (Module['_dsa_pin_mapping'] = (a0) =>
     (_dsa_pin_mapping = Module['_dsa_pin_mapping'] =
       wasmExports['dsa_pin_mapping'])(a0))
-  var _dsm_attach = (Module['_dsm_attach'] = (a0) =>
+  let _dsm_attach = (Module['_dsm_attach'] = (a0) =>
     (_dsm_attach = Module['_dsm_attach'] = wasmExports['dsm_attach'])(a0))
-  var _dsm_detach = (Module['_dsm_detach'] = (a0) =>
+  let _dsm_detach = (Module['_dsm_detach'] = (a0) =>
     (_dsm_detach = Module['_dsm_detach'] = wasmExports['dsm_detach'])(a0))
-  var _dsa_detach = (Module['_dsa_detach'] = (a0) =>
+  let _dsa_detach = (Module['_dsa_detach'] = (a0) =>
     (_dsa_detach = Module['_dsa_detach'] = wasmExports['dsa_detach'])(a0))
-  var _ShmemInitStruct = (Module['_ShmemInitStruct'] = (a0, a1, a2) =>
+  let _ShmemInitStruct = (Module['_ShmemInitStruct'] = (a0, a1, a2) =>
     (_ShmemInitStruct = Module['_ShmemInitStruct'] =
       wasmExports['ShmemInitStruct'])(a0, a1, a2))
-  var _LWLockAcquire = (Module['_LWLockAcquire'] = (a0, a1) =>
+  let _LWLockAcquire = (Module['_LWLockAcquire'] = (a0, a1) =>
     (_LWLockAcquire = Module['_LWLockAcquire'] = wasmExports['LWLockAcquire'])(
       a0,
       a1,
     ))
-  var _LWLockRelease = (Module['_LWLockRelease'] = (a0) =>
+  let _LWLockRelease = (Module['_LWLockRelease'] = (a0) =>
     (_LWLockRelease = Module['_LWLockRelease'] = wasmExports['LWLockRelease'])(
       a0,
     ))
-  var _LWLockConditionalAcquire = (Module['_LWLockConditionalAcquire'] = (
+  let _LWLockConditionalAcquire = (Module['_LWLockConditionalAcquire'] = (
     a0,
     a1,
   ) =>
     (_LWLockConditionalAcquire = Module['_LWLockConditionalAcquire'] =
       wasmExports['LWLockConditionalAcquire'])(a0, a1))
-  var _dsa_create_ext = (Module['_dsa_create_ext'] = (a0, a1, a2) =>
+  let _dsa_create_ext = (Module['_dsa_create_ext'] = (a0, a1, a2) =>
     (_dsa_create_ext = Module['_dsa_create_ext'] =
       wasmExports['dsa_create_ext'])(a0, a1, a2))
-  var _dsa_allocate_extended = (Module['_dsa_allocate_extended'] = (
+  let _dsa_allocate_extended = (Module['_dsa_allocate_extended'] = (
     a0,
     a1,
     a2,
   ) =>
     (_dsa_allocate_extended = Module['_dsa_allocate_extended'] =
       wasmExports['dsa_allocate_extended'])(a0, a1, a2))
-  var _dsa_get_address = (Module['_dsa_get_address'] = (a0, a1) =>
+  let _dsa_get_address = (Module['_dsa_get_address'] = (a0, a1) =>
     (_dsa_get_address = Module['_dsa_get_address'] =
       wasmExports['dsa_get_address'])(a0, a1))
-  var _LWLockInitialize = (Module['_LWLockInitialize'] = (a0, a1) =>
+  let _LWLockInitialize = (Module['_LWLockInitialize'] = (a0, a1) =>
     (_LWLockInitialize = Module['_LWLockInitialize'] =
       wasmExports['LWLockInitialize'])(a0, a1))
-  var _dsa_attach = (Module['_dsa_attach'] = (a0) =>
+  let _dsa_attach = (Module['_dsa_attach'] = (a0) =>
     (_dsa_attach = Module['_dsa_attach'] = wasmExports['dsa_attach'])(a0))
-  var _dsa_free = (Module['_dsa_free'] = (a0, a1) =>
+  let _dsa_free = (Module['_dsa_free'] = (a0, a1) =>
     (_dsa_free = Module['_dsa_free'] = wasmExports['dsa_free'])(a0, a1))
-  var _dsa_get_total_size = (Module['_dsa_get_total_size'] = (a0) =>
+  let _dsa_get_total_size = (Module['_dsa_get_total_size'] = (a0) =>
     (_dsa_get_total_size = Module['_dsa_get_total_size'] =
       wasmExports['dsa_get_total_size'])(a0))
-  var _MemoryContextMemAllocated = (Module['_MemoryContextMemAllocated'] = (
+  let _MemoryContextMemAllocated = (Module['_MemoryContextMemAllocated'] = (
     a0,
     a1,
   ) =>
     (_MemoryContextMemAllocated = Module['_MemoryContextMemAllocated'] =
       wasmExports['MemoryContextMemAllocated'])(a0, a1))
-  var _check_stack_depth = (Module['_check_stack_depth'] = () =>
+  let _check_stack_depth = (Module['_check_stack_depth'] = () =>
     (_check_stack_depth = Module['_check_stack_depth'] =
       wasmExports['check_stack_depth'])())
-  var _GetCurrentCommandId = (Module['_GetCurrentCommandId'] = (a0) =>
+  let _GetCurrentCommandId = (Module['_GetCurrentCommandId'] = (a0) =>
     (_GetCurrentCommandId = Module['_GetCurrentCommandId'] =
       wasmExports['GetCurrentCommandId'])(a0))
-  var _toast_open_indexes = (Module['_toast_open_indexes'] = (a0, a1, a2, a3) =>
+  let _toast_open_indexes = (Module['_toast_open_indexes'] = (a0, a1, a2, a3) =>
     (_toast_open_indexes = Module['_toast_open_indexes'] =
       wasmExports['toast_open_indexes'])(a0, a1, a2, a3))
-  var _heap_insert = (Module['_heap_insert'] = (a0, a1, a2, a3, a4) =>
+  let _heap_insert = (Module['_heap_insert'] = (a0, a1, a2, a3, a4) =>
     (_heap_insert = Module['_heap_insert'] = wasmExports['heap_insert'])(
       a0,
       a1,
@@ -10273,12 +10285,12 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _RelationGetIndexList = (Module['_RelationGetIndexList'] = (a0) =>
+  let _RelationGetIndexList = (Module['_RelationGetIndexList'] = (a0) =>
     (_RelationGetIndexList = Module['_RelationGetIndexList'] =
       wasmExports['RelationGetIndexList'])(a0))
-  var _list_free = (Module['_list_free'] = (a0) =>
+  let _list_free = (Module['_list_free'] = (a0) =>
     (_list_free = Module['_list_free'] = wasmExports['list_free'])(a0))
-  var _systable_beginscan = (Module['_systable_beginscan'] = (
+  let _systable_beginscan = (Module['_systable_beginscan'] = (
     a0,
     a1,
     a2,
@@ -10288,16 +10300,16 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_systable_beginscan = Module['_systable_beginscan'] =
       wasmExports['systable_beginscan'])(a0, a1, a2, a3, a4, a5))
-  var _systable_getnext = (Module['_systable_getnext'] = (a0) =>
+  let _systable_getnext = (Module['_systable_getnext'] = (a0) =>
     (_systable_getnext = Module['_systable_getnext'] =
       wasmExports['systable_getnext'])(a0))
-  var _systable_endscan = (Module['_systable_endscan'] = (a0) =>
+  let _systable_endscan = (Module['_systable_endscan'] = (a0) =>
     (_systable_endscan = Module['_systable_endscan'] =
       wasmExports['systable_endscan'])(a0))
-  var _toast_close_indexes = (Module['_toast_close_indexes'] = (a0, a1, a2) =>
+  let _toast_close_indexes = (Module['_toast_close_indexes'] = (a0, a1, a2) =>
     (_toast_close_indexes = Module['_toast_close_indexes'] =
       wasmExports['toast_close_indexes'])(a0, a1, a2))
-  var _systable_beginscan_ordered = (Module['_systable_beginscan_ordered'] = (
+  let _systable_beginscan_ordered = (Module['_systable_beginscan_ordered'] = (
     a0,
     a1,
     a2,
@@ -10306,82 +10318,82 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_systable_beginscan_ordered = Module['_systable_beginscan_ordered'] =
       wasmExports['systable_beginscan_ordered'])(a0, a1, a2, a3, a4))
-  var _systable_getnext_ordered = (Module['_systable_getnext_ordered'] = (
+  let _systable_getnext_ordered = (Module['_systable_getnext_ordered'] = (
     a0,
     a1,
   ) =>
     (_systable_getnext_ordered = Module['_systable_getnext_ordered'] =
       wasmExports['systable_getnext_ordered'])(a0, a1))
-  var _systable_endscan_ordered = (Module['_systable_endscan_ordered'] = (a0) =>
+  let _systable_endscan_ordered = (Module['_systable_endscan_ordered'] = (a0) =>
     (_systable_endscan_ordered = Module['_systable_endscan_ordered'] =
       wasmExports['systable_endscan_ordered'])(a0))
-  var _get_toast_snapshot = (Module['_get_toast_snapshot'] = () =>
+  let _get_toast_snapshot = (Module['_get_toast_snapshot'] = () =>
     (_get_toast_snapshot = Module['_get_toast_snapshot'] =
       wasmExports['get_toast_snapshot'])())
-  var _convert_tuples_by_position = (Module['_convert_tuples_by_position'] = (
+  let _convert_tuples_by_position = (Module['_convert_tuples_by_position'] = (
     a0,
     a1,
     a2,
   ) =>
     (_convert_tuples_by_position = Module['_convert_tuples_by_position'] =
       wasmExports['convert_tuples_by_position'])(a0, a1, a2))
-  var _execute_attr_map_tuple = (Module['_execute_attr_map_tuple'] = (a0, a1) =>
+  let _execute_attr_map_tuple = (Module['_execute_attr_map_tuple'] = (a0, a1) =>
     (_execute_attr_map_tuple = Module['_execute_attr_map_tuple'] =
       wasmExports['execute_attr_map_tuple'])(a0, a1))
-  var _ExecStoreVirtualTuple = (Module['_ExecStoreVirtualTuple'] = (a0) =>
+  let _ExecStoreVirtualTuple = (Module['_ExecStoreVirtualTuple'] = (a0) =>
     (_ExecStoreVirtualTuple = Module['_ExecStoreVirtualTuple'] =
       wasmExports['ExecStoreVirtualTuple'])(a0))
-  var _bms_is_member = (Module['_bms_is_member'] = (a0, a1) =>
+  let _bms_is_member = (Module['_bms_is_member'] = (a0, a1) =>
     (_bms_is_member = Module['_bms_is_member'] = wasmExports['bms_is_member'])(
       a0,
       a1,
     ))
-  var _bms_add_member = (Module['_bms_add_member'] = (a0, a1) =>
+  let _bms_add_member = (Module['_bms_add_member'] = (a0, a1) =>
     (_bms_add_member = Module['_bms_add_member'] =
       wasmExports['bms_add_member'])(a0, a1))
-  var _CreateTupleDescCopy = (Module['_CreateTupleDescCopy'] = (a0) =>
+  let _CreateTupleDescCopy = (Module['_CreateTupleDescCopy'] = (a0) =>
     (_CreateTupleDescCopy = Module['_CreateTupleDescCopy'] =
       wasmExports['CreateTupleDescCopy'])(a0))
-  var _ResourceOwnerEnlarge = (Module['_ResourceOwnerEnlarge'] = (a0) =>
+  let _ResourceOwnerEnlarge = (Module['_ResourceOwnerEnlarge'] = (a0) =>
     (_ResourceOwnerEnlarge = Module['_ResourceOwnerEnlarge'] =
       wasmExports['ResourceOwnerEnlarge'])(a0))
-  var _ResourceOwnerRemember = (Module['_ResourceOwnerRemember'] = (
+  let _ResourceOwnerRemember = (Module['_ResourceOwnerRemember'] = (
     a0,
     a1,
     a2,
   ) =>
     (_ResourceOwnerRemember = Module['_ResourceOwnerRemember'] =
       wasmExports['ResourceOwnerRemember'])(a0, a1, a2))
-  var _DecrTupleDescRefCount = (Module['_DecrTupleDescRefCount'] = (a0) =>
+  let _DecrTupleDescRefCount = (Module['_DecrTupleDescRefCount'] = (a0) =>
     (_DecrTupleDescRefCount = Module['_DecrTupleDescRefCount'] =
       wasmExports['DecrTupleDescRefCount'])(a0))
-  var _ResourceOwnerForget = (Module['_ResourceOwnerForget'] = (a0, a1, a2) =>
+  let _ResourceOwnerForget = (Module['_ResourceOwnerForget'] = (a0, a1, a2) =>
     (_ResourceOwnerForget = Module['_ResourceOwnerForget'] =
       wasmExports['ResourceOwnerForget'])(a0, a1, a2))
-  var _datumIsEqual = (Module['_datumIsEqual'] = (a0, a1, a2, a3) =>
+  let _datumIsEqual = (Module['_datumIsEqual'] = (a0, a1, a2, a3) =>
     (_datumIsEqual = Module['_datumIsEqual'] = wasmExports['datumIsEqual'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _namestrcpy = (Module['_namestrcpy'] = (a0, a1) =>
+  let _namestrcpy = (Module['_namestrcpy'] = (a0, a1) =>
     (_namestrcpy = Module['_namestrcpy'] = wasmExports['namestrcpy'])(a0, a1))
-  var _TupleDescInitEntryCollation = (Module['_TupleDescInitEntryCollation'] = (
+  let _TupleDescInitEntryCollation = (Module['_TupleDescInitEntryCollation'] = (
     a0,
     a1,
     a2,
   ) =>
     (_TupleDescInitEntryCollation = Module['_TupleDescInitEntryCollation'] =
       wasmExports['TupleDescInitEntryCollation'])(a0, a1, a2))
-  var _stringToNode = (Module['_stringToNode'] = (a0) =>
+  let _stringToNode = (Module['_stringToNode'] = (a0) =>
     (_stringToNode = Module['_stringToNode'] = wasmExports['stringToNode'])(a0))
-  var _psprintf = (Module['_psprintf'] = (a0, a1) =>
+  let _psprintf = (Module['_psprintf'] = (a0, a1) =>
     (_psprintf = Module['_psprintf'] = wasmExports['psprintf'])(a0, a1))
-  var _pg_detoast_datum_copy = (Module['_pg_detoast_datum_copy'] = (a0) =>
+  let _pg_detoast_datum_copy = (Module['_pg_detoast_datum_copy'] = (a0) =>
     (_pg_detoast_datum_copy = Module['_pg_detoast_datum_copy'] =
       wasmExports['pg_detoast_datum_copy'])(a0))
-  var _get_typlenbyvalalign = (Module['_get_typlenbyvalalign'] = (
+  let _get_typlenbyvalalign = (Module['_get_typlenbyvalalign'] = (
     a0,
     a1,
     a2,
@@ -10389,7 +10401,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_get_typlenbyvalalign = Module['_get_typlenbyvalalign'] =
       wasmExports['get_typlenbyvalalign'])(a0, a1, a2, a3))
-  var _deconstruct_array = (Module['_deconstruct_array'] = (
+  let _deconstruct_array = (Module['_deconstruct_array'] = (
     a0,
     a1,
     a2,
@@ -10401,7 +10413,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_deconstruct_array = Module['_deconstruct_array'] =
       wasmExports['deconstruct_array'])(a0, a1, a2, a3, a4, a5, a6, a7))
-  var _ginCompareAttEntries = (Module['_ginCompareAttEntries'] = (
+  let _ginCompareAttEntries = (Module['_ginCompareAttEntries'] = (
     a0,
     a1,
     a2,
@@ -10412,63 +10424,63 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_ginCompareAttEntries = Module['_ginCompareAttEntries'] =
       wasmExports['ginCompareAttEntries'])(a0, a1, a2, a3, a4, a5, a6))
-  var _repalloc_huge = (Module['_repalloc_huge'] = (a0, a1) =>
+  let _repalloc_huge = (Module['_repalloc_huge'] = (a0, a1) =>
     (_repalloc_huge = Module['_repalloc_huge'] = wasmExports['repalloc_huge'])(
       a0,
       a1,
     ))
-  var _GinDataLeafPageGetItems = (Module['_GinDataLeafPageGetItems'] = (
+  let _GinDataLeafPageGetItems = (Module['_GinDataLeafPageGetItems'] = (
     a0,
     a1,
     a2,
   ) =>
     (_GinDataLeafPageGetItems = Module['_GinDataLeafPageGetItems'] =
       wasmExports['GinDataLeafPageGetItems'])(a0, a1, a2))
-  var _tbm_add_tuples = (Module['_tbm_add_tuples'] = (a0, a1, a2, a3) =>
+  let _tbm_add_tuples = (Module['_tbm_add_tuples'] = (a0, a1, a2, a3) =>
     (_tbm_add_tuples = Module['_tbm_add_tuples'] =
       wasmExports['tbm_add_tuples'])(a0, a1, a2, a3))
-  var _ginPostingListDecode = (Module['_ginPostingListDecode'] = (a0, a1) =>
+  let _ginPostingListDecode = (Module['_ginPostingListDecode'] = (a0, a1) =>
     (_ginPostingListDecode = Module['_ginPostingListDecode'] =
       wasmExports['ginPostingListDecode'])(a0, a1))
-  var _ItemPointerCompare = (Module['_ItemPointerCompare'] = (a0, a1) =>
+  let _ItemPointerCompare = (Module['_ItemPointerCompare'] = (a0, a1) =>
     (_ItemPointerCompare = Module['_ItemPointerCompare'] =
       wasmExports['ItemPointerCompare'])(a0, a1))
-  var _gintuple_get_attrnum = (Module['_gintuple_get_attrnum'] = (a0, a1) =>
+  let _gintuple_get_attrnum = (Module['_gintuple_get_attrnum'] = (a0, a1) =>
     (_gintuple_get_attrnum = Module['_gintuple_get_attrnum'] =
       wasmExports['gintuple_get_attrnum'])(a0, a1))
-  var _gintuple_get_key = (Module['_gintuple_get_key'] = (a0, a1, a2) =>
+  let _gintuple_get_key = (Module['_gintuple_get_key'] = (a0, a1, a2) =>
     (_gintuple_get_key = Module['_gintuple_get_key'] =
       wasmExports['gintuple_get_key'])(a0, a1, a2))
-  var _LockPage = (Module['_LockPage'] = (a0, a1, a2) =>
+  let _LockPage = (Module['_LockPage'] = (a0, a1, a2) =>
     (_LockPage = Module['_LockPage'] = wasmExports['LockPage'])(a0, a1, a2))
-  var _UnlockPage = (Module['_UnlockPage'] = (a0, a1, a2) =>
+  let _UnlockPage = (Module['_UnlockPage'] = (a0, a1, a2) =>
     (_UnlockPage = Module['_UnlockPage'] = wasmExports['UnlockPage'])(
       a0,
       a1,
       a2,
     ))
-  var _vacuum_delay_point = (Module['_vacuum_delay_point'] = (a0) =>
+  let _vacuum_delay_point = (Module['_vacuum_delay_point'] = (a0) =>
     (_vacuum_delay_point = Module['_vacuum_delay_point'] =
       wasmExports['vacuum_delay_point'])(a0))
-  var _RecordFreeIndexPage = (Module['_RecordFreeIndexPage'] = (a0, a1) =>
+  let _RecordFreeIndexPage = (Module['_RecordFreeIndexPage'] = (a0, a1) =>
     (_RecordFreeIndexPage = Module['_RecordFreeIndexPage'] =
       wasmExports['RecordFreeIndexPage'])(a0, a1))
-  var _IndexFreeSpaceMapVacuum = (Module['_IndexFreeSpaceMapVacuum'] = (a0) =>
+  let _IndexFreeSpaceMapVacuum = (Module['_IndexFreeSpaceMapVacuum'] = (a0) =>
     (_IndexFreeSpaceMapVacuum = Module['_IndexFreeSpaceMapVacuum'] =
       wasmExports['IndexFreeSpaceMapVacuum'])(a0))
-  var _initGinState = (Module['_initGinState'] = (a0, a1) =>
+  let _initGinState = (Module['_initGinState'] = (a0, a1) =>
     (_initGinState = Module['_initGinState'] = wasmExports['initGinState'])(
       a0,
       a1,
     ))
-  var _pg_prng_double = (Module['_pg_prng_double'] = (a0) =>
+  let _pg_prng_double = (Module['_pg_prng_double'] = (a0) =>
     (_pg_prng_double = Module['_pg_prng_double'] =
       wasmExports['pg_prng_double'])(a0))
-  var _pgstat_progress_update_param = (Module['_pgstat_progress_update_param'] =
+  let _pgstat_progress_update_param = (Module['_pgstat_progress_update_param'] =
     (a0, a1) =>
       (_pgstat_progress_update_param = Module['_pgstat_progress_update_param'] =
         wasmExports['pgstat_progress_update_param'])(a0, a1))
-  var _log_newpage_range = (Module['_log_newpage_range'] = (
+  let _log_newpage_range = (Module['_log_newpage_range'] = (
     a0,
     a1,
     a2,
@@ -10477,63 +10489,63 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_log_newpage_range = Module['_log_newpage_range'] =
       wasmExports['log_newpage_range'])(a0, a1, a2, a3, a4))
-  var _GetFreeIndexPage = (Module['_GetFreeIndexPage'] = (a0) =>
+  let _GetFreeIndexPage = (Module['_GetFreeIndexPage'] = (a0) =>
     (_GetFreeIndexPage = Module['_GetFreeIndexPage'] =
       wasmExports['GetFreeIndexPage'])(a0))
-  var _ConditionalLockBuffer = (Module['_ConditionalLockBuffer'] = (a0) =>
+  let _ConditionalLockBuffer = (Module['_ConditionalLockBuffer'] = (a0) =>
     (_ConditionalLockBuffer = Module['_ConditionalLockBuffer'] =
       wasmExports['ConditionalLockBuffer'])(a0))
-  var _LockBufferForCleanup = (Module['_LockBufferForCleanup'] = (a0) =>
+  let _LockBufferForCleanup = (Module['_LockBufferForCleanup'] = (a0) =>
     (_LockBufferForCleanup = Module['_LockBufferForCleanup'] =
       wasmExports['LockBufferForCleanup'])(a0))
-  var _ReadNextFullTransactionId = (Module['_ReadNextFullTransactionId'] = () =>
+  let _ReadNextFullTransactionId = (Module['_ReadNextFullTransactionId'] = () =>
     (_ReadNextFullTransactionId = Module['_ReadNextFullTransactionId'] =
       wasmExports['ReadNextFullTransactionId'])())
-  var _PageIndexMultiDelete = (Module['_PageIndexMultiDelete'] = (a0, a1, a2) =>
+  let _PageIndexMultiDelete = (Module['_PageIndexMultiDelete'] = (a0, a1, a2) =>
     (_PageIndexMultiDelete = Module['_PageIndexMultiDelete'] =
       wasmExports['PageIndexMultiDelete'])(a0, a1, a2))
-  var _list_make1_impl = (Module['_list_make1_impl'] = (a0, a1) =>
+  let _list_make1_impl = (Module['_list_make1_impl'] = (a0, a1) =>
     (_list_make1_impl = Module['_list_make1_impl'] =
       wasmExports['list_make1_impl'])(a0, a1))
-  var _lcons = (Module['_lcons'] = (a0, a1) =>
+  let _lcons = (Module['_lcons'] = (a0, a1) =>
     (_lcons = Module['_lcons'] = wasmExports['lcons'])(a0, a1))
-  var _pow = (Module['_pow'] = (a0, a1) =>
+  let _pow = (Module['_pow'] = (a0, a1) =>
     (_pow = Module['_pow'] = wasmExports['pow'])(a0, a1))
-  var _smgrnblocks = (Module['_smgrnblocks'] = (a0, a1) =>
+  let _smgrnblocks = (Module['_smgrnblocks'] = (a0, a1) =>
     (_smgrnblocks = Module['_smgrnblocks'] = wasmExports['smgrnblocks'])(
       a0,
       a1,
     ))
-  var _list_free_deep = (Module['_list_free_deep'] = (a0) =>
+  let _list_free_deep = (Module['_list_free_deep'] = (a0) =>
     (_list_free_deep = Module['_list_free_deep'] =
       wasmExports['list_free_deep'])(a0))
-  var _BufFileWrite = (Module['_BufFileWrite'] = (a0, a1, a2) =>
+  let _BufFileWrite = (Module['_BufFileWrite'] = (a0, a1, a2) =>
     (_BufFileWrite = Module['_BufFileWrite'] = wasmExports['BufFileWrite'])(
       a0,
       a1,
       a2,
     ))
-  var _BufFileReadExact = (Module['_BufFileReadExact'] = (a0, a1, a2) =>
+  let _BufFileReadExact = (Module['_BufFileReadExact'] = (a0, a1, a2) =>
     (_BufFileReadExact = Module['_BufFileReadExact'] =
       wasmExports['BufFileReadExact'])(a0, a1, a2))
-  var _BufFileClose = (Module['_BufFileClose'] = (a0) =>
+  let _BufFileClose = (Module['_BufFileClose'] = (a0) =>
     (_BufFileClose = Module['_BufFileClose'] = wasmExports['BufFileClose'])(a0))
-  var _pairingheap_remove_first = (Module['_pairingheap_remove_first'] = (a0) =>
+  let _pairingheap_remove_first = (Module['_pairingheap_remove_first'] = (a0) =>
     (_pairingheap_remove_first = Module['_pairingheap_remove_first'] =
       wasmExports['pairingheap_remove_first'])(a0))
-  var _pairingheap_add = (Module['_pairingheap_add'] = (a0, a1) =>
+  let _pairingheap_add = (Module['_pairingheap_add'] = (a0, a1) =>
     (_pairingheap_add = Module['_pairingheap_add'] =
       wasmExports['pairingheap_add'])(a0, a1))
-  var _float_overflow_error = (Module['_float_overflow_error'] = () =>
+  let _float_overflow_error = (Module['_float_overflow_error'] = () =>
     (_float_overflow_error = Module['_float_overflow_error'] =
       wasmExports['float_overflow_error'])())
-  var _float8_cmp_internal = (Module['_float8_cmp_internal'] = (a0, a1) =>
+  let _float8_cmp_internal = (Module['_float8_cmp_internal'] = (a0, a1) =>
     (_float8_cmp_internal = Module['_float8_cmp_internal'] =
       wasmExports['float8_cmp_internal'])(a0, a1))
-  var _float_underflow_error = (Module['_float_underflow_error'] = () =>
+  let _float_underflow_error = (Module['_float_underflow_error'] = () =>
     (_float_underflow_error = Module['_float_underflow_error'] =
       wasmExports['float_underflow_error'])())
-  var _DirectFunctionCall5Coll = (Module['_DirectFunctionCall5Coll'] = (
+  let _DirectFunctionCall5Coll = (Module['_DirectFunctionCall5Coll'] = (
     a0,
     a1,
     a2,
@@ -10544,16 +10556,16 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_DirectFunctionCall5Coll = Module['_DirectFunctionCall5Coll'] =
       wasmExports['DirectFunctionCall5Coll'])(a0, a1, a2, a3, a4, a5, a6))
-  var _pairingheap_allocate = (Module['_pairingheap_allocate'] = (a0, a1) =>
+  let _pairingheap_allocate = (Module['_pairingheap_allocate'] = (a0, a1) =>
     (_pairingheap_allocate = Module['_pairingheap_allocate'] =
       wasmExports['pairingheap_allocate'])(a0, a1))
-  var _GetXLogInsertRecPtr = (Module['_GetXLogInsertRecPtr'] = () =>
+  let _GetXLogInsertRecPtr = (Module['_GetXLogInsertRecPtr'] = () =>
     (_GetXLogInsertRecPtr = Module['_GetXLogInsertRecPtr'] =
       wasmExports['GetXLogInsertRecPtr'])())
-  var _OidFunctionCall1Coll = (Module['_OidFunctionCall1Coll'] = (a0, a1, a2) =>
+  let _OidFunctionCall1Coll = (Module['_OidFunctionCall1Coll'] = (a0, a1, a2) =>
     (_OidFunctionCall1Coll = Module['_OidFunctionCall1Coll'] =
       wasmExports['OidFunctionCall1Coll'])(a0, a1, a2))
-  var _GenerationContextCreate = (Module['_GenerationContextCreate'] = (
+  let _GenerationContextCreate = (Module['_GenerationContextCreate'] = (
     a0,
     a1,
     a2,
@@ -10562,14 +10574,14 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_GenerationContextCreate = Module['_GenerationContextCreate'] =
       wasmExports['GenerationContextCreate'])(a0, a1, a2, a3, a4))
-  var _block_range_read_stream_cb = (Module['_block_range_read_stream_cb'] = (
+  let _block_range_read_stream_cb = (Module['_block_range_read_stream_cb'] = (
     a0,
     a1,
     a2,
   ) =>
     (_block_range_read_stream_cb = Module['_block_range_read_stream_cb'] =
       wasmExports['block_range_read_stream_cb'])(a0, a1, a2))
-  var _read_stream_begin_relation = (Module['_read_stream_begin_relation'] = (
+  let _read_stream_begin_relation = (Module['_read_stream_begin_relation'] = (
     a0,
     a1,
     a2,
@@ -10580,92 +10592,92 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_read_stream_begin_relation = Module['_read_stream_begin_relation'] =
       wasmExports['read_stream_begin_relation'])(a0, a1, a2, a3, a4, a5, a6))
-  var _read_stream_next_buffer = (Module['_read_stream_next_buffer'] = (
+  let _read_stream_next_buffer = (Module['_read_stream_next_buffer'] = (
     a0,
     a1,
   ) =>
     (_read_stream_next_buffer = Module['_read_stream_next_buffer'] =
       wasmExports['read_stream_next_buffer'])(a0, a1))
-  var _read_stream_end = (Module['_read_stream_end'] = (a0) =>
+  let _read_stream_end = (Module['_read_stream_end'] = (a0) =>
     (_read_stream_end = Module['_read_stream_end'] =
       wasmExports['read_stream_end'])(a0))
-  var __hash_getbuf = (Module['__hash_getbuf'] = (a0, a1, a2, a3) =>
+  let __hash_getbuf = (Module['__hash_getbuf'] = (a0, a1, a2, a3) =>
     (__hash_getbuf = Module['__hash_getbuf'] = wasmExports['_hash_getbuf'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var __hash_relbuf = (Module['__hash_relbuf'] = (a0, a1) =>
+  let __hash_relbuf = (Module['__hash_relbuf'] = (a0, a1) =>
     (__hash_relbuf = Module['__hash_relbuf'] = wasmExports['_hash_relbuf'])(
       a0,
       a1,
     ))
-  var __hash_get_indextuple_hashkey = (Module['__hash_get_indextuple_hashkey'] =
+  let __hash_get_indextuple_hashkey = (Module['__hash_get_indextuple_hashkey'] =
     (a0) =>
       (__hash_get_indextuple_hashkey = Module['__hash_get_indextuple_hashkey'] =
         wasmExports['_hash_get_indextuple_hashkey'])(a0))
-  var _hashcharextended = (Module['_hashcharextended'] = (a0) =>
+  let _hashcharextended = (Module['_hashcharextended'] = (a0) =>
     (_hashcharextended = Module['_hashcharextended'] =
       wasmExports['hashcharextended'])(a0))
-  var _hashint8 = (Module['_hashint8'] = (a0) =>
+  let _hashint8 = (Module['_hashint8'] = (a0) =>
     (_hashint8 = Module['_hashint8'] = wasmExports['hashint8'])(a0))
-  var _hashint8extended = (Module['_hashint8extended'] = (a0) =>
+  let _hashint8extended = (Module['_hashint8extended'] = (a0) =>
     (_hashint8extended = Module['_hashint8extended'] =
       wasmExports['hashint8extended'])(a0))
-  var _hash_bytes_extended = (Module['_hash_bytes_extended'] = (a0, a1, a2) =>
+  let _hash_bytes_extended = (Module['_hash_bytes_extended'] = (a0, a1, a2) =>
     (_hash_bytes_extended = Module['_hash_bytes_extended'] =
       wasmExports['hash_bytes_extended'])(a0, a1, a2))
-  var _hashfloat8 = (Module['_hashfloat8'] = (a0) =>
+  let _hashfloat8 = (Module['_hashfloat8'] = (a0) =>
     (_hashfloat8 = Module['_hashfloat8'] = wasmExports['hashfloat8'])(a0))
-  var _hashfloat8extended = (Module['_hashfloat8extended'] = (a0) =>
+  let _hashfloat8extended = (Module['_hashfloat8extended'] = (a0) =>
     (_hashfloat8extended = Module['_hashfloat8extended'] =
       wasmExports['hashfloat8extended'])(a0))
-  var _pg_newlocale_from_collation = (Module['_pg_newlocale_from_collation'] = (
+  let _pg_newlocale_from_collation = (Module['_pg_newlocale_from_collation'] = (
     a0,
   ) =>
     (_pg_newlocale_from_collation = Module['_pg_newlocale_from_collation'] =
       wasmExports['pg_newlocale_from_collation'])(a0))
-  var __hash_ovflblkno_to_bitno = (Module['__hash_ovflblkno_to_bitno'] = (
+  let __hash_ovflblkno_to_bitno = (Module['__hash_ovflblkno_to_bitno'] = (
     a0,
     a1,
   ) =>
     (__hash_ovflblkno_to_bitno = Module['__hash_ovflblkno_to_bitno'] =
       wasmExports['_hash_ovflblkno_to_bitno'])(a0, a1))
-  var _hash_destroy = (Module['_hash_destroy'] = (a0) =>
+  let _hash_destroy = (Module['_hash_destroy'] = (a0) =>
     (_hash_destroy = Module['_hash_destroy'] = wasmExports['hash_destroy'])(a0))
-  var _list_member_oid = (Module['_list_member_oid'] = (a0, a1) =>
+  let _list_member_oid = (Module['_list_member_oid'] = (a0, a1) =>
     (_list_member_oid = Module['_list_member_oid'] =
       wasmExports['list_member_oid'])(a0, a1))
-  var _CommandCounterIncrement = (Module['_CommandCounterIncrement'] = () =>
+  let _CommandCounterIncrement = (Module['_CommandCounterIncrement'] = () =>
     (_CommandCounterIncrement = Module['_CommandCounterIncrement'] =
       wasmExports['CommandCounterIncrement'])())
-  var _list_concat_copy = (Module['_list_concat_copy'] = (a0, a1) =>
+  let _list_concat_copy = (Module['_list_concat_copy'] = (a0, a1) =>
     (_list_concat_copy = Module['_list_concat_copy'] =
       wasmExports['list_concat_copy'])(a0, a1))
-  var _HeapTupleSatisfiesVisibility = (Module['_HeapTupleSatisfiesVisibility'] =
+  let _HeapTupleSatisfiesVisibility = (Module['_HeapTupleSatisfiesVisibility'] =
     (a0, a1, a2) =>
       (_HeapTupleSatisfiesVisibility = Module['_HeapTupleSatisfiesVisibility'] =
         wasmExports['HeapTupleSatisfiesVisibility'])(a0, a1, a2))
-  var _GetAccessStrategy = (Module['_GetAccessStrategy'] = (a0) =>
+  let _GetAccessStrategy = (Module['_GetAccessStrategy'] = (a0) =>
     (_GetAccessStrategy = Module['_GetAccessStrategy'] =
       wasmExports['GetAccessStrategy'])(a0))
-  var _FreeAccessStrategy = (Module['_FreeAccessStrategy'] = (a0) =>
+  let _FreeAccessStrategy = (Module['_FreeAccessStrategy'] = (a0) =>
     (_FreeAccessStrategy = Module['_FreeAccessStrategy'] =
       wasmExports['FreeAccessStrategy'])(a0))
-  var _heap_getnext = (Module['_heap_getnext'] = (a0, a1) =>
+  let _heap_getnext = (Module['_heap_getnext'] = (a0, a1) =>
     (_heap_getnext = Module['_heap_getnext'] = wasmExports['heap_getnext'])(
       a0,
       a1,
     ))
-  var _ExecStoreBufferHeapTuple = (Module['_ExecStoreBufferHeapTuple'] = (
+  let _ExecStoreBufferHeapTuple = (Module['_ExecStoreBufferHeapTuple'] = (
     a0,
     a1,
     a2,
   ) =>
     (_ExecStoreBufferHeapTuple = Module['_ExecStoreBufferHeapTuple'] =
       wasmExports['ExecStoreBufferHeapTuple'])(a0, a1, a2))
-  var _heap_fetch = (Module['_heap_fetch'] = (a0, a1, a2, a3, a4) =>
+  let _heap_fetch = (Module['_heap_fetch'] = (a0, a1, a2, a3, a4) =>
     (_heap_fetch = Module['_heap_fetch'] = wasmExports['heap_fetch'])(
       a0,
       a1,
@@ -10673,14 +10685,14 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _HeapTupleSatisfiesVacuum = (Module['_HeapTupleSatisfiesVacuum'] = (
+  let _HeapTupleSatisfiesVacuum = (Module['_HeapTupleSatisfiesVacuum'] = (
     a0,
     a1,
     a2,
   ) =>
     (_HeapTupleSatisfiesVacuum = Module['_HeapTupleSatisfiesVacuum'] =
       wasmExports['HeapTupleSatisfiesVacuum'])(a0, a1, a2))
-  var _GetMultiXactIdMembers = (Module['_GetMultiXactIdMembers'] = (
+  let _GetMultiXactIdMembers = (Module['_GetMultiXactIdMembers'] = (
     a0,
     a1,
     a2,
@@ -10688,16 +10700,16 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_GetMultiXactIdMembers = Module['_GetMultiXactIdMembers'] =
       wasmExports['GetMultiXactIdMembers'])(a0, a1, a2, a3))
-  var _TransactionIdPrecedes = (Module['_TransactionIdPrecedes'] = (a0, a1) =>
+  let _TransactionIdPrecedes = (Module['_TransactionIdPrecedes'] = (a0, a1) =>
     (_TransactionIdPrecedes = Module['_TransactionIdPrecedes'] =
       wasmExports['TransactionIdPrecedes'])(a0, a1))
-  var _GetBulkInsertState = (Module['_GetBulkInsertState'] = () =>
+  let _GetBulkInsertState = (Module['_GetBulkInsertState'] = () =>
     (_GetBulkInsertState = Module['_GetBulkInsertState'] =
       wasmExports['GetBulkInsertState'])())
-  var _FreeBulkInsertState = (Module['_FreeBulkInsertState'] = (a0) =>
+  let _FreeBulkInsertState = (Module['_FreeBulkInsertState'] = (a0) =>
     (_FreeBulkInsertState = Module['_FreeBulkInsertState'] =
       wasmExports['FreeBulkInsertState'])(a0))
-  var _visibilitymap_clear = (Module['_visibilitymap_clear'] = (
+  let _visibilitymap_clear = (Module['_visibilitymap_clear'] = (
     a0,
     a1,
     a2,
@@ -10705,13 +10717,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_visibilitymap_clear = Module['_visibilitymap_clear'] =
       wasmExports['visibilitymap_clear'])(a0, a1, a2, a3))
-  var _pgstat_count_heap_insert = (Module['_pgstat_count_heap_insert'] = (
+  let _pgstat_count_heap_insert = (Module['_pgstat_count_heap_insert'] = (
     a0,
     a1,
   ) =>
     (_pgstat_count_heap_insert = Module['_pgstat_count_heap_insert'] =
       wasmExports['pgstat_count_heap_insert'])(a0, a1))
-  var _heap_multi_insert = (Module['_heap_multi_insert'] = (
+  let _heap_multi_insert = (Module['_heap_multi_insert'] = (
     a0,
     a1,
     a2,
@@ -10721,14 +10733,14 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_heap_multi_insert = Module['_heap_multi_insert'] =
       wasmExports['heap_multi_insert'])(a0, a1, a2, a3, a4, a5))
-  var _ExecFetchSlotHeapTuple = (Module['_ExecFetchSlotHeapTuple'] = (
+  let _ExecFetchSlotHeapTuple = (Module['_ExecFetchSlotHeapTuple'] = (
     a0,
     a1,
     a2,
   ) =>
     (_ExecFetchSlotHeapTuple = Module['_ExecFetchSlotHeapTuple'] =
       wasmExports['ExecFetchSlotHeapTuple'])(a0, a1, a2))
-  var _heap_delete = (Module['_heap_delete'] = (a0, a1, a2, a3, a4, a5, a6) =>
+  let _heap_delete = (Module['_heap_delete'] = (a0, a1, a2, a3, a4, a5, a6) =>
     (_heap_delete = Module['_heap_delete'] = wasmExports['heap_delete'])(
       a0,
       a1,
@@ -10738,48 +10750,48 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a5,
       a6,
     ))
-  var _visibilitymap_pin = (Module['_visibilitymap_pin'] = (a0, a1, a2) =>
+  let _visibilitymap_pin = (Module['_visibilitymap_pin'] = (a0, a1, a2) =>
     (_visibilitymap_pin = Module['_visibilitymap_pin'] =
       wasmExports['visibilitymap_pin'])(a0, a1, a2))
-  var _HeapTupleSatisfiesUpdate = (Module['_HeapTupleSatisfiesUpdate'] = (
+  let _HeapTupleSatisfiesUpdate = (Module['_HeapTupleSatisfiesUpdate'] = (
     a0,
     a1,
     a2,
   ) =>
     (_HeapTupleSatisfiesUpdate = Module['_HeapTupleSatisfiesUpdate'] =
       wasmExports['HeapTupleSatisfiesUpdate'])(a0, a1, a2))
-  var _TransactionIdIsCurrentTransactionId = (Module[
+  let _TransactionIdIsCurrentTransactionId = (Module[
     '_TransactionIdIsCurrentTransactionId'
   ] = (a0) =>
     (_TransactionIdIsCurrentTransactionId = Module[
       '_TransactionIdIsCurrentTransactionId'
     ] =
       wasmExports['TransactionIdIsCurrentTransactionId'])(a0))
-  var _TransactionIdDidCommit = (Module['_TransactionIdDidCommit'] = (a0) =>
+  let _TransactionIdDidCommit = (Module['_TransactionIdDidCommit'] = (a0) =>
     (_TransactionIdDidCommit = Module['_TransactionIdDidCommit'] =
       wasmExports['TransactionIdDidCommit'])(a0))
-  var _TransactionIdIsInProgress = (Module['_TransactionIdIsInProgress'] = (
+  let _TransactionIdIsInProgress = (Module['_TransactionIdIsInProgress'] = (
     a0,
   ) =>
     (_TransactionIdIsInProgress = Module['_TransactionIdIsInProgress'] =
       wasmExports['TransactionIdIsInProgress'])(a0))
-  var _bms_free = (Module['_bms_free'] = (a0) =>
+  let _bms_free = (Module['_bms_free'] = (a0) =>
     (_bms_free = Module['_bms_free'] = wasmExports['bms_free'])(a0))
-  var _bms_add_members = (Module['_bms_add_members'] = (a0, a1) =>
+  let _bms_add_members = (Module['_bms_add_members'] = (a0, a1) =>
     (_bms_add_members = Module['_bms_add_members'] =
       wasmExports['bms_add_members'])(a0, a1))
-  var _bms_next_member = (Module['_bms_next_member'] = (a0, a1) =>
+  let _bms_next_member = (Module['_bms_next_member'] = (a0, a1) =>
     (_bms_next_member = Module['_bms_next_member'] =
       wasmExports['bms_next_member'])(a0, a1))
-  var _bms_overlap = (Module['_bms_overlap'] = (a0, a1) =>
+  let _bms_overlap = (Module['_bms_overlap'] = (a0, a1) =>
     (_bms_overlap = Module['_bms_overlap'] = wasmExports['bms_overlap'])(
       a0,
       a1,
     ))
-  var _HeapTupleGetUpdateXid = (Module['_HeapTupleGetUpdateXid'] = (a0) =>
+  let _HeapTupleGetUpdateXid = (Module['_HeapTupleGetUpdateXid'] = (a0) =>
     (_HeapTupleGetUpdateXid = Module['_HeapTupleGetUpdateXid'] =
       wasmExports['HeapTupleGetUpdateXid'])(a0))
-  var _heap_lock_tuple = (Module['_heap_lock_tuple'] = (
+  let _heap_lock_tuple = (Module['_heap_lock_tuple'] = (
     a0,
     a1,
     a2,
@@ -10791,63 +10803,63 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_heap_lock_tuple = Module['_heap_lock_tuple'] =
       wasmExports['heap_lock_tuple'])(a0, a1, a2, a3, a4, a5, a6, a7))
-  var _MultiXactIdPrecedes = (Module['_MultiXactIdPrecedes'] = (a0, a1) =>
+  let _MultiXactIdPrecedes = (Module['_MultiXactIdPrecedes'] = (a0, a1) =>
     (_MultiXactIdPrecedes = Module['_MultiXactIdPrecedes'] =
       wasmExports['MultiXactIdPrecedes'])(a0, a1))
-  var _heap_tuple_needs_eventual_freeze = (Module[
+  let _heap_tuple_needs_eventual_freeze = (Module[
     '_heap_tuple_needs_eventual_freeze'
   ] = (a0) =>
     (_heap_tuple_needs_eventual_freeze = Module[
       '_heap_tuple_needs_eventual_freeze'
     ] =
       wasmExports['heap_tuple_needs_eventual_freeze'])(a0))
-  var _PrefetchBuffer = (Module['_PrefetchBuffer'] = (a0, a1, a2, a3) =>
+  let _PrefetchBuffer = (Module['_PrefetchBuffer'] = (a0, a1, a2, a3) =>
     (_PrefetchBuffer = Module['_PrefetchBuffer'] =
       wasmExports['PrefetchBuffer'])(a0, a1, a2, a3))
-  var _RelationTruncate = (Module['_RelationTruncate'] = (a0, a1) =>
+  let _RelationTruncate = (Module['_RelationTruncate'] = (a0, a1) =>
     (_RelationTruncate = Module['_RelationTruncate'] =
       wasmExports['RelationTruncate'])(a0, a1))
-  var _FlushRelationBuffers = (Module['_FlushRelationBuffers'] = (a0) =>
+  let _FlushRelationBuffers = (Module['_FlushRelationBuffers'] = (a0) =>
     (_FlushRelationBuffers = Module['_FlushRelationBuffers'] =
       wasmExports['FlushRelationBuffers'])(a0))
-  var _smgrexists = (Module['_smgrexists'] = (a0, a1) =>
+  let _smgrexists = (Module['_smgrexists'] = (a0, a1) =>
     (_smgrexists = Module['_smgrexists'] = wasmExports['smgrexists'])(a0, a1))
-  var _table_slot_create = (Module['_table_slot_create'] = (a0, a1) =>
+  let _table_slot_create = (Module['_table_slot_create'] = (a0, a1) =>
     (_table_slot_create = Module['_table_slot_create'] =
       wasmExports['table_slot_create'])(a0, a1))
-  var _ExecDropSingleTupleTableSlot = (Module['_ExecDropSingleTupleTableSlot'] =
+  let _ExecDropSingleTupleTableSlot = (Module['_ExecDropSingleTupleTableSlot'] =
     (a0) =>
       (_ExecDropSingleTupleTableSlot = Module['_ExecDropSingleTupleTableSlot'] =
         wasmExports['ExecDropSingleTupleTableSlot'])(a0))
-  var _CreateExecutorState = (Module['_CreateExecutorState'] = () =>
+  let _CreateExecutorState = (Module['_CreateExecutorState'] = () =>
     (_CreateExecutorState = Module['_CreateExecutorState'] =
       wasmExports['CreateExecutorState'])())
-  var _MakePerTupleExprContext = (Module['_MakePerTupleExprContext'] = (a0) =>
+  let _MakePerTupleExprContext = (Module['_MakePerTupleExprContext'] = (a0) =>
     (_MakePerTupleExprContext = Module['_MakePerTupleExprContext'] =
       wasmExports['MakePerTupleExprContext'])(a0))
-  var _ExecPrepareQual = (Module['_ExecPrepareQual'] = (a0, a1) =>
+  let _ExecPrepareQual = (Module['_ExecPrepareQual'] = (a0, a1) =>
     (_ExecPrepareQual = Module['_ExecPrepareQual'] =
       wasmExports['ExecPrepareQual'])(a0, a1))
-  var _GetOldestNonRemovableTransactionId = (Module[
+  let _GetOldestNonRemovableTransactionId = (Module[
     '_GetOldestNonRemovableTransactionId'
   ] = (a0) =>
     (_GetOldestNonRemovableTransactionId = Module[
       '_GetOldestNonRemovableTransactionId'
     ] =
       wasmExports['GetOldestNonRemovableTransactionId'])(a0))
-  var _FormIndexDatum = (Module['_FormIndexDatum'] = (a0, a1, a2, a3, a4) =>
+  let _FormIndexDatum = (Module['_FormIndexDatum'] = (a0, a1, a2, a3, a4) =>
     (_FormIndexDatum = Module['_FormIndexDatum'] =
       wasmExports['FormIndexDatum'])(a0, a1, a2, a3, a4))
-  var _FreeExecutorState = (Module['_FreeExecutorState'] = (a0) =>
+  let _FreeExecutorState = (Module['_FreeExecutorState'] = (a0) =>
     (_FreeExecutorState = Module['_FreeExecutorState'] =
       wasmExports['FreeExecutorState'])(a0))
-  var _MakeSingleTupleTableSlot = (Module['_MakeSingleTupleTableSlot'] = (
+  let _MakeSingleTupleTableSlot = (Module['_MakeSingleTupleTableSlot'] = (
     a0,
     a1,
   ) =>
     (_MakeSingleTupleTableSlot = Module['_MakeSingleTupleTableSlot'] =
       wasmExports['MakeSingleTupleTableSlot'])(a0, a1))
-  var _tuplesort_getdatum = (Module['_tuplesort_getdatum'] = (
+  let _tuplesort_getdatum = (Module['_tuplesort_getdatum'] = (
     a0,
     a1,
     a2,
@@ -10857,13 +10869,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_tuplesort_getdatum = Module['_tuplesort_getdatum'] =
       wasmExports['tuplesort_getdatum'])(a0, a1, a2, a3, a4, a5))
-  var _ExecStoreHeapTuple = (Module['_ExecStoreHeapTuple'] = (a0, a1, a2) =>
+  let _ExecStoreHeapTuple = (Module['_ExecStoreHeapTuple'] = (a0, a1, a2) =>
     (_ExecStoreHeapTuple = Module['_ExecStoreHeapTuple'] =
       wasmExports['ExecStoreHeapTuple'])(a0, a1, a2))
-  var _XidInMVCCSnapshot = (Module['_XidInMVCCSnapshot'] = (a0, a1) =>
+  let _XidInMVCCSnapshot = (Module['_XidInMVCCSnapshot'] = (a0, a1) =>
     (_XidInMVCCSnapshot = Module['_XidInMVCCSnapshot'] =
       wasmExports['XidInMVCCSnapshot'])(a0, a1))
-  var _bsearch = (Module['_bsearch'] = (a0, a1, a2, a3, a4) =>
+  let _bsearch = (Module['_bsearch'] = (a0, a1, a2, a3, a4) =>
     (_bsearch = Module['_bsearch'] = wasmExports['bsearch'])(
       a0,
       a1,
@@ -10871,7 +10883,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _XLogRecGetBlockTagExtended = (Module['_XLogRecGetBlockTagExtended'] = (
+  let _XLogRecGetBlockTagExtended = (Module['_XLogRecGetBlockTagExtended'] = (
     a0,
     a1,
     a2,
@@ -10881,66 +10893,66 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_XLogRecGetBlockTagExtended = Module['_XLogRecGetBlockTagExtended'] =
       wasmExports['XLogRecGetBlockTagExtended'])(a0, a1, a2, a3, a4, a5))
-  var _hash_seq_init = (Module['_hash_seq_init'] = (a0, a1) =>
+  let _hash_seq_init = (Module['_hash_seq_init'] = (a0, a1) =>
     (_hash_seq_init = Module['_hash_seq_init'] = wasmExports['hash_seq_init'])(
       a0,
       a1,
     ))
-  var _hash_seq_search = (Module['_hash_seq_search'] = (a0) =>
+  let _hash_seq_search = (Module['_hash_seq_search'] = (a0) =>
     (_hash_seq_search = Module['_hash_seq_search'] =
       wasmExports['hash_seq_search'])(a0))
-  var _errcode_for_file_access = (Module['_errcode_for_file_access'] = () =>
+  let _errcode_for_file_access = (Module['_errcode_for_file_access'] = () =>
     (_errcode_for_file_access = Module['_errcode_for_file_access'] =
       wasmExports['errcode_for_file_access'])())
-  var _pg_snprintf = (Module['_pg_snprintf'] = (a0, a1, a2, a3) =>
+  let _pg_snprintf = (Module['_pg_snprintf'] = (a0, a1, a2, a3) =>
     (_pg_snprintf = Module['_pg_snprintf'] = wasmExports['pg_snprintf'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _OpenTransientFile = (Module['_OpenTransientFile'] = (a0, a1) =>
+  let _OpenTransientFile = (Module['_OpenTransientFile'] = (a0, a1) =>
     (_OpenTransientFile = Module['_OpenTransientFile'] =
       wasmExports['OpenTransientFile'])(a0, a1))
-  var _ftruncate = (Module['_ftruncate'] = (a0, a1) =>
+  let _ftruncate = (Module['_ftruncate'] = (a0, a1) =>
     (_ftruncate = Module['_ftruncate'] = wasmExports['ftruncate'])(a0, a1))
-  var ___errno_location = (Module['___errno_location'] = () =>
+  let ___errno_location = (Module['___errno_location'] = () =>
     (___errno_location = Module['___errno_location'] =
       wasmExports['__errno_location'])())
-  var _pwrite = (Module['_pwrite'] = (a0, a1, a2, a3) =>
+  let _pwrite = (Module['_pwrite'] = (a0, a1, a2, a3) =>
     (_pwrite = Module['_pwrite'] = wasmExports['pwrite'])(a0, a1, a2, a3))
-  var _CloseTransientFile = (Module['_CloseTransientFile'] = (a0) =>
+  let _CloseTransientFile = (Module['_CloseTransientFile'] = (a0) =>
     (_CloseTransientFile = Module['_CloseTransientFile'] =
       wasmExports['CloseTransientFile'])(a0))
-  var _sscanf = (Module['_sscanf'] = (a0, a1, a2) =>
+  let _sscanf = (Module['_sscanf'] = (a0, a1, a2) =>
     (_sscanf = Module['_sscanf'] = wasmExports['sscanf'])(a0, a1, a2))
-  var _unlink = (Module['_unlink'] = (a0) =>
+  let _unlink = (Module['_unlink'] = (a0) =>
     (_unlink = Module['_unlink'] = wasmExports['unlink'])(a0))
-  var _fsync_fname = (Module['_fsync_fname'] = (a0, a1) =>
+  let _fsync_fname = (Module['_fsync_fname'] = (a0, a1) =>
     (_fsync_fname = Module['_fsync_fname'] = wasmExports['fsync_fname'])(
       a0,
       a1,
     ))
-  var _GetCurrentTimestamp = (Module['_GetCurrentTimestamp'] = () =>
+  let _GetCurrentTimestamp = (Module['_GetCurrentTimestamp'] = () =>
     (_GetCurrentTimestamp = Module['_GetCurrentTimestamp'] =
       wasmExports['GetCurrentTimestamp'])())
-  var _get_namespace_name = (Module['_get_namespace_name'] = (a0) =>
+  let _get_namespace_name = (Module['_get_namespace_name'] = (a0) =>
     (_get_namespace_name = Module['_get_namespace_name'] =
       wasmExports['get_namespace_name'])(a0))
-  var _pg_prng_uint32 = (Module['_pg_prng_uint32'] = (a0) =>
+  let _pg_prng_uint32 = (Module['_pg_prng_uint32'] = (a0) =>
     (_pg_prng_uint32 = Module['_pg_prng_uint32'] =
       wasmExports['pg_prng_uint32'])(a0))
-  var _GetRecordedFreeSpace = (Module['_GetRecordedFreeSpace'] = (a0, a1) =>
+  let _GetRecordedFreeSpace = (Module['_GetRecordedFreeSpace'] = (a0, a1) =>
     (_GetRecordedFreeSpace = Module['_GetRecordedFreeSpace'] =
       wasmExports['GetRecordedFreeSpace'])(a0, a1))
-  var _visibilitymap_get_status = (Module['_visibilitymap_get_status'] = (
+  let _visibilitymap_get_status = (Module['_visibilitymap_get_status'] = (
     a0,
     a1,
     a2,
   ) =>
     (_visibilitymap_get_status = Module['_visibilitymap_get_status'] =
       wasmExports['visibilitymap_get_status'])(a0, a1, a2))
-  var _vac_estimate_reltuples = (Module['_vac_estimate_reltuples'] = (
+  let _vac_estimate_reltuples = (Module['_vac_estimate_reltuples'] = (
     a0,
     a1,
     a2,
@@ -10948,86 +10960,86 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_vac_estimate_reltuples = Module['_vac_estimate_reltuples'] =
       wasmExports['vac_estimate_reltuples'])(a0, a1, a2, a3))
-  var _WaitLatch = (Module['_WaitLatch'] = (a0, a1, a2, a3) =>
+  let _WaitLatch = (Module['_WaitLatch'] = (a0, a1, a2, a3) =>
     (_WaitLatch = Module['_WaitLatch'] = wasmExports['WaitLatch'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _ResetLatch = (Module['_ResetLatch'] = (a0) =>
+  let _ResetLatch = (Module['_ResetLatch'] = (a0) =>
     (_ResetLatch = Module['_ResetLatch'] = wasmExports['ResetLatch'])(a0))
-  var _clock_gettime = (Module['_clock_gettime'] = (a0, a1) =>
+  let _clock_gettime = (Module['_clock_gettime'] = (a0, a1) =>
     (_clock_gettime = Module['_clock_gettime'] = wasmExports['clock_gettime'])(
       a0,
       a1,
     ))
-  var _WalUsageAccumDiff = (Module['_WalUsageAccumDiff'] = (a0, a1, a2) =>
+  let _WalUsageAccumDiff = (Module['_WalUsageAccumDiff'] = (a0, a1, a2) =>
     (_WalUsageAccumDiff = Module['_WalUsageAccumDiff'] =
       wasmExports['WalUsageAccumDiff'])(a0, a1, a2))
-  var _BufferUsageAccumDiff = (Module['_BufferUsageAccumDiff'] = (a0, a1, a2) =>
+  let _BufferUsageAccumDiff = (Module['_BufferUsageAccumDiff'] = (a0, a1, a2) =>
     (_BufferUsageAccumDiff = Module['_BufferUsageAccumDiff'] =
       wasmExports['BufferUsageAccumDiff'])(a0, a1, a2))
-  var _appendStringInfoString = (Module['_appendStringInfoString'] = (a0, a1) =>
+  let _appendStringInfoString = (Module['_appendStringInfoString'] = (a0, a1) =>
     (_appendStringInfoString = Module['_appendStringInfoString'] =
       wasmExports['appendStringInfoString'])(a0, a1))
-  var _set_errcontext_domain = (Module['_set_errcontext_domain'] = (a0) =>
+  let _set_errcontext_domain = (Module['_set_errcontext_domain'] = (a0) =>
     (_set_errcontext_domain = Module['_set_errcontext_domain'] =
       wasmExports['set_errcontext_domain'])(a0))
-  var _errcontext_msg = (Module['_errcontext_msg'] = (a0, a1) =>
+  let _errcontext_msg = (Module['_errcontext_msg'] = (a0, a1) =>
     (_errcontext_msg = Module['_errcontext_msg'] =
       wasmExports['errcontext_msg'])(a0, a1))
-  var _visibilitymap_prepare_truncate = (Module[
+  let _visibilitymap_prepare_truncate = (Module[
     '_visibilitymap_prepare_truncate'
   ] = (a0, a1) =>
     (_visibilitymap_prepare_truncate = Module[
       '_visibilitymap_prepare_truncate'
     ] =
       wasmExports['visibilitymap_prepare_truncate'])(a0, a1))
-  var _check_enable_rls = (Module['_check_enable_rls'] = (a0, a1, a2) =>
+  let _check_enable_rls = (Module['_check_enable_rls'] = (a0, a1, a2) =>
     (_check_enable_rls = Module['_check_enable_rls'] =
       wasmExports['check_enable_rls'])(a0, a1, a2))
-  var _pg_class_aclcheck = (Module['_pg_class_aclcheck'] = (a0, a1, a2) =>
+  let _pg_class_aclcheck = (Module['_pg_class_aclcheck'] = (a0, a1, a2) =>
     (_pg_class_aclcheck = Module['_pg_class_aclcheck'] =
       wasmExports['pg_class_aclcheck'])(a0, a1, a2))
-  var _try_index_open = (Module['_try_index_open'] = (a0, a1) =>
+  let _try_index_open = (Module['_try_index_open'] = (a0, a1) =>
     (_try_index_open = Module['_try_index_open'] =
       wasmExports['try_index_open'])(a0, a1))
-  var _btboolcmp = (Module['_btboolcmp'] = (a0) =>
+  let _btboolcmp = (Module['_btboolcmp'] = (a0) =>
     (_btboolcmp = Module['_btboolcmp'] = wasmExports['btboolcmp'])(a0))
-  var _btint2cmp = (Module['_btint2cmp'] = (a0) =>
+  let _btint2cmp = (Module['_btint2cmp'] = (a0) =>
     (_btint2cmp = Module['_btint2cmp'] = wasmExports['btint2cmp'])(a0))
-  var _btint4cmp = (Module['_btint4cmp'] = (a0) =>
+  let _btint4cmp = (Module['_btint4cmp'] = (a0) =>
     (_btint4cmp = Module['_btint4cmp'] = wasmExports['btint4cmp'])(a0))
-  var _btint8cmp = (Module['_btint8cmp'] = (a0) =>
+  let _btint8cmp = (Module['_btint8cmp'] = (a0) =>
     (_btint8cmp = Module['_btint8cmp'] = wasmExports['btint8cmp'])(a0))
-  var _btoidcmp = (Module['_btoidcmp'] = (a0) =>
+  let _btoidcmp = (Module['_btoidcmp'] = (a0) =>
     (_btoidcmp = Module['_btoidcmp'] = wasmExports['btoidcmp'])(a0))
-  var _btcharcmp = (Module['_btcharcmp'] = (a0) =>
+  let _btcharcmp = (Module['_btcharcmp'] = (a0) =>
     (_btcharcmp = Module['_btcharcmp'] = wasmExports['btcharcmp'])(a0))
-  var __bt_form_posting = (Module['__bt_form_posting'] = (a0, a1, a2) =>
+  let __bt_form_posting = (Module['__bt_form_posting'] = (a0, a1, a2) =>
     (__bt_form_posting = Module['__bt_form_posting'] =
       wasmExports['_bt_form_posting'])(a0, a1, a2))
-  var __bt_mkscankey = (Module['__bt_mkscankey'] = (a0, a1) =>
+  let __bt_mkscankey = (Module['__bt_mkscankey'] = (a0, a1) =>
     (__bt_mkscankey = Module['__bt_mkscankey'] = wasmExports['_bt_mkscankey'])(
       a0,
       a1,
     ))
-  var __bt_checkpage = (Module['__bt_checkpage'] = (a0, a1) =>
+  let __bt_checkpage = (Module['__bt_checkpage'] = (a0, a1) =>
     (__bt_checkpage = Module['__bt_checkpage'] = wasmExports['_bt_checkpage'])(
       a0,
       a1,
     ))
-  var __bt_compare = (Module['__bt_compare'] = (a0, a1, a2, a3) =>
+  let __bt_compare = (Module['__bt_compare'] = (a0, a1, a2, a3) =>
     (__bt_compare = Module['__bt_compare'] = wasmExports['_bt_compare'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var __bt_relbuf = (Module['__bt_relbuf'] = (a0, a1) =>
+  let __bt_relbuf = (Module['__bt_relbuf'] = (a0, a1) =>
     (__bt_relbuf = Module['__bt_relbuf'] = wasmExports['_bt_relbuf'])(a0, a1))
-  var __bt_search = (Module['__bt_search'] = (a0, a1, a2, a3, a4) =>
+  let __bt_search = (Module['__bt_search'] = (a0, a1, a2, a3, a4) =>
     (__bt_search = Module['__bt_search'] = wasmExports['_bt_search'])(
       a0,
       a1,
@@ -11035,17 +11047,17 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var __bt_binsrch_insert = (Module['__bt_binsrch_insert'] = (a0, a1) =>
+  let __bt_binsrch_insert = (Module['__bt_binsrch_insert'] = (a0, a1) =>
     (__bt_binsrch_insert = Module['__bt_binsrch_insert'] =
       wasmExports['_bt_binsrch_insert'])(a0, a1))
-  var __bt_freestack = (Module['__bt_freestack'] = (a0) =>
+  let __bt_freestack = (Module['__bt_freestack'] = (a0) =>
     (__bt_freestack = Module['__bt_freestack'] = wasmExports['_bt_freestack'])(
       a0,
     ))
-  var __bt_metaversion = (Module['__bt_metaversion'] = (a0, a1, a2) =>
+  let __bt_metaversion = (Module['__bt_metaversion'] = (a0, a1, a2) =>
     (__bt_metaversion = Module['__bt_metaversion'] =
       wasmExports['_bt_metaversion'])(a0, a1, a2))
-  var _get_opfamily_member = (Module['_get_opfamily_member'] = (
+  let _get_opfamily_member = (Module['_get_opfamily_member'] = (
     a0,
     a1,
     a2,
@@ -11053,53 +11065,53 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_get_opfamily_member = Module['_get_opfamily_member'] =
       wasmExports['get_opfamily_member'])(a0, a1, a2, a3))
-  var __bt_allequalimage = (Module['__bt_allequalimage'] = (a0, a1) =>
+  let __bt_allequalimage = (Module['__bt_allequalimage'] = (a0, a1) =>
     (__bt_allequalimage = Module['__bt_allequalimage'] =
       wasmExports['_bt_allequalimage'])(a0, a1))
-  var ___wasm_setjmp_test = (Module['___wasm_setjmp_test'] = (a0, a1) =>
+  let ___wasm_setjmp_test = (Module['___wasm_setjmp_test'] = (a0, a1) =>
     (___wasm_setjmp_test = Module['___wasm_setjmp_test'] =
       wasmExports['__wasm_setjmp_test'])(a0, a1))
-  var _before_shmem_exit = (Module['_before_shmem_exit'] = (a0, a1) =>
+  let _before_shmem_exit = (Module['_before_shmem_exit'] = (a0, a1) =>
     (_before_shmem_exit = Module['_before_shmem_exit'] =
       wasmExports['before_shmem_exit'])(a0, a1))
-  var ___wasm_setjmp = (Module['___wasm_setjmp'] = (a0, a1, a2) =>
+  let ___wasm_setjmp = (Module['___wasm_setjmp'] = (a0, a1, a2) =>
     (___wasm_setjmp = Module['___wasm_setjmp'] = wasmExports['__wasm_setjmp'])(
       a0,
       a1,
       a2,
     ))
-  var _cancel_before_shmem_exit = (Module['_cancel_before_shmem_exit'] = (
+  let _cancel_before_shmem_exit = (Module['_cancel_before_shmem_exit'] = (
     a0,
     a1,
   ) =>
     (_cancel_before_shmem_exit = Module['_cancel_before_shmem_exit'] =
       wasmExports['cancel_before_shmem_exit'])(a0, a1))
-  var _pg_re_throw = (Module['_pg_re_throw'] = () =>
+  let _pg_re_throw = (Module['_pg_re_throw'] = () =>
     (_pg_re_throw = Module['_pg_re_throw'] = wasmExports['pg_re_throw'])())
-  var _emscripten_longjmp = (Module['_emscripten_longjmp'] = (a0, a1) =>
+  let _emscripten_longjmp = (Module['_emscripten_longjmp'] = (a0, a1) =>
     (_emscripten_longjmp = Module['_emscripten_longjmp'] =
       wasmExports['emscripten_longjmp'])(a0, a1))
-  var _ConditionVariableBroadcast = (Module['_ConditionVariableBroadcast'] = (
+  let _ConditionVariableBroadcast = (Module['_ConditionVariableBroadcast'] = (
     a0,
   ) =>
     (_ConditionVariableBroadcast = Module['_ConditionVariableBroadcast'] =
       wasmExports['ConditionVariableBroadcast'])(a0))
-  var _datum_image_eq = (Module['_datum_image_eq'] = (a0, a1, a2, a3) =>
+  let _datum_image_eq = (Module['_datum_image_eq'] = (a0, a1, a2, a3) =>
     (_datum_image_eq = Module['_datum_image_eq'] =
       wasmExports['datum_image_eq'])(a0, a1, a2, a3))
-  var _time = (Module['_time'] = (a0) =>
+  let _time = (Module['_time'] = (a0) =>
     (_time = Module['_time'] = wasmExports['time'])(a0))
-  var __bt_check_natts = (Module['__bt_check_natts'] = (a0, a1, a2, a3) =>
+  let __bt_check_natts = (Module['__bt_check_natts'] = (a0, a1, a2, a3) =>
     (__bt_check_natts = Module['__bt_check_natts'] =
       wasmExports['_bt_check_natts'])(a0, a1, a2, a3))
-  var _strlcpy = (Module['_strlcpy'] = (a0, a1, a2) =>
+  let _strlcpy = (Module['_strlcpy'] = (a0, a1, a2) =>
     (_strlcpy = Module['_strlcpy'] = wasmExports['strlcpy'])(a0, a1, a2))
-  var _strncpy = (Module['_strncpy'] = (a0, a1, a2) =>
+  let _strncpy = (Module['_strncpy'] = (a0, a1, a2) =>
     (_strncpy = Module['_strncpy'] = wasmExports['strncpy'])(a0, a1, a2))
-  var _timestamptz_to_str = (Module['_timestamptz_to_str'] = (a0) =>
+  let _timestamptz_to_str = (Module['_timestamptz_to_str'] = (a0) =>
     (_timestamptz_to_str = Module['_timestamptz_to_str'] =
       wasmExports['timestamptz_to_str'])(a0))
-  var _XLogRecGetBlockRefInfo = (Module['_XLogRecGetBlockRefInfo'] = (
+  let _XLogRecGetBlockRefInfo = (Module['_XLogRecGetBlockRefInfo'] = (
     a0,
     a1,
     a2,
@@ -11108,7 +11120,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_XLogRecGetBlockRefInfo = Module['_XLogRecGetBlockRefInfo'] =
       wasmExports['XLogRecGetBlockRefInfo'])(a0, a1, a2, a3, a4))
-  var _varstr_cmp = (Module['_varstr_cmp'] = (a0, a1, a2, a3, a4) =>
+  let _varstr_cmp = (Module['_varstr_cmp'] = (a0, a1, a2, a3, a4) =>
     (_varstr_cmp = Module['_varstr_cmp'] = wasmExports['varstr_cmp'])(
       a0,
       a1,
@@ -11116,189 +11128,189 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _getBaseType = (Module['_getBaseType'] = (a0) =>
+  let _getBaseType = (Module['_getBaseType'] = (a0) =>
     (_getBaseType = Module['_getBaseType'] = wasmExports['getBaseType'])(a0))
-  var _exprType = (Module['_exprType'] = (a0) =>
+  let _exprType = (Module['_exprType'] = (a0) =>
     (_exprType = Module['_exprType'] = wasmExports['exprType'])(a0))
-  var _GetActiveSnapshot = (Module['_GetActiveSnapshot'] = () =>
+  let _GetActiveSnapshot = (Module['_GetActiveSnapshot'] = () =>
     (_GetActiveSnapshot = Module['_GetActiveSnapshot'] =
       wasmExports['GetActiveSnapshot'])())
-  var _errdetail_relkind_not_supported = (Module[
+  let _errdetail_relkind_not_supported = (Module[
     '_errdetail_relkind_not_supported'
   ] = (a0) =>
     (_errdetail_relkind_not_supported = Module[
       '_errdetail_relkind_not_supported'
     ] =
       wasmExports['errdetail_relkind_not_supported'])(a0))
-  var _table_openrv = (Module['_table_openrv'] = (a0, a1) =>
+  let _table_openrv = (Module['_table_openrv'] = (a0, a1) =>
     (_table_openrv = Module['_table_openrv'] = wasmExports['table_openrv'])(
       a0,
       a1,
     ))
-  var _table_slot_callbacks = (Module['_table_slot_callbacks'] = (a0) =>
+  let _table_slot_callbacks = (Module['_table_slot_callbacks'] = (a0) =>
     (_table_slot_callbacks = Module['_table_slot_callbacks'] =
       wasmExports['table_slot_callbacks'])(a0))
-  var _clamp_row_est = (Module['_clamp_row_est'] = (a0) =>
+  let _clamp_row_est = (Module['_clamp_row_est'] = (a0) =>
     (_clamp_row_est = Module['_clamp_row_est'] = wasmExports['clamp_row_est'])(
       a0,
     ))
-  var _pre_format_elog_string = (Module['_pre_format_elog_string'] = (a0, a1) =>
+  let _pre_format_elog_string = (Module['_pre_format_elog_string'] = (a0, a1) =>
     (_pre_format_elog_string = Module['_pre_format_elog_string'] =
       wasmExports['pre_format_elog_string'])(a0, a1))
-  var _format_elog_string = (Module['_format_elog_string'] = (a0, a1) =>
+  let _format_elog_string = (Module['_format_elog_string'] = (a0, a1) =>
     (_format_elog_string = Module['_format_elog_string'] =
       wasmExports['format_elog_string'])(a0, a1))
-  var _IsTransactionState = (Module['_IsTransactionState'] = () =>
+  let _IsTransactionState = (Module['_IsTransactionState'] = () =>
     (_IsTransactionState = Module['_IsTransactionState'] =
       wasmExports['IsTransactionState'])())
-  var _estimate_expression_value = (Module['_estimate_expression_value'] = (
+  let _estimate_expression_value = (Module['_estimate_expression_value'] = (
     a0,
     a1,
   ) =>
     (_estimate_expression_value = Module['_estimate_expression_value'] =
       wasmExports['estimate_expression_value'])(a0, a1))
-  var _SetConfigOption = (Module['_SetConfigOption'] = (a0, a1, a2, a3) =>
+  let _SetConfigOption = (Module['_SetConfigOption'] = (a0, a1, a2, a3) =>
     (_SetConfigOption = Module['_SetConfigOption'] =
       wasmExports['SetConfigOption'])(a0, a1, a2, a3))
-  var _XLogFlush = (Module['_XLogFlush'] = (a0) =>
+  let _XLogFlush = (Module['_XLogFlush'] = (a0) =>
     (_XLogFlush = Module['_XLogFlush'] = wasmExports['XLogFlush'])(a0))
-  var _get_call_result_type = (Module['_get_call_result_type'] = (a0, a1, a2) =>
+  let _get_call_result_type = (Module['_get_call_result_type'] = (a0, a1, a2) =>
     (_get_call_result_type = Module['_get_call_result_type'] =
       wasmExports['get_call_result_type'])(a0, a1, a2))
-  var _HeapTupleHeaderGetDatum = (Module['_HeapTupleHeaderGetDatum'] = (a0) =>
+  let _HeapTupleHeaderGetDatum = (Module['_HeapTupleHeaderGetDatum'] = (a0) =>
     (_HeapTupleHeaderGetDatum = Module['_HeapTupleHeaderGetDatum'] =
       wasmExports['HeapTupleHeaderGetDatum'])(a0))
-  var _GenericXLogStart = (Module['_GenericXLogStart'] = (a0) =>
+  let _GenericXLogStart = (Module['_GenericXLogStart'] = (a0) =>
     (_GenericXLogStart = Module['_GenericXLogStart'] =
       wasmExports['GenericXLogStart'])(a0))
-  var _GenericXLogRegisterBuffer = (Module['_GenericXLogRegisterBuffer'] = (
+  let _GenericXLogRegisterBuffer = (Module['_GenericXLogRegisterBuffer'] = (
     a0,
     a1,
     a2,
   ) =>
     (_GenericXLogRegisterBuffer = Module['_GenericXLogRegisterBuffer'] =
       wasmExports['GenericXLogRegisterBuffer'])(a0, a1, a2))
-  var _GenericXLogFinish = (Module['_GenericXLogFinish'] = (a0) =>
+  let _GenericXLogFinish = (Module['_GenericXLogFinish'] = (a0) =>
     (_GenericXLogFinish = Module['_GenericXLogFinish'] =
       wasmExports['GenericXLogFinish'])(a0))
-  var _GenericXLogAbort = (Module['_GenericXLogAbort'] = (a0) =>
+  let _GenericXLogAbort = (Module['_GenericXLogAbort'] = (a0) =>
     (_GenericXLogAbort = Module['_GenericXLogAbort'] =
       wasmExports['GenericXLogAbort'])(a0))
-  var _errmsg_plural = (Module['_errmsg_plural'] = (a0, a1, a2, a3) =>
+  let _errmsg_plural = (Module['_errmsg_plural'] = (a0, a1, a2, a3) =>
     (_errmsg_plural = Module['_errmsg_plural'] = wasmExports['errmsg_plural'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _ReadNextMultiXactId = (Module['_ReadNextMultiXactId'] = () =>
+  let _ReadNextMultiXactId = (Module['_ReadNextMultiXactId'] = () =>
     (_ReadNextMultiXactId = Module['_ReadNextMultiXactId'] =
       wasmExports['ReadNextMultiXactId'])())
-  var _ReadMultiXactIdRange = (Module['_ReadMultiXactIdRange'] = (a0, a1) =>
+  let _ReadMultiXactIdRange = (Module['_ReadMultiXactIdRange'] = (a0, a1) =>
     (_ReadMultiXactIdRange = Module['_ReadMultiXactIdRange'] =
       wasmExports['ReadMultiXactIdRange'])(a0, a1))
-  var _MultiXactIdPrecedesOrEquals = (Module['_MultiXactIdPrecedesOrEquals'] = (
+  let _MultiXactIdPrecedesOrEquals = (Module['_MultiXactIdPrecedesOrEquals'] = (
     a0,
     a1,
   ) =>
     (_MultiXactIdPrecedesOrEquals = Module['_MultiXactIdPrecedesOrEquals'] =
       wasmExports['MultiXactIdPrecedesOrEquals'])(a0, a1))
-  var _init_MultiFuncCall = (Module['_init_MultiFuncCall'] = (a0) =>
+  let _init_MultiFuncCall = (Module['_init_MultiFuncCall'] = (a0) =>
     (_init_MultiFuncCall = Module['_init_MultiFuncCall'] =
       wasmExports['init_MultiFuncCall'])(a0))
-  var _TupleDescGetAttInMetadata = (Module['_TupleDescGetAttInMetadata'] = (
+  let _TupleDescGetAttInMetadata = (Module['_TupleDescGetAttInMetadata'] = (
     a0,
   ) =>
     (_TupleDescGetAttInMetadata = Module['_TupleDescGetAttInMetadata'] =
       wasmExports['TupleDescGetAttInMetadata'])(a0))
-  var _per_MultiFuncCall = (Module['_per_MultiFuncCall'] = (a0) =>
+  let _per_MultiFuncCall = (Module['_per_MultiFuncCall'] = (a0) =>
     (_per_MultiFuncCall = Module['_per_MultiFuncCall'] =
       wasmExports['per_MultiFuncCall'])(a0))
-  var _BuildTupleFromCStrings = (Module['_BuildTupleFromCStrings'] = (a0, a1) =>
+  let _BuildTupleFromCStrings = (Module['_BuildTupleFromCStrings'] = (a0, a1) =>
     (_BuildTupleFromCStrings = Module['_BuildTupleFromCStrings'] =
       wasmExports['BuildTupleFromCStrings'])(a0, a1))
-  var _end_MultiFuncCall = (Module['_end_MultiFuncCall'] = (a0, a1) =>
+  let _end_MultiFuncCall = (Module['_end_MultiFuncCall'] = (a0, a1) =>
     (_end_MultiFuncCall = Module['_end_MultiFuncCall'] =
       wasmExports['end_MultiFuncCall'])(a0, a1))
-  var _GetCurrentSubTransactionId = (Module['_GetCurrentSubTransactionId'] =
+  let _GetCurrentSubTransactionId = (Module['_GetCurrentSubTransactionId'] =
     () =>
       (_GetCurrentSubTransactionId = Module['_GetCurrentSubTransactionId'] =
         wasmExports['GetCurrentSubTransactionId'])())
-  var _WaitForBackgroundWorkerShutdown = (Module[
+  let _WaitForBackgroundWorkerShutdown = (Module[
     '_WaitForBackgroundWorkerShutdown'
   ] = (a0) =>
     (_WaitForBackgroundWorkerShutdown = Module[
       '_WaitForBackgroundWorkerShutdown'
     ] =
       wasmExports['WaitForBackgroundWorkerShutdown'])(a0))
-  var _RegisterDynamicBackgroundWorker = (Module[
+  let _RegisterDynamicBackgroundWorker = (Module[
     '_RegisterDynamicBackgroundWorker'
   ] = (a0, a1) =>
     (_RegisterDynamicBackgroundWorker = Module[
       '_RegisterDynamicBackgroundWorker'
     ] =
       wasmExports['RegisterDynamicBackgroundWorker'])(a0, a1))
-  var _appendBinaryStringInfo = (Module['_appendBinaryStringInfo'] = (
+  let _appendBinaryStringInfo = (Module['_appendBinaryStringInfo'] = (
     a0,
     a1,
     a2,
   ) =>
     (_appendBinaryStringInfo = Module['_appendBinaryStringInfo'] =
       wasmExports['appendBinaryStringInfo'])(a0, a1, a2))
-  var _pq_getmsgbyte = (Module['_pq_getmsgbyte'] = (a0) =>
+  let _pq_getmsgbyte = (Module['_pq_getmsgbyte'] = (a0) =>
     (_pq_getmsgbyte = Module['_pq_getmsgbyte'] = wasmExports['pq_getmsgbyte'])(
       a0,
     ))
-  var _pq_getmsgint = (Module['_pq_getmsgint'] = (a0, a1) =>
+  let _pq_getmsgint = (Module['_pq_getmsgint'] = (a0, a1) =>
     (_pq_getmsgint = Module['_pq_getmsgint'] = wasmExports['pq_getmsgint'])(
       a0,
       a1,
     ))
-  var _pq_getmsgint64 = (Module['_pq_getmsgint64'] = (a0) =>
+  let _pq_getmsgint64 = (Module['_pq_getmsgint64'] = (a0) =>
     (_pq_getmsgint64 = Module['_pq_getmsgint64'] =
       wasmExports['pq_getmsgint64'])(a0))
-  var _die = (Module['_die'] = (a0) =>
+  let _die = (Module['_die'] = (a0) =>
     (_die = Module['_die'] = wasmExports['die'])(a0))
-  var _pqsignal_be = (Module['_pqsignal_be'] = (a0, a1) =>
+  let _pqsignal_be = (Module['_pqsignal_be'] = (a0, a1) =>
     (_pqsignal_be = Module['_pqsignal_be'] = wasmExports['pqsignal_be'])(
       a0,
       a1,
     ))
-  var _BackgroundWorkerUnblockSignals = (Module[
+  let _BackgroundWorkerUnblockSignals = (Module[
     '_BackgroundWorkerUnblockSignals'
   ] = () =>
     (_BackgroundWorkerUnblockSignals = Module[
       '_BackgroundWorkerUnblockSignals'
     ] =
       wasmExports['BackgroundWorkerUnblockSignals'])())
-  var _BackgroundWorkerInitializeConnectionByOid = (Module[
+  let _BackgroundWorkerInitializeConnectionByOid = (Module[
     '_BackgroundWorkerInitializeConnectionByOid'
   ] = (a0, a1, a2) =>
     (_BackgroundWorkerInitializeConnectionByOid = Module[
       '_BackgroundWorkerInitializeConnectionByOid'
     ] =
       wasmExports['BackgroundWorkerInitializeConnectionByOid'])(a0, a1, a2))
-  var _GetDatabaseEncoding = (Module['_GetDatabaseEncoding'] = () =>
+  let _GetDatabaseEncoding = (Module['_GetDatabaseEncoding'] = () =>
     (_GetDatabaseEncoding = Module['_GetDatabaseEncoding'] =
       wasmExports['GetDatabaseEncoding'])())
-  var _StartTransactionCommand = (Module['_StartTransactionCommand'] = () =>
+  let _StartTransactionCommand = (Module['_StartTransactionCommand'] = () =>
     (_StartTransactionCommand = Module['_StartTransactionCommand'] =
       wasmExports['StartTransactionCommand'])())
-  var _CommitTransactionCommand = (Module['_CommitTransactionCommand'] = () =>
+  let _CommitTransactionCommand = (Module['_CommitTransactionCommand'] = () =>
     (_CommitTransactionCommand = Module['_CommitTransactionCommand'] =
       wasmExports['CommitTransactionCommand'])())
-  var _PushActiveSnapshot = (Module['_PushActiveSnapshot'] = (a0) =>
+  let _PushActiveSnapshot = (Module['_PushActiveSnapshot'] = (a0) =>
     (_PushActiveSnapshot = Module['_PushActiveSnapshot'] =
       wasmExports['PushActiveSnapshot'])(a0))
-  var _PopActiveSnapshot = (Module['_PopActiveSnapshot'] = () =>
+  let _PopActiveSnapshot = (Module['_PopActiveSnapshot'] = () =>
     (_PopActiveSnapshot = Module['_PopActiveSnapshot'] =
       wasmExports['PopActiveSnapshot'])())
-  var _RmgrNotFound = (Module['_RmgrNotFound'] = (a0) =>
+  let _RmgrNotFound = (Module['_RmgrNotFound'] = (a0) =>
     (_RmgrNotFound = Module['_RmgrNotFound'] = wasmExports['RmgrNotFound'])(a0))
-  var _InitMaterializedSRF = (Module['_InitMaterializedSRF'] = (a0, a1) =>
+  let _InitMaterializedSRF = (Module['_InitMaterializedSRF'] = (a0, a1) =>
     (_InitMaterializedSRF = Module['_InitMaterializedSRF'] =
       wasmExports['InitMaterializedSRF'])(a0, a1))
-  var _tuplestore_putvalues = (Module['_tuplestore_putvalues'] = (
+  let _tuplestore_putvalues = (Module['_tuplestore_putvalues'] = (
     a0,
     a1,
     a2,
@@ -11306,193 +11318,193 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_tuplestore_putvalues = Module['_tuplestore_putvalues'] =
       wasmExports['tuplestore_putvalues'])(a0, a1, a2, a3))
-  var _pread = (Module['_pread'] = (a0, a1, a2, a3) =>
+  let _pread = (Module['_pread'] = (a0, a1, a2, a3) =>
     (_pread = Module['_pread'] = wasmExports['pread'])(a0, a1, a2, a3))
-  var _strspn = (Module['_strspn'] = (a0, a1) =>
+  let _strspn = (Module['_strspn'] = (a0, a1) =>
     (_strspn = Module['_strspn'] = wasmExports['strspn'])(a0, a1))
-  var _strtoll = (Module['_strtoll'] = (a0, a1, a2) =>
+  let _strtoll = (Module['_strtoll'] = (a0, a1, a2) =>
     (_strtoll = Module['_strtoll'] = wasmExports['strtoll'])(a0, a1, a2))
-  var _AllocateFile = (Module['_AllocateFile'] = (a0, a1) =>
+  let _AllocateFile = (Module['_AllocateFile'] = (a0, a1) =>
     (_AllocateFile = Module['_AllocateFile'] = wasmExports['AllocateFile'])(
       a0,
       a1,
     ))
-  var _ferror = (Module['_ferror'] = (a0) =>
+  let _ferror = (Module['_ferror'] = (a0) =>
     (_ferror = Module['_ferror'] = wasmExports['ferror'])(a0))
-  var _FreeFile = (Module['_FreeFile'] = (a0) =>
+  let _FreeFile = (Module['_FreeFile'] = (a0) =>
     (_FreeFile = Module['_FreeFile'] = wasmExports['FreeFile'])(a0))
-  var _getpid = (Module['_getpid'] = () =>
+  let _getpid = (Module['_getpid'] = () =>
     (_getpid = Module['_getpid'] = wasmExports['getpid'])())
-  var _read = (Module['_read'] = (a0, a1, a2) =>
+  let _read = (Module['_read'] = (a0, a1, a2) =>
     (_read = Module['_read'] = wasmExports['read'])(a0, a1, a2))
-  var _write = (Module['_write'] = (a0, a1, a2) =>
+  let _write = (Module['_write'] = (a0, a1, a2) =>
     (_write = Module['_write'] = wasmExports['write'])(a0, a1, a2))
-  var _durable_rename = (Module['_durable_rename'] = (a0, a1, a2) =>
+  let _durable_rename = (Module['_durable_rename'] = (a0, a1, a2) =>
     (_durable_rename = Module['_durable_rename'] =
       wasmExports['durable_rename'])(a0, a1, a2))
-  var _BlessTupleDesc = (Module['_BlessTupleDesc'] = (a0) =>
+  let _BlessTupleDesc = (Module['_BlessTupleDesc'] = (a0) =>
     (_BlessTupleDesc = Module['_BlessTupleDesc'] =
       wasmExports['BlessTupleDesc'])(a0))
-  var _fstat = (Module['_fstat'] = (a0, a1) =>
+  let _fstat = (Module['_fstat'] = (a0, a1) =>
     (_fstat = Module['_fstat'] = wasmExports['fstat'])(a0, a1))
-  var _superuser_arg = (Module['_superuser_arg'] = (a0) =>
+  let _superuser_arg = (Module['_superuser_arg'] = (a0) =>
     (_superuser_arg = Module['_superuser_arg'] = wasmExports['superuser_arg'])(
       a0,
     ))
-  var _wal_segment_close = (Module['_wal_segment_close'] = (a0) =>
+  let _wal_segment_close = (Module['_wal_segment_close'] = (a0) =>
     (_wal_segment_close = Module['_wal_segment_close'] =
       wasmExports['wal_segment_close'])(a0))
-  var _wal_segment_open = (Module['_wal_segment_open'] = (a0, a1, a2) =>
+  let _wal_segment_open = (Module['_wal_segment_open'] = (a0, a1, a2) =>
     (_wal_segment_open = Module['_wal_segment_open'] =
       wasmExports['wal_segment_open'])(a0, a1, a2))
-  var _XLogReaderAllocate = (Module['_XLogReaderAllocate'] = (a0, a1, a2, a3) =>
+  let _XLogReaderAllocate = (Module['_XLogReaderAllocate'] = (a0, a1, a2, a3) =>
     (_XLogReaderAllocate = Module['_XLogReaderAllocate'] =
       wasmExports['XLogReaderAllocate'])(a0, a1, a2, a3))
-  var _XLogReadRecord = (Module['_XLogReadRecord'] = (a0, a1) =>
+  let _XLogReadRecord = (Module['_XLogReadRecord'] = (a0, a1) =>
     (_XLogReadRecord = Module['_XLogReadRecord'] =
       wasmExports['XLogReadRecord'])(a0, a1))
-  var _XLogReaderFree = (Module['_XLogReaderFree'] = (a0) =>
+  let _XLogReaderFree = (Module['_XLogReaderFree'] = (a0) =>
     (_XLogReaderFree = Module['_XLogReaderFree'] =
       wasmExports['XLogReaderFree'])(a0))
-  var _strtoull = (Module['_strtoull'] = (a0, a1, a2) =>
+  let _strtoull = (Module['_strtoull'] = (a0, a1, a2) =>
     (_strtoull = Module['_strtoull'] = wasmExports['strtoull'])(a0, a1, a2))
-  var _access = (Module['_access'] = (a0, a1) =>
+  let _access = (Module['_access'] = (a0, a1) =>
     (_access = Module['_access'] = wasmExports['access'])(a0, a1))
-  var _IsAbortedTransactionBlockState = (Module[
+  let _IsAbortedTransactionBlockState = (Module[
     '_IsAbortedTransactionBlockState'
   ] = () =>
     (_IsAbortedTransactionBlockState = Module[
       '_IsAbortedTransactionBlockState'
     ] =
       wasmExports['IsAbortedTransactionBlockState'])())
-  var _GetTopFullTransactionId = (Module['_GetTopFullTransactionId'] = () =>
+  let _GetTopFullTransactionId = (Module['_GetTopFullTransactionId'] = () =>
     (_GetTopFullTransactionId = Module['_GetTopFullTransactionId'] =
       wasmExports['GetTopFullTransactionId'])())
-  var _GetCurrentTransactionNestLevel = (Module[
+  let _GetCurrentTransactionNestLevel = (Module[
     '_GetCurrentTransactionNestLevel'
   ] = () =>
     (_GetCurrentTransactionNestLevel = Module[
       '_GetCurrentTransactionNestLevel'
     ] =
       wasmExports['GetCurrentTransactionNestLevel'])())
-  var _ResourceOwnerCreate = (Module['_ResourceOwnerCreate'] = (a0, a1) =>
+  let _ResourceOwnerCreate = (Module['_ResourceOwnerCreate'] = (a0, a1) =>
     (_ResourceOwnerCreate = Module['_ResourceOwnerCreate'] =
       wasmExports['ResourceOwnerCreate'])(a0, a1))
-  var _AbortCurrentTransaction = (Module['_AbortCurrentTransaction'] = () =>
+  let _AbortCurrentTransaction = (Module['_AbortCurrentTransaction'] = () =>
     (_AbortCurrentTransaction = Module['_AbortCurrentTransaction'] =
       wasmExports['AbortCurrentTransaction'])())
-  var _IsTransactionBlock = (Module['_IsTransactionBlock'] = () =>
+  let _IsTransactionBlock = (Module['_IsTransactionBlock'] = () =>
     (_IsTransactionBlock = Module['_IsTransactionBlock'] =
       wasmExports['IsTransactionBlock'])())
-  var _RegisterXactCallback = (Module['_RegisterXactCallback'] = (a0, a1) =>
+  let _RegisterXactCallback = (Module['_RegisterXactCallback'] = (a0, a1) =>
     (_RegisterXactCallback = Module['_RegisterXactCallback'] =
       wasmExports['RegisterXactCallback'])(a0, a1))
-  var _UnregisterXactCallback = (Module['_UnregisterXactCallback'] = (a0, a1) =>
+  let _UnregisterXactCallback = (Module['_UnregisterXactCallback'] = (a0, a1) =>
     (_UnregisterXactCallback = Module['_UnregisterXactCallback'] =
       wasmExports['UnregisterXactCallback'])(a0, a1))
-  var _RegisterSubXactCallback = (Module['_RegisterSubXactCallback'] = (
+  let _RegisterSubXactCallback = (Module['_RegisterSubXactCallback'] = (
     a0,
     a1,
   ) =>
     (_RegisterSubXactCallback = Module['_RegisterSubXactCallback'] =
       wasmExports['RegisterSubXactCallback'])(a0, a1))
-  var _BeginInternalSubTransaction = (Module['_BeginInternalSubTransaction'] = (
+  let _BeginInternalSubTransaction = (Module['_BeginInternalSubTransaction'] = (
     a0,
   ) =>
     (_BeginInternalSubTransaction = Module['_BeginInternalSubTransaction'] =
       wasmExports['BeginInternalSubTransaction'])(a0))
-  var _ReleaseCurrentSubTransaction = (Module['_ReleaseCurrentSubTransaction'] =
+  let _ReleaseCurrentSubTransaction = (Module['_ReleaseCurrentSubTransaction'] =
     () =>
       (_ReleaseCurrentSubTransaction = Module['_ReleaseCurrentSubTransaction'] =
         wasmExports['ReleaseCurrentSubTransaction'])())
-  var _ResourceOwnerDelete = (Module['_ResourceOwnerDelete'] = (a0) =>
+  let _ResourceOwnerDelete = (Module['_ResourceOwnerDelete'] = (a0) =>
     (_ResourceOwnerDelete = Module['_ResourceOwnerDelete'] =
       wasmExports['ResourceOwnerDelete'])(a0))
-  var _RollbackAndReleaseCurrentSubTransaction = (Module[
+  let _RollbackAndReleaseCurrentSubTransaction = (Module[
     '_RollbackAndReleaseCurrentSubTransaction'
   ] = () =>
     (_RollbackAndReleaseCurrentSubTransaction = Module[
       '_RollbackAndReleaseCurrentSubTransaction'
     ] =
       wasmExports['RollbackAndReleaseCurrentSubTransaction'])())
-  var _pg_usleep = (Module['_pg_usleep'] = (a0) =>
+  let _pg_usleep = (Module['_pg_usleep'] = (a0) =>
     (_pg_usleep = Module['_pg_usleep'] = wasmExports['pg_usleep'])(a0))
-  var _close = (Module['_close'] = (a0) =>
+  let _close = (Module['_close'] = (a0) =>
     (_close = Module['_close'] = wasmExports['close'])(a0))
-  var _ReleaseExternalFD = (Module['_ReleaseExternalFD'] = () =>
+  let _ReleaseExternalFD = (Module['_ReleaseExternalFD'] = () =>
     (_ReleaseExternalFD = Module['_ReleaseExternalFD'] =
       wasmExports['ReleaseExternalFD'])())
-  var _GetDefaultCharSignedness = (Module['_GetDefaultCharSignedness'] = () =>
+  let _GetDefaultCharSignedness = (Module['_GetDefaultCharSignedness'] = () =>
     (_GetDefaultCharSignedness = Module['_GetDefaultCharSignedness'] =
       wasmExports['GetDefaultCharSignedness'])())
-  var _SplitIdentifierString = (Module['_SplitIdentifierString'] = (
+  let _SplitIdentifierString = (Module['_SplitIdentifierString'] = (
     a0,
     a1,
     a2,
   ) =>
     (_SplitIdentifierString = Module['_SplitIdentifierString'] =
       wasmExports['SplitIdentifierString'])(a0, a1, a2))
-  var _guc_malloc = (Module['_guc_malloc'] = (a0, a1) =>
+  let _guc_malloc = (Module['_guc_malloc'] = (a0, a1) =>
     (_guc_malloc = Module['_guc_malloc'] = wasmExports['guc_malloc'])(a0, a1))
-  var _find_option = (Module['_find_option'] = (a0, a1, a2, a3) =>
+  let _find_option = (Module['_find_option'] = (a0, a1, a2, a3) =>
     (_find_option = Module['_find_option'] = wasmExports['find_option'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _gettimeofday = (Module['_gettimeofday'] = (a0, a1) =>
+  let _gettimeofday = (Module['_gettimeofday'] = (a0, a1) =>
     (_gettimeofday = Module['_gettimeofday'] = wasmExports['gettimeofday'])(
       a0,
       a1,
     ))
-  var _pg_strong_random = (Module['_pg_strong_random'] = (a0, a1) =>
+  let _pg_strong_random = (Module['_pg_strong_random'] = (a0, a1) =>
     (_pg_strong_random = Module['_pg_strong_random'] =
       wasmExports['pg_strong_random'])(a0, a1))
-  var _stat = (Module['_stat'] = (a0, a1) =>
+  let _stat = (Module['_stat'] = (a0, a1) =>
     (_stat = Module['_stat'] = wasmExports['stat'])(a0, a1))
-  var _GetFlushRecPtr = (Module['_GetFlushRecPtr'] = (a0) =>
+  let _GetFlushRecPtr = (Module['_GetFlushRecPtr'] = (a0) =>
     (_GetFlushRecPtr = Module['_GetFlushRecPtr'] =
       wasmExports['GetFlushRecPtr'])(a0))
-  var _GetXLogReplayRecPtr = (Module['_GetXLogReplayRecPtr'] = (a0) =>
+  let _GetXLogReplayRecPtr = (Module['_GetXLogReplayRecPtr'] = (a0) =>
     (_GetXLogReplayRecPtr = Module['_GetXLogReplayRecPtr'] =
       wasmExports['GetXLogReplayRecPtr'])(a0))
-  var _TimestampDifferenceMilliseconds = (Module[
+  let _TimestampDifferenceMilliseconds = (Module[
     '_TimestampDifferenceMilliseconds'
   ] = (a0, a1) =>
     (_TimestampDifferenceMilliseconds = Module[
       '_TimestampDifferenceMilliseconds'
     ] =
       wasmExports['TimestampDifferenceMilliseconds'])(a0, a1))
-  var _strtoul = (Module['_strtoul'] = (a0, a1, a2) =>
+  let _strtoul = (Module['_strtoul'] = (a0, a1, a2) =>
     (_strtoul = Module['_strtoul'] = wasmExports['strtoul'])(a0, a1, a2))
-  var _readlink = (Module['_readlink'] = (a0, a1, a2) =>
+  let _readlink = (Module['_readlink'] = (a0, a1, a2) =>
     (_readlink = Module['_readlink'] = wasmExports['readlink'])(a0, a1, a2))
-  var _pg_fprintf = (Module['_pg_fprintf'] = (a0, a1, a2) =>
+  let _pg_fprintf = (Module['_pg_fprintf'] = (a0, a1, a2) =>
     (_pg_fprintf = Module['_pg_fprintf'] = wasmExports['pg_fprintf'])(
       a0,
       a1,
       a2,
     ))
-  var _fflush = (Module['_fflush'] = (a0) =>
+  let _fflush = (Module['_fflush'] = (a0) =>
     (_fflush = Module['_fflush'] = wasmExports['fflush'])(a0))
-  var _pgl_system = (Module['_pgl_system'] = (a0) =>
+  let _pgl_system = (Module['_pgl_system'] = (a0) =>
     (_pgl_system = Module['_pgl_system'] = wasmExports['pgl_system'])(a0))
-  var _wait_result_to_str = (Module['_wait_result_to_str'] = (a0) =>
+  let _wait_result_to_str = (Module['_wait_result_to_str'] = (a0) =>
     (_wait_result_to_str = Module['_wait_result_to_str'] =
       wasmExports['wait_result_to_str'])(a0))
-  var _replace_percent_placeholders = (Module['_replace_percent_placeholders'] =
+  let _replace_percent_placeholders = (Module['_replace_percent_placeholders'] =
     (a0, a1, a2, a3) =>
       (_replace_percent_placeholders = Module['_replace_percent_placeholders'] =
         wasmExports['replace_percent_placeholders'])(a0, a1, a2, a3))
-  var _makeStringInfo = (Module['_makeStringInfo'] = () =>
+  let _makeStringInfo = (Module['_makeStringInfo'] = () =>
     (_makeStringInfo = Module['_makeStringInfo'] =
       wasmExports['makeStringInfo'])())
-  var _pg_toupper = (Module['_pg_toupper'] = (a0) =>
+  let _pg_toupper = (Module['_pg_toupper'] = (a0) =>
     (_pg_toupper = Module['_pg_toupper'] = wasmExports['pg_toupper'])(a0))
-  var _numeric_in = (Module['_numeric_in'] = (a0) =>
+  let _numeric_in = (Module['_numeric_in'] = (a0) =>
     (_numeric_in = Module['_numeric_in'] = wasmExports['numeric_in'])(a0))
-  var _DirectFunctionCall3Coll = (Module['_DirectFunctionCall3Coll'] = (
+  let _DirectFunctionCall3Coll = (Module['_DirectFunctionCall3Coll'] = (
     a0,
     a1,
     a2,
@@ -11501,37 +11513,37 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_DirectFunctionCall3Coll = Module['_DirectFunctionCall3Coll'] =
       wasmExports['DirectFunctionCall3Coll'])(a0, a1, a2, a3, a4))
-  var _palloc_extended = (Module['_palloc_extended'] = (a0, a1) =>
+  let _palloc_extended = (Module['_palloc_extended'] = (a0, a1) =>
     (_palloc_extended = Module['_palloc_extended'] =
       wasmExports['palloc_extended'])(a0, a1))
-  var _pg_vsnprintf = (Module['_pg_vsnprintf'] = (a0, a1, a2, a3) =>
+  let _pg_vsnprintf = (Module['_pg_vsnprintf'] = (a0, a1, a2, a3) =>
     (_pg_vsnprintf = Module['_pg_vsnprintf'] = wasmExports['pg_vsnprintf'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _XLogFindNextRecord = (Module['_XLogFindNextRecord'] = (a0, a1) =>
+  let _XLogFindNextRecord = (Module['_XLogFindNextRecord'] = (a0, a1) =>
     (_XLogFindNextRecord = Module['_XLogFindNextRecord'] =
       wasmExports['XLogFindNextRecord'])(a0, a1))
-  var _RestoreBlockImage = (Module['_RestoreBlockImage'] = (a0, a1, a2) =>
+  let _RestoreBlockImage = (Module['_RestoreBlockImage'] = (a0, a1, a2) =>
     (_RestoreBlockImage = Module['_RestoreBlockImage'] =
       wasmExports['RestoreBlockImage'])(a0, a1, a2))
-  var _timestamptz_in = (Module['_timestamptz_in'] = (a0) =>
+  let _timestamptz_in = (Module['_timestamptz_in'] = (a0) =>
     (_timestamptz_in = Module['_timestamptz_in'] =
       wasmExports['timestamptz_in'])(a0))
-  var _fscanf = (Module['_fscanf'] = (a0, a1, a2) =>
+  let _fscanf = (Module['_fscanf'] = (a0, a1, a2) =>
     (_fscanf = Module['_fscanf'] = wasmExports['fscanf'])(a0, a1, a2))
-  var _symlink = (Module['_symlink'] = (a0, a1) =>
+  let _symlink = (Module['_symlink'] = (a0, a1) =>
     (_symlink = Module['_symlink'] = wasmExports['symlink'])(a0, a1))
-  var _ConditionVariableTimedSleep = (Module['_ConditionVariableTimedSleep'] = (
+  let _ConditionVariableTimedSleep = (Module['_ConditionVariableTimedSleep'] = (
     a0,
     a1,
     a2,
   ) =>
     (_ConditionVariableTimedSleep = Module['_ConditionVariableTimedSleep'] =
       wasmExports['ConditionVariableTimedSleep'])(a0, a1, a2))
-  var _ParseDateTime = (Module['_ParseDateTime'] = (
+  let _ParseDateTime = (Module['_ParseDateTime'] = (
     a0,
     a1,
     a2,
@@ -11549,7 +11561,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a5,
       a6,
     ))
-  var _DecodeDateTime = (Module['_DecodeDateTime'] = (
+  let _DecodeDateTime = (Module['_DecodeDateTime'] = (
     a0,
     a1,
     a2,
@@ -11561,135 +11573,135 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_DecodeDateTime = Module['_DecodeDateTime'] =
       wasmExports['DecodeDateTime'])(a0, a1, a2, a3, a4, a5, a6, a7))
-  var _tm2timestamp = (Module['_tm2timestamp'] = (a0, a1, a2, a3) =>
+  let _tm2timestamp = (Module['_tm2timestamp'] = (a0, a1, a2, a3) =>
     (_tm2timestamp = Module['_tm2timestamp'] = wasmExports['tm2timestamp'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _XLogRecStoreStats = (Module['_XLogRecStoreStats'] = (a0, a1) =>
+  let _XLogRecStoreStats = (Module['_XLogRecStoreStats'] = (a0, a1) =>
     (_XLogRecStoreStats = Module['_XLogRecStoreStats'] =
       wasmExports['XLogRecStoreStats'])(a0, a1))
-  var _hash_get_num_entries = (Module['_hash_get_num_entries'] = (a0) =>
+  let _hash_get_num_entries = (Module['_hash_get_num_entries'] = (a0) =>
     (_hash_get_num_entries = Module['_hash_get_num_entries'] =
       wasmExports['hash_get_num_entries'])(a0))
-  var _read_local_xlog_page_no_wait = (Module['_read_local_xlog_page_no_wait'] =
+  let _read_local_xlog_page_no_wait = (Module['_read_local_xlog_page_no_wait'] =
     (a0, a1, a2, a3, a4) =>
       (_read_local_xlog_page_no_wait = Module['_read_local_xlog_page_no_wait'] =
         wasmExports['read_local_xlog_page_no_wait'])(a0, a1, a2, a3, a4))
-  var _escape_json_with_len = (Module['_escape_json_with_len'] = (a0, a1, a2) =>
+  let _escape_json_with_len = (Module['_escape_json_with_len'] = (a0, a1, a2) =>
     (_escape_json_with_len = Module['_escape_json_with_len'] =
       wasmExports['escape_json_with_len'])(a0, a1, a2))
-  var _BufFileSeek = (Module['_BufFileSeek'] = (a0, a1, a2, a3) =>
+  let _BufFileSeek = (Module['_BufFileSeek'] = (a0, a1, a2, a3) =>
     (_BufFileSeek = Module['_BufFileSeek'] = wasmExports['BufFileSeek'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _lstat = (Module['_lstat'] = (a0, a1) =>
+  let _lstat = (Module['_lstat'] = (a0, a1) =>
     (_lstat = Module['_lstat'] = wasmExports['lstat'])(a0, a1))
-  var _destroyStringInfo = (Module['_destroyStringInfo'] = (a0) =>
+  let _destroyStringInfo = (Module['_destroyStringInfo'] = (a0) =>
     (_destroyStringInfo = Module['_destroyStringInfo'] =
       wasmExports['destroyStringInfo'])(a0))
-  var _list_sort = (Module['_list_sort'] = (a0, a1) =>
+  let _list_sort = (Module['_list_sort'] = (a0, a1) =>
     (_list_sort = Module['_list_sort'] = wasmExports['list_sort'])(a0, a1))
-  var _pgl_geteuid = (Module['_pgl_geteuid'] = () =>
+  let _pgl_geteuid = (Module['_pgl_geteuid'] = () =>
     (_pgl_geteuid = Module['_pgl_geteuid'] = wasmExports['pgl_geteuid'])())
-  var _getegid = (Module['_getegid'] = () =>
+  let _getegid = (Module['_getegid'] = () =>
     (_getegid = Module['_getegid'] = wasmExports['getegid'])())
-  var _pg_checksum_page = (Module['_pg_checksum_page'] = (a0, a1) =>
+  let _pg_checksum_page = (Module['_pg_checksum_page'] = (a0, a1) =>
     (_pg_checksum_page = Module['_pg_checksum_page'] =
       wasmExports['pg_checksum_page'])(a0, a1))
-  var _CreateDestReceiver = (Module['_CreateDestReceiver'] = (a0) =>
+  let _CreateDestReceiver = (Module['_CreateDestReceiver'] = (a0) =>
     (_CreateDestReceiver = Module['_CreateDestReceiver'] =
       wasmExports['CreateDestReceiver'])(a0))
-  var _bbsink_forward_end_archive = (Module['_bbsink_forward_end_archive'] = (
+  let _bbsink_forward_end_archive = (Module['_bbsink_forward_end_archive'] = (
     a0,
   ) =>
     (_bbsink_forward_end_archive = Module['_bbsink_forward_end_archive'] =
       wasmExports['bbsink_forward_end_archive'])(a0))
-  var _bbsink_forward_begin_manifest = (Module[
+  let _bbsink_forward_begin_manifest = (Module[
     '_bbsink_forward_begin_manifest'
   ] = (a0) =>
     (_bbsink_forward_begin_manifest = Module['_bbsink_forward_begin_manifest'] =
       wasmExports['bbsink_forward_begin_manifest'])(a0))
-  var _bbsink_forward_end_manifest = (Module['_bbsink_forward_end_manifest'] = (
+  let _bbsink_forward_end_manifest = (Module['_bbsink_forward_end_manifest'] = (
     a0,
   ) =>
     (_bbsink_forward_end_manifest = Module['_bbsink_forward_end_manifest'] =
       wasmExports['bbsink_forward_end_manifest'])(a0))
-  var _bbsink_forward_end_backup = (Module['_bbsink_forward_end_backup'] = (
+  let _bbsink_forward_end_backup = (Module['_bbsink_forward_end_backup'] = (
     a0,
     a1,
     a2,
   ) =>
     (_bbsink_forward_end_backup = Module['_bbsink_forward_end_backup'] =
       wasmExports['bbsink_forward_end_backup'])(a0, a1, a2))
-  var _bbsink_forward_cleanup = (Module['_bbsink_forward_cleanup'] = (a0) =>
+  let _bbsink_forward_cleanup = (Module['_bbsink_forward_cleanup'] = (a0) =>
     (_bbsink_forward_cleanup = Module['_bbsink_forward_cleanup'] =
       wasmExports['bbsink_forward_cleanup'])(a0))
-  var _MemoryContextAllocExtended = (Module['_MemoryContextAllocExtended'] = (
+  let _MemoryContextAllocExtended = (Module['_MemoryContextAllocExtended'] = (
     a0,
     a1,
     a2,
   ) =>
     (_MemoryContextAllocExtended = Module['_MemoryContextAllocExtended'] =
       wasmExports['MemoryContextAllocExtended'])(a0, a1, a2))
-  var _appendStringInfoVA = (Module['_appendStringInfoVA'] = (a0, a1, a2) =>
+  let _appendStringInfoVA = (Module['_appendStringInfoVA'] = (a0, a1, a2) =>
     (_appendStringInfoVA = Module['_appendStringInfoVA'] =
       wasmExports['appendStringInfoVA'])(a0, a1, a2))
-  var _list_concat = (Module['_list_concat'] = (a0, a1) =>
+  let _list_concat = (Module['_list_concat'] = (a0, a1) =>
     (_list_concat = Module['_list_concat'] = wasmExports['list_concat'])(
       a0,
       a1,
     ))
-  var _strrchr = (Module['_strrchr'] = (a0, a1) =>
+  let _strrchr = (Module['_strrchr'] = (a0, a1) =>
     (_strrchr = Module['_strrchr'] = wasmExports['strrchr'])(a0, a1))
-  var _bbsink_forward_begin_backup = (Module['_bbsink_forward_begin_backup'] = (
+  let _bbsink_forward_begin_backup = (Module['_bbsink_forward_begin_backup'] = (
     a0,
   ) =>
     (_bbsink_forward_begin_backup = Module['_bbsink_forward_begin_backup'] =
       wasmExports['bbsink_forward_begin_backup'])(a0))
-  var _bbsink_forward_archive_contents = (Module[
+  let _bbsink_forward_archive_contents = (Module[
     '_bbsink_forward_archive_contents'
   ] = (a0, a1) =>
     (_bbsink_forward_archive_contents = Module[
       '_bbsink_forward_archive_contents'
     ] =
       wasmExports['bbsink_forward_archive_contents'])(a0, a1))
-  var _bbsink_forward_begin_archive = (Module['_bbsink_forward_begin_archive'] =
+  let _bbsink_forward_begin_archive = (Module['_bbsink_forward_begin_archive'] =
     (a0, a1) =>
       (_bbsink_forward_begin_archive = Module['_bbsink_forward_begin_archive'] =
         wasmExports['bbsink_forward_begin_archive'])(a0, a1))
-  var _bbsink_forward_manifest_contents = (Module[
+  let _bbsink_forward_manifest_contents = (Module[
     '_bbsink_forward_manifest_contents'
   ] = (a0, a1) =>
     (_bbsink_forward_manifest_contents = Module[
       '_bbsink_forward_manifest_contents'
     ] =
       wasmExports['bbsink_forward_manifest_contents'])(a0, a1))
-  var _has_privs_of_role = (Module['_has_privs_of_role'] = (a0, a1) =>
+  let _has_privs_of_role = (Module['_has_privs_of_role'] = (a0, a1) =>
     (_has_privs_of_role = Module['_has_privs_of_role'] =
       wasmExports['has_privs_of_role'])(a0, a1))
-  var _BaseBackupAddTarget = (Module['_BaseBackupAddTarget'] = (a0, a1, a2) =>
+  let _BaseBackupAddTarget = (Module['_BaseBackupAddTarget'] = (a0, a1, a2) =>
     (_BaseBackupAddTarget = Module['_BaseBackupAddTarget'] =
       wasmExports['BaseBackupAddTarget'])(a0, a1, a2))
-  var _list_copy = (Module['_list_copy'] = (a0) =>
+  let _list_copy = (Module['_list_copy'] = (a0) =>
     (_list_copy = Module['_list_copy'] = wasmExports['list_copy'])(a0))
-  var _tuplestore_puttuple = (Module['_tuplestore_puttuple'] = (a0, a1) =>
+  let _tuplestore_puttuple = (Module['_tuplestore_puttuple'] = (a0, a1) =>
     (_tuplestore_puttuple = Module['_tuplestore_puttuple'] =
       wasmExports['tuplestore_puttuple'])(a0, a1))
-  var _isatty = (Module['_isatty'] = (a0) =>
+  let _isatty = (Module['_isatty'] = (a0) =>
     (_isatty = Module['_isatty'] = wasmExports['isatty'])(a0))
-  var _makeRangeVar = (Module['_makeRangeVar'] = (a0, a1, a2) =>
+  let _makeRangeVar = (Module['_makeRangeVar'] = (a0, a1, a2) =>
     (_makeRangeVar = Module['_makeRangeVar'] = wasmExports['makeRangeVar'])(
       a0,
       a1,
       a2,
     ))
-  var _DefineIndex = (Module['_DefineIndex'] = (
+  let _DefineIndex = (Module['_DefineIndex'] = (
     a0,
     a1,
     a2,
@@ -11717,16 +11729,16 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a10,
       a11,
     ))
-  var _getc = (Module['_getc'] = (a0) =>
+  let _getc = (Module['_getc'] = (a0) =>
     (_getc = Module['_getc'] = wasmExports['getc'])(a0))
-  var _fread = (Module['_fread'] = (a0, a1, a2, a3) =>
+  let _fread = (Module['_fread'] = (a0, a1, a2, a3) =>
     (_fread = Module['_fread'] = wasmExports['fread'])(a0, a1, a2, a3))
-  var _clearerr = (Module['_clearerr'] = (a0) =>
+  let _clearerr = (Module['_clearerr'] = (a0) =>
     (_clearerr = Module['_clearerr'] = wasmExports['clearerr'])(a0))
-  var _copyObjectImpl = (Module['_copyObjectImpl'] = (a0) =>
+  let _copyObjectImpl = (Module['_copyObjectImpl'] = (a0) =>
     (_copyObjectImpl = Module['_copyObjectImpl'] =
       wasmExports['copyObjectImpl'])(a0))
-  var _get_object_address = (Module['_get_object_address'] = (
+  let _get_object_address = (Module['_get_object_address'] = (
     a0,
     a1,
     a2,
@@ -11736,73 +11748,73 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_get_object_address = Module['_get_object_address'] =
       wasmExports['get_object_address'])(a0, a1, a2, a3, a4, a5))
-  var _lappend_oid = (Module['_lappend_oid'] = (a0, a1) =>
+  let _lappend_oid = (Module['_lappend_oid'] = (a0, a1) =>
     (_lappend_oid = Module['_lappend_oid'] = wasmExports['lappend_oid'])(
       a0,
       a1,
     ))
-  var _makeTypeNameFromNameList = (Module['_makeTypeNameFromNameList'] = (a0) =>
+  let _makeTypeNameFromNameList = (Module['_makeTypeNameFromNameList'] = (a0) =>
     (_makeTypeNameFromNameList = Module['_makeTypeNameFromNameList'] =
       wasmExports['makeTypeNameFromNameList'])(a0))
-  var _SearchSysCache2 = (Module['_SearchSysCache2'] = (a0, a1, a2) =>
+  let _SearchSysCache2 = (Module['_SearchSysCache2'] = (a0, a1, a2) =>
     (_SearchSysCache2 = Module['_SearchSysCache2'] =
       wasmExports['SearchSysCache2'])(a0, a1, a2))
-  var _SysCacheGetAttr = (Module['_SysCacheGetAttr'] = (a0, a1, a2, a3) =>
+  let _SysCacheGetAttr = (Module['_SysCacheGetAttr'] = (a0, a1, a2, a3) =>
     (_SysCacheGetAttr = Module['_SysCacheGetAttr'] =
       wasmExports['SysCacheGetAttr'])(a0, a1, a2, a3))
-  var _CatalogTupleUpdate = (Module['_CatalogTupleUpdate'] = (a0, a1, a2) =>
+  let _CatalogTupleUpdate = (Module['_CatalogTupleUpdate'] = (a0, a1, a2) =>
     (_CatalogTupleUpdate = Module['_CatalogTupleUpdate'] =
       wasmExports['CatalogTupleUpdate'])(a0, a1, a2))
-  var _get_attnum = (Module['_get_attnum'] = (a0, a1) =>
+  let _get_attnum = (Module['_get_attnum'] = (a0, a1) =>
     (_get_attnum = Module['_get_attnum'] = wasmExports['get_attnum'])(a0, a1))
-  var _get_rel_name = (Module['_get_rel_name'] = (a0) =>
+  let _get_rel_name = (Module['_get_rel_name'] = (a0) =>
     (_get_rel_name = Module['_get_rel_name'] = wasmExports['get_rel_name'])(a0))
-  var _CatalogTupleDelete = (Module['_CatalogTupleDelete'] = (a0, a1) =>
+  let _CatalogTupleDelete = (Module['_CatalogTupleDelete'] = (a0, a1) =>
     (_CatalogTupleDelete = Module['_CatalogTupleDelete'] =
       wasmExports['CatalogTupleDelete'])(a0, a1))
-  var _get_namespace_oid = (Module['_get_namespace_oid'] = (a0, a1) =>
+  let _get_namespace_oid = (Module['_get_namespace_oid'] = (a0, a1) =>
     (_get_namespace_oid = Module['_get_namespace_oid'] =
       wasmExports['get_namespace_oid'])(a0, a1))
-  var _SearchSysCache3 = (Module['_SearchSysCache3'] = (a0, a1, a2, a3) =>
+  let _SearchSysCache3 = (Module['_SearchSysCache3'] = (a0, a1, a2, a3) =>
     (_SearchSysCache3 = Module['_SearchSysCache3'] =
       wasmExports['SearchSysCache3'])(a0, a1, a2, a3))
-  var _performDeletion = (Module['_performDeletion'] = (a0, a1, a2) =>
+  let _performDeletion = (Module['_performDeletion'] = (a0, a1, a2) =>
     (_performDeletion = Module['_performDeletion'] =
       wasmExports['performDeletion'])(a0, a1, a2))
-  var _CatalogTupleInsert = (Module['_CatalogTupleInsert'] = (a0, a1) =>
+  let _CatalogTupleInsert = (Module['_CatalogTupleInsert'] = (a0, a1) =>
     (_CatalogTupleInsert = Module['_CatalogTupleInsert'] =
       wasmExports['CatalogTupleInsert'])(a0, a1))
-  var _recordDependencyOn = (Module['_recordDependencyOn'] = (a0, a1, a2) =>
+  let _recordDependencyOn = (Module['_recordDependencyOn'] = (a0, a1, a2) =>
     (_recordDependencyOn = Module['_recordDependencyOn'] =
       wasmExports['recordDependencyOn'])(a0, a1, a2))
-  var _get_element_type = (Module['_get_element_type'] = (a0) =>
+  let _get_element_type = (Module['_get_element_type'] = (a0) =>
     (_get_element_type = Module['_get_element_type'] =
       wasmExports['get_element_type'])(a0))
-  var _object_aclcheck = (Module['_object_aclcheck'] = (a0, a1, a2, a3) =>
+  let _object_aclcheck = (Module['_object_aclcheck'] = (a0, a1, a2, a3) =>
     (_object_aclcheck = Module['_object_aclcheck'] =
       wasmExports['object_aclcheck'])(a0, a1, a2, a3))
-  var _isTempNamespace = (Module['_isTempNamespace'] = (a0) =>
+  let _isTempNamespace = (Module['_isTempNamespace'] = (a0) =>
     (_isTempNamespace = Module['_isTempNamespace'] =
       wasmExports['isTempNamespace'])(a0))
-  var _superuser = (Module['_superuser'] = () =>
+  let _superuser = (Module['_superuser'] = () =>
     (_superuser = Module['_superuser'] = wasmExports['superuser'])())
-  var _SearchSysCacheAttName = (Module['_SearchSysCacheAttName'] = (a0, a1) =>
+  let _SearchSysCacheAttName = (Module['_SearchSysCacheAttName'] = (a0, a1) =>
     (_SearchSysCacheAttName = Module['_SearchSysCacheAttName'] =
       wasmExports['SearchSysCacheAttName'])(a0, a1))
-  var _new_object_addresses = (Module['_new_object_addresses'] = () =>
+  let _new_object_addresses = (Module['_new_object_addresses'] = () =>
     (_new_object_addresses = Module['_new_object_addresses'] =
       wasmExports['new_object_addresses'])())
-  var _free_object_addresses = (Module['_free_object_addresses'] = (a0) =>
+  let _free_object_addresses = (Module['_free_object_addresses'] = (a0) =>
     (_free_object_addresses = Module['_free_object_addresses'] =
       wasmExports['free_object_addresses'])(a0))
-  var _performMultipleDeletions = (Module['_performMultipleDeletions'] = (
+  let _performMultipleDeletions = (Module['_performMultipleDeletions'] = (
     a0,
     a1,
     a2,
   ) =>
     (_performMultipleDeletions = Module['_performMultipleDeletions'] =
       wasmExports['performMultipleDeletions'])(a0, a1, a2))
-  var _recordDependencyOnExpr = (Module['_recordDependencyOnExpr'] = (
+  let _recordDependencyOnExpr = (Module['_recordDependencyOnExpr'] = (
     a0,
     a1,
     a2,
@@ -11810,7 +11822,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_recordDependencyOnExpr = Module['_recordDependencyOnExpr'] =
       wasmExports['recordDependencyOnExpr'])(a0, a1, a2, a3))
-  var _query_tree_walker_impl = (Module['_query_tree_walker_impl'] = (
+  let _query_tree_walker_impl = (Module['_query_tree_walker_impl'] = (
     a0,
     a1,
     a2,
@@ -11818,46 +11830,46 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_query_tree_walker_impl = Module['_query_tree_walker_impl'] =
       wasmExports['query_tree_walker_impl'])(a0, a1, a2, a3))
-  var _expression_tree_walker_impl = (Module['_expression_tree_walker_impl'] = (
+  let _expression_tree_walker_impl = (Module['_expression_tree_walker_impl'] = (
     a0,
     a1,
     a2,
   ) =>
     (_expression_tree_walker_impl = Module['_expression_tree_walker_impl'] =
       wasmExports['expression_tree_walker_impl'])(a0, a1, a2))
-  var _add_exact_object_address = (Module['_add_exact_object_address'] = (
+  let _add_exact_object_address = (Module['_add_exact_object_address'] = (
     a0,
     a1,
   ) =>
     (_add_exact_object_address = Module['_add_exact_object_address'] =
       wasmExports['add_exact_object_address'])(a0, a1))
-  var _get_rel_relkind = (Module['_get_rel_relkind'] = (a0) =>
+  let _get_rel_relkind = (Module['_get_rel_relkind'] = (a0) =>
     (_get_rel_relkind = Module['_get_rel_relkind'] =
       wasmExports['get_rel_relkind'])(a0))
-  var _get_typtype = (Module['_get_typtype'] = (a0) =>
+  let _get_typtype = (Module['_get_typtype'] = (a0) =>
     (_get_typtype = Module['_get_typtype'] = wasmExports['get_typtype'])(a0))
-  var _list_delete_last = (Module['_list_delete_last'] = (a0) =>
+  let _list_delete_last = (Module['_list_delete_last'] = (a0) =>
     (_list_delete_last = Module['_list_delete_last'] =
       wasmExports['list_delete_last'])(a0))
-  var _type_is_collatable = (Module['_type_is_collatable'] = (a0) =>
+  let _type_is_collatable = (Module['_type_is_collatable'] = (a0) =>
     (_type_is_collatable = Module['_type_is_collatable'] =
       wasmExports['type_is_collatable'])(a0))
-  var _CatalogOpenIndexes = (Module['_CatalogOpenIndexes'] = (a0) =>
+  let _CatalogOpenIndexes = (Module['_CatalogOpenIndexes'] = (a0) =>
     (_CatalogOpenIndexes = Module['_CatalogOpenIndexes'] =
       wasmExports['CatalogOpenIndexes'])(a0))
-  var _CatalogCloseIndexes = (Module['_CatalogCloseIndexes'] = (a0) =>
+  let _CatalogCloseIndexes = (Module['_CatalogCloseIndexes'] = (a0) =>
     (_CatalogCloseIndexes = Module['_CatalogCloseIndexes'] =
       wasmExports['CatalogCloseIndexes'])(a0))
-  var _get_relname_relid = (Module['_get_relname_relid'] = (a0, a1) =>
+  let _get_relname_relid = (Module['_get_relname_relid'] = (a0, a1) =>
     (_get_relname_relid = Module['_get_relname_relid'] =
       wasmExports['get_relname_relid'])(a0, a1))
-  var _GetSysCacheOid = (Module['_GetSysCacheOid'] = (a0, a1, a2, a3, a4, a5) =>
+  let _GetSysCacheOid = (Module['_GetSysCacheOid'] = (a0, a1, a2, a3, a4, a5) =>
     (_GetSysCacheOid = Module['_GetSysCacheOid'] =
       wasmExports['GetSysCacheOid'])(a0, a1, a2, a3, a4, a5))
-  var _CheckTableNotInUse = (Module['_CheckTableNotInUse'] = (a0, a1) =>
+  let _CheckTableNotInUse = (Module['_CheckTableNotInUse'] = (a0, a1) =>
     (_CheckTableNotInUse = Module['_CheckTableNotInUse'] =
       wasmExports['CheckTableNotInUse'])(a0, a1))
-  var _construct_array = (Module['_construct_array'] = (
+  let _construct_array = (Module['_construct_array'] = (
     a0,
     a1,
     a2,
@@ -11867,41 +11879,41 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_construct_array = Module['_construct_array'] =
       wasmExports['construct_array'])(a0, a1, a2, a3, a4, a5))
-  var _make_parsestate = (Module['_make_parsestate'] = (a0) =>
+  let _make_parsestate = (Module['_make_parsestate'] = (a0) =>
     (_make_parsestate = Module['_make_parsestate'] =
       wasmExports['make_parsestate'])(a0))
-  var _addRangeTableEntryForRelation = (Module[
+  let _addRangeTableEntryForRelation = (Module[
     '_addRangeTableEntryForRelation'
   ] = (a0, a1, a2, a3, a4, a5) =>
     (_addRangeTableEntryForRelation = Module['_addRangeTableEntryForRelation'] =
       wasmExports['addRangeTableEntryForRelation'])(a0, a1, a2, a3, a4, a5))
-  var _addNSItemToQuery = (Module['_addNSItemToQuery'] = (a0, a1, a2, a3, a4) =>
+  let _addNSItemToQuery = (Module['_addNSItemToQuery'] = (a0, a1, a2, a3, a4) =>
     (_addNSItemToQuery = Module['_addNSItemToQuery'] =
       wasmExports['addNSItemToQuery'])(a0, a1, a2, a3, a4))
-  var _transformExpr = (Module['_transformExpr'] = (a0, a1, a2) =>
+  let _transformExpr = (Module['_transformExpr'] = (a0, a1, a2) =>
     (_transformExpr = Module['_transformExpr'] = wasmExports['transformExpr'])(
       a0,
       a1,
       a2,
     ))
-  var _coerce_to_boolean = (Module['_coerce_to_boolean'] = (a0, a1, a2) =>
+  let _coerce_to_boolean = (Module['_coerce_to_boolean'] = (a0, a1, a2) =>
     (_coerce_to_boolean = Module['_coerce_to_boolean'] =
       wasmExports['coerce_to_boolean'])(a0, a1, a2))
-  var _assign_expr_collations = (Module['_assign_expr_collations'] = (a0, a1) =>
+  let _assign_expr_collations = (Module['_assign_expr_collations'] = (a0, a1) =>
     (_assign_expr_collations = Module['_assign_expr_collations'] =
       wasmExports['assign_expr_collations'])(a0, a1))
-  var _equal = (Module['_equal'] = (a0, a1) =>
+  let _equal = (Module['_equal'] = (a0, a1) =>
     (_equal = Module['_equal'] = wasmExports['equal'])(a0, a1))
-  var _pull_var_clause = (Module['_pull_var_clause'] = (a0, a1) =>
+  let _pull_var_clause = (Module['_pull_var_clause'] = (a0, a1) =>
     (_pull_var_clause = Module['_pull_var_clause'] =
       wasmExports['pull_var_clause'])(a0, a1))
-  var _get_attname = (Module['_get_attname'] = (a0, a1, a2) =>
+  let _get_attname = (Module['_get_attname'] = (a0, a1, a2) =>
     (_get_attname = Module['_get_attname'] = wasmExports['get_attname'])(
       a0,
       a1,
       a2,
     ))
-  var _coerce_to_target_type = (Module['_coerce_to_target_type'] = (
+  let _coerce_to_target_type = (Module['_coerce_to_target_type'] = (
     a0,
     a1,
     a2,
@@ -11913,40 +11925,40 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_coerce_to_target_type = Module['_coerce_to_target_type'] =
       wasmExports['coerce_to_target_type'])(a0, a1, a2, a3, a4, a5, a6, a7))
-  var _nodeToString = (Module['_nodeToString'] = (a0) =>
+  let _nodeToString = (Module['_nodeToString'] = (a0) =>
     (_nodeToString = Module['_nodeToString'] = wasmExports['nodeToString'])(a0))
-  var _lappend_int = (Module['_lappend_int'] = (a0, a1) =>
+  let _lappend_int = (Module['_lappend_int'] = (a0, a1) =>
     (_lappend_int = Module['_lappend_int'] = wasmExports['lappend_int'])(
       a0,
       a1,
     ))
-  var _list_delete_nth_cell = (Module['_list_delete_nth_cell'] = (a0, a1) =>
+  let _list_delete_nth_cell = (Module['_list_delete_nth_cell'] = (a0, a1) =>
     (_list_delete_nth_cell = Module['_list_delete_nth_cell'] =
       wasmExports['list_delete_nth_cell'])(a0, a1))
-  var _CatalogTupleInsertWithInfo = (Module['_CatalogTupleInsertWithInfo'] = (
+  let _CatalogTupleInsertWithInfo = (Module['_CatalogTupleInsertWithInfo'] = (
     a0,
     a1,
     a2,
   ) =>
     (_CatalogTupleInsertWithInfo = Module['_CatalogTupleInsertWithInfo'] =
       wasmExports['CatalogTupleInsertWithInfo'])(a0, a1, a2))
-  var _buildoidvector = (Module['_buildoidvector'] = (a0, a1) =>
+  let _buildoidvector = (Module['_buildoidvector'] = (a0, a1) =>
     (_buildoidvector = Module['_buildoidvector'] =
       wasmExports['buildoidvector'])(a0, a1))
-  var _parser_errposition = (Module['_parser_errposition'] = (a0, a1) =>
+  let _parser_errposition = (Module['_parser_errposition'] = (a0, a1) =>
     (_parser_errposition = Module['_parser_errposition'] =
       wasmExports['parser_errposition'])(a0, a1))
-  var _exprLocation = (Module['_exprLocation'] = (a0) =>
+  let _exprLocation = (Module['_exprLocation'] = (a0) =>
     (_exprLocation = Module['_exprLocation'] = wasmExports['exprLocation'])(a0))
-  var _exprTypmod = (Module['_exprTypmod'] = (a0) =>
+  let _exprTypmod = (Module['_exprTypmod'] = (a0) =>
     (_exprTypmod = Module['_exprTypmod'] = wasmExports['exprTypmod'])(a0))
-  var _get_base_element_type = (Module['_get_base_element_type'] = (a0) =>
+  let _get_base_element_type = (Module['_get_base_element_type'] = (a0) =>
     (_get_base_element_type = Module['_get_base_element_type'] =
       wasmExports['get_base_element_type'])(a0))
-  var _SystemFuncName = (Module['_SystemFuncName'] = (a0) =>
+  let _SystemFuncName = (Module['_SystemFuncName'] = (a0) =>
     (_SystemFuncName = Module['_SystemFuncName'] =
       wasmExports['SystemFuncName'])(a0))
-  var _CreateTrigger = (Module['_CreateTrigger'] = (
+  let _CreateTrigger = (Module['_CreateTrigger'] = (
     a0,
     a1,
     a2,
@@ -11974,13 +11986,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a10,
       a11,
     ))
-  var _plan_create_index_workers = (Module['_plan_create_index_workers'] = (
+  let _plan_create_index_workers = (Module['_plan_create_index_workers'] = (
     a0,
     a1,
   ) =>
     (_plan_create_index_workers = Module['_plan_create_index_workers'] =
       wasmExports['plan_create_index_workers'])(a0, a1))
-  var _tuplesort_begin_datum = (Module['_tuplesort_begin_datum'] = (
+  let _tuplesort_begin_datum = (Module['_tuplesort_begin_datum'] = (
     a0,
     a1,
     a2,
@@ -11991,102 +12003,102 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_tuplesort_begin_datum = Module['_tuplesort_begin_datum'] =
       wasmExports['tuplesort_begin_datum'])(a0, a1, a2, a3, a4, a5, a6))
-  var _tuplesort_putdatum = (Module['_tuplesort_putdatum'] = (a0, a1, a2) =>
+  let _tuplesort_putdatum = (Module['_tuplesort_putdatum'] = (a0, a1, a2) =>
     (_tuplesort_putdatum = Module['_tuplesort_putdatum'] =
       wasmExports['tuplesort_putdatum'])(a0, a1, a2))
-  var _get_rel_namespace = (Module['_get_rel_namespace'] = (a0) =>
+  let _get_rel_namespace = (Module['_get_rel_namespace'] = (a0) =>
     (_get_rel_namespace = Module['_get_rel_namespace'] =
       wasmExports['get_rel_namespace'])(a0))
-  var _ExecOpenIndices = (Module['_ExecOpenIndices'] = (a0, a1) =>
+  let _ExecOpenIndices = (Module['_ExecOpenIndices'] = (a0, a1) =>
     (_ExecOpenIndices = Module['_ExecOpenIndices'] =
       wasmExports['ExecOpenIndices'])(a0, a1))
-  var _ExecCloseIndices = (Module['_ExecCloseIndices'] = (a0) =>
+  let _ExecCloseIndices = (Module['_ExecCloseIndices'] = (a0) =>
     (_ExecCloseIndices = Module['_ExecCloseIndices'] =
       wasmExports['ExecCloseIndices'])(a0))
-  var _ConditionalLockRelationOid = (Module['_ConditionalLockRelationOid'] = (
+  let _ConditionalLockRelationOid = (Module['_ConditionalLockRelationOid'] = (
     a0,
     a1,
   ) =>
     (_ConditionalLockRelationOid = Module['_ConditionalLockRelationOid'] =
       wasmExports['ConditionalLockRelationOid'])(a0, a1))
-  var _RelnameGetRelid = (Module['_RelnameGetRelid'] = (a0) =>
+  let _RelnameGetRelid = (Module['_RelnameGetRelid'] = (a0) =>
     (_RelnameGetRelid = Module['_RelnameGetRelid'] =
       wasmExports['RelnameGetRelid'])(a0))
-  var _get_relkind_objtype = (Module['_get_relkind_objtype'] = (a0) =>
+  let _get_relkind_objtype = (Module['_get_relkind_objtype'] = (a0) =>
     (_get_relkind_objtype = Module['_get_relkind_objtype'] =
       wasmExports['get_relkind_objtype'])(a0))
-  var _RelationIsVisible = (Module['_RelationIsVisible'] = (a0) =>
+  let _RelationIsVisible = (Module['_RelationIsVisible'] = (a0) =>
     (_RelationIsVisible = Module['_RelationIsVisible'] =
       wasmExports['RelationIsVisible'])(a0))
-  var _TypenameGetTypid = (Module['_TypenameGetTypid'] = (a0) =>
+  let _TypenameGetTypid = (Module['_TypenameGetTypid'] = (a0) =>
     (_TypenameGetTypid = Module['_TypenameGetTypid'] =
       wasmExports['TypenameGetTypid'])(a0))
-  var _get_func_arg_info = (Module['_get_func_arg_info'] = (a0, a1, a2, a3) =>
+  let _get_func_arg_info = (Module['_get_func_arg_info'] = (a0, a1, a2, a3) =>
     (_get_func_arg_info = Module['_get_func_arg_info'] =
       wasmExports['get_func_arg_info'])(a0, a1, a2, a3))
-  var _NameListToString = (Module['_NameListToString'] = (a0) =>
+  let _NameListToString = (Module['_NameListToString'] = (a0) =>
     (_NameListToString = Module['_NameListToString'] =
       wasmExports['NameListToString'])(a0))
-  var _OpernameGetOprid = (Module['_OpernameGetOprid'] = (a0, a1, a2) =>
+  let _OpernameGetOprid = (Module['_OpernameGetOprid'] = (a0, a1, a2) =>
     (_OpernameGetOprid = Module['_OpernameGetOprid'] =
       wasmExports['OpernameGetOprid'])(a0, a1, a2))
-  var _get_ts_config_oid = (Module['_get_ts_config_oid'] = (a0, a1) =>
+  let _get_ts_config_oid = (Module['_get_ts_config_oid'] = (a0, a1) =>
     (_get_ts_config_oid = Module['_get_ts_config_oid'] =
       wasmExports['get_ts_config_oid'])(a0, a1))
-  var _makeRangeVarFromNameList = (Module['_makeRangeVarFromNameList'] = (a0) =>
+  let _makeRangeVarFromNameList = (Module['_makeRangeVarFromNameList'] = (a0) =>
     (_makeRangeVarFromNameList = Module['_makeRangeVarFromNameList'] =
       wasmExports['makeRangeVarFromNameList'])(a0))
-  var _quote_identifier = (Module['_quote_identifier'] = (a0) =>
+  let _quote_identifier = (Module['_quote_identifier'] = (a0) =>
     (_quote_identifier = Module['_quote_identifier'] =
       wasmExports['quote_identifier'])(a0))
-  var _atoi = (Module['_atoi'] = (a0) =>
+  let _atoi = (Module['_atoi'] = (a0) =>
     (_atoi = Module['_atoi'] = wasmExports['atoi'])(a0))
-  var _GetSearchPathMatcher = (Module['_GetSearchPathMatcher'] = (a0) =>
+  let _GetSearchPathMatcher = (Module['_GetSearchPathMatcher'] = (a0) =>
     (_GetSearchPathMatcher = Module['_GetSearchPathMatcher'] =
       wasmExports['GetSearchPathMatcher'])(a0))
-  var _SearchPathMatchesCurrentEnvironment = (Module[
+  let _SearchPathMatchesCurrentEnvironment = (Module[
     '_SearchPathMatchesCurrentEnvironment'
   ] = (a0) =>
     (_SearchPathMatchesCurrentEnvironment = Module[
       '_SearchPathMatchesCurrentEnvironment'
     ] =
       wasmExports['SearchPathMatchesCurrentEnvironment'])(a0))
-  var _get_collation_oid = (Module['_get_collation_oid'] = (a0, a1) =>
+  let _get_collation_oid = (Module['_get_collation_oid'] = (a0, a1) =>
     (_get_collation_oid = Module['_get_collation_oid'] =
       wasmExports['get_collation_oid'])(a0, a1))
-  var _GetDatabaseEncodingName = (Module['_GetDatabaseEncodingName'] = () =>
+  let _GetDatabaseEncodingName = (Module['_GetDatabaseEncodingName'] = () =>
     (_GetDatabaseEncodingName = Module['_GetDatabaseEncodingName'] =
       wasmExports['GetDatabaseEncodingName'])())
-  var _CacheRegisterSyscacheCallback = (Module[
+  let _CacheRegisterSyscacheCallback = (Module[
     '_CacheRegisterSyscacheCallback'
   ] = (a0, a1, a2) =>
     (_CacheRegisterSyscacheCallback = Module['_CacheRegisterSyscacheCallback'] =
       wasmExports['CacheRegisterSyscacheCallback'])(a0, a1, a2))
-  var _fetch_search_path = (Module['_fetch_search_path'] = (a0) =>
+  let _fetch_search_path = (Module['_fetch_search_path'] = (a0) =>
     (_fetch_search_path = Module['_fetch_search_path'] =
       wasmExports['fetch_search_path'])(a0))
-  var _get_extension_oid = (Module['_get_extension_oid'] = (a0, a1) =>
+  let _get_extension_oid = (Module['_get_extension_oid'] = (a0, a1) =>
     (_get_extension_oid = Module['_get_extension_oid'] =
       wasmExports['get_extension_oid'])(a0, a1))
-  var _get_role_oid = (Module['_get_role_oid'] = (a0, a1) =>
+  let _get_role_oid = (Module['_get_role_oid'] = (a0, a1) =>
     (_get_role_oid = Module['_get_role_oid'] = wasmExports['get_role_oid'])(
       a0,
       a1,
     ))
-  var _get_am_oid = (Module['_get_am_oid'] = (a0, a1) =>
+  let _get_am_oid = (Module['_get_am_oid'] = (a0, a1) =>
     (_get_am_oid = Module['_get_am_oid'] = wasmExports['get_am_oid'])(a0, a1))
-  var _GetForeignServerByName = (Module['_GetForeignServerByName'] = (a0, a1) =>
+  let _GetForeignServerByName = (Module['_GetForeignServerByName'] = (a0, a1) =>
     (_GetForeignServerByName = Module['_GetForeignServerByName'] =
       wasmExports['GetForeignServerByName'])(a0, a1))
-  var _typeStringToTypeName = (Module['_typeStringToTypeName'] = (a0, a1) =>
+  let _typeStringToTypeName = (Module['_typeStringToTypeName'] = (a0, a1) =>
     (_typeStringToTypeName = Module['_typeStringToTypeName'] =
       wasmExports['typeStringToTypeName'])(a0, a1))
-  var _makeFloat = (Module['_makeFloat'] = (a0) =>
+  let _makeFloat = (Module['_makeFloat'] = (a0) =>
     (_makeFloat = Module['_makeFloat'] = wasmExports['makeFloat'])(a0))
-  var _list_make2_impl = (Module['_list_make2_impl'] = (a0, a1, a2) =>
+  let _list_make2_impl = (Module['_list_make2_impl'] = (a0, a1, a2) =>
     (_list_make2_impl = Module['_list_make2_impl'] =
       wasmExports['list_make2_impl'])(a0, a1, a2))
-  var _check_object_ownership = (Module['_check_object_ownership'] = (
+  let _check_object_ownership = (Module['_check_object_ownership'] = (
     a0,
     a1,
     a2,
@@ -12095,48 +12107,48 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_check_object_ownership = Module['_check_object_ownership'] =
       wasmExports['check_object_ownership'])(a0, a1, a2, a3, a4))
-  var _GetUserNameFromId = (Module['_GetUserNameFromId'] = (a0, a1) =>
+  let _GetUserNameFromId = (Module['_GetUserNameFromId'] = (a0, a1) =>
     (_GetUserNameFromId = Module['_GetUserNameFromId'] =
       wasmExports['GetUserNameFromId'])(a0, a1))
-  var _format_type_extended = (Module['_format_type_extended'] = (a0, a1, a2) =>
+  let _format_type_extended = (Module['_format_type_extended'] = (a0, a1, a2) =>
     (_format_type_extended = Module['_format_type_extended'] =
       wasmExports['format_type_extended'])(a0, a1, a2))
-  var _quote_qualified_identifier = (Module['_quote_qualified_identifier'] = (
+  let _quote_qualified_identifier = (Module['_quote_qualified_identifier'] = (
     a0,
     a1,
   ) =>
     (_quote_qualified_identifier = Module['_quote_qualified_identifier'] =
       wasmExports['quote_qualified_identifier'])(a0, a1))
-  var _get_tablespace_name = (Module['_get_tablespace_name'] = (a0) =>
+  let _get_tablespace_name = (Module['_get_tablespace_name'] = (a0) =>
     (_get_tablespace_name = Module['_get_tablespace_name'] =
       wasmExports['get_tablespace_name'])(a0))
-  var _GetForeignServerExtended = (Module['_GetForeignServerExtended'] = (
+  let _GetForeignServerExtended = (Module['_GetForeignServerExtended'] = (
     a0,
     a1,
   ) =>
     (_GetForeignServerExtended = Module['_GetForeignServerExtended'] =
       wasmExports['GetForeignServerExtended'])(a0, a1))
-  var _GetForeignServer = (Module['_GetForeignServer'] = (a0) =>
+  let _GetForeignServer = (Module['_GetForeignServer'] = (a0) =>
     (_GetForeignServer = Module['_GetForeignServer'] =
       wasmExports['GetForeignServer'])(a0))
-  var _get_extension_name = (Module['_get_extension_name'] = (a0) =>
+  let _get_extension_name = (Module['_get_extension_name'] = (a0) =>
     (_get_extension_name = Module['_get_extension_name'] =
       wasmExports['get_extension_name'])(a0))
-  var _construct_empty_array = (Module['_construct_empty_array'] = (a0) =>
+  let _construct_empty_array = (Module['_construct_empty_array'] = (a0) =>
     (_construct_empty_array = Module['_construct_empty_array'] =
       wasmExports['construct_empty_array'])(a0))
-  var _format_type_be_qualified = (Module['_format_type_be_qualified'] = (a0) =>
+  let _format_type_be_qualified = (Module['_format_type_be_qualified'] = (a0) =>
     (_format_type_be_qualified = Module['_format_type_be_qualified'] =
       wasmExports['format_type_be_qualified'])(a0))
-  var _get_namespace_name_or_temp = (Module['_get_namespace_name_or_temp'] = (
+  let _get_namespace_name_or_temp = (Module['_get_namespace_name_or_temp'] = (
     a0,
   ) =>
     (_get_namespace_name_or_temp = Module['_get_namespace_name_or_temp'] =
       wasmExports['get_namespace_name_or_temp'])(a0))
-  var _list_make3_impl = (Module['_list_make3_impl'] = (a0, a1, a2, a3) =>
+  let _list_make3_impl = (Module['_list_make3_impl'] = (a0, a1, a2, a3) =>
     (_list_make3_impl = Module['_list_make3_impl'] =
       wasmExports['list_make3_impl'])(a0, a1, a2, a3))
-  var _construct_md_array = (Module['_construct_md_array'] = (
+  let _construct_md_array = (Module['_construct_md_array'] = (
     a0,
     a1,
     a2,
@@ -12149,40 +12161,40 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_construct_md_array = Module['_construct_md_array'] =
       wasmExports['construct_md_array'])(a0, a1, a2, a3, a4, a5, a6, a7, a8))
-  var _pull_varattnos = (Module['_pull_varattnos'] = (a0, a1, a2) =>
+  let _pull_varattnos = (Module['_pull_varattnos'] = (a0, a1, a2) =>
     (_pull_varattnos = Module['_pull_varattnos'] =
       wasmExports['pull_varattnos'])(a0, a1, a2))
-  var _makeBoolExpr = (Module['_makeBoolExpr'] = (a0, a1, a2) =>
+  let _makeBoolExpr = (Module['_makeBoolExpr'] = (a0, a1, a2) =>
     (_makeBoolExpr = Module['_makeBoolExpr'] = wasmExports['makeBoolExpr'])(
       a0,
       a1,
       a2,
     ))
-  var _eval_const_expressions = (Module['_eval_const_expressions'] = (a0, a1) =>
+  let _eval_const_expressions = (Module['_eval_const_expressions'] = (a0, a1) =>
     (_eval_const_expressions = Module['_eval_const_expressions'] =
       wasmExports['eval_const_expressions'])(a0, a1))
-  var _get_func_name = (Module['_get_func_name'] = (a0) =>
+  let _get_func_name = (Module['_get_func_name'] = (a0) =>
     (_get_func_name = Module['_get_func_name'] = wasmExports['get_func_name'])(
       a0,
     ))
-  var _construct_array_builtin = (Module['_construct_array_builtin'] = (
+  let _construct_array_builtin = (Module['_construct_array_builtin'] = (
     a0,
     a1,
     a2,
   ) =>
     (_construct_array_builtin = Module['_construct_array_builtin'] =
       wasmExports['construct_array_builtin'])(a0, a1, a2))
-  var _makeObjectName = (Module['_makeObjectName'] = (a0, a1, a2) =>
+  let _makeObjectName = (Module['_makeObjectName'] = (a0, a1, a2) =>
     (_makeObjectName = Module['_makeObjectName'] =
       wasmExports['makeObjectName'])(a0, a1, a2))
-  var _get_primary_key_attnos = (Module['_get_primary_key_attnos'] = (
+  let _get_primary_key_attnos = (Module['_get_primary_key_attnos'] = (
     a0,
     a1,
     a2,
   ) =>
     (_get_primary_key_attnos = Module['_get_primary_key_attnos'] =
       wasmExports['get_primary_key_attnos'])(a0, a1, a2))
-  var _check_functional_grouping = (Module['_check_functional_grouping'] = (
+  let _check_functional_grouping = (Module['_check_functional_grouping'] = (
     a0,
     a1,
     a2,
@@ -12191,83 +12203,83 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_check_functional_grouping = Module['_check_functional_grouping'] =
       wasmExports['check_functional_grouping'])(a0, a1, a2, a3, a4))
-  var _bms_is_subset = (Module['_bms_is_subset'] = (a0, a1) =>
+  let _bms_is_subset = (Module['_bms_is_subset'] = (a0, a1) =>
     (_bms_is_subset = Module['_bms_is_subset'] = wasmExports['bms_is_subset'])(
       a0,
       a1,
     ))
-  var _getExtensionOfObject = (Module['_getExtensionOfObject'] = (a0, a1) =>
+  let _getExtensionOfObject = (Module['_getExtensionOfObject'] = (a0, a1) =>
     (_getExtensionOfObject = Module['_getExtensionOfObject'] =
       wasmExports['getExtensionOfObject'])(a0, a1))
-  var _find_inheritance_children = (Module['_find_inheritance_children'] = (
+  let _find_inheritance_children = (Module['_find_inheritance_children'] = (
     a0,
     a1,
   ) =>
     (_find_inheritance_children = Module['_find_inheritance_children'] =
       wasmExports['find_inheritance_children'])(a0, a1))
-  var _find_all_inheritors = (Module['_find_all_inheritors'] = (a0, a1, a2) =>
+  let _find_all_inheritors = (Module['_find_all_inheritors'] = (a0, a1, a2) =>
     (_find_all_inheritors = Module['_find_all_inheritors'] =
       wasmExports['find_all_inheritors'])(a0, a1, a2))
-  var _has_superclass = (Module['_has_superclass'] = (a0) =>
+  let _has_superclass = (Module['_has_superclass'] = (a0) =>
     (_has_superclass = Module['_has_superclass'] =
       wasmExports['has_superclass'])(a0))
-  var _strstr = (Module['_strstr'] = (a0, a1) =>
+  let _strstr = (Module['_strstr'] = (a0, a1) =>
     (_strstr = Module['_strstr'] = wasmExports['strstr'])(a0, a1))
-  var _memchr = (Module['_memchr'] = (a0, a1, a2) =>
+  let _memchr = (Module['_memchr'] = (a0, a1, a2) =>
     (_memchr = Module['_memchr'] = wasmExports['memchr'])(a0, a1, a2))
-  var _CheckFunctionValidatorAccess = (Module['_CheckFunctionValidatorAccess'] =
+  let _CheckFunctionValidatorAccess = (Module['_CheckFunctionValidatorAccess'] =
     (a0, a1) =>
       (_CheckFunctionValidatorAccess = Module['_CheckFunctionValidatorAccess'] =
         wasmExports['CheckFunctionValidatorAccess'])(a0, a1))
-  var _AcquireRewriteLocks = (Module['_AcquireRewriteLocks'] = (a0, a1, a2) =>
+  let _AcquireRewriteLocks = (Module['_AcquireRewriteLocks'] = (a0, a1, a2) =>
     (_AcquireRewriteLocks = Module['_AcquireRewriteLocks'] =
       wasmExports['AcquireRewriteLocks'])(a0, a1, a2))
-  var _pg_parse_query = (Module['_pg_parse_query'] = (a0) =>
+  let _pg_parse_query = (Module['_pg_parse_query'] = (a0) =>
     (_pg_parse_query = Module['_pg_parse_query'] =
       wasmExports['pg_parse_query'])(a0))
-  var _get_func_result_type = (Module['_get_func_result_type'] = (a0, a1, a2) =>
+  let _get_func_result_type = (Module['_get_func_result_type'] = (a0, a1, a2) =>
     (_get_func_result_type = Module['_get_func_result_type'] =
       wasmExports['get_func_result_type'])(a0, a1, a2))
-  var _function_parse_error_transpose = (Module[
+  let _function_parse_error_transpose = (Module[
     '_function_parse_error_transpose'
   ] = (a0) =>
     (_function_parse_error_transpose = Module[
       '_function_parse_error_transpose'
     ] =
       wasmExports['function_parse_error_transpose'])(a0))
-  var _geterrposition = (Module['_geterrposition'] = () =>
+  let _geterrposition = (Module['_geterrposition'] = () =>
     (_geterrposition = Module['_geterrposition'] =
       wasmExports['geterrposition'])())
-  var _getinternalerrposition = (Module['_getinternalerrposition'] = () =>
+  let _getinternalerrposition = (Module['_getinternalerrposition'] = () =>
     (_getinternalerrposition = Module['_getinternalerrposition'] =
       wasmExports['getinternalerrposition'])())
-  var _pg_mblen_cstr = (Module['_pg_mblen_cstr'] = (a0) =>
+  let _pg_mblen_cstr = (Module['_pg_mblen_cstr'] = (a0) =>
     (_pg_mblen_cstr = Module['_pg_mblen_cstr'] = wasmExports['pg_mblen_cstr'])(
       a0,
     ))
-  var _pg_mbstrlen_with_len = (Module['_pg_mbstrlen_with_len'] = (a0, a1) =>
+  let _pg_mbstrlen_with_len = (Module['_pg_mbstrlen_with_len'] = (a0, a1) =>
     (_pg_mbstrlen_with_len = Module['_pg_mbstrlen_with_len'] =
       wasmExports['pg_mbstrlen_with_len'])(a0, a1))
-  var _errposition = (Module['_errposition'] = (a0) =>
+  let _errposition = (Module['_errposition'] = (a0) =>
     (_errposition = Module['_errposition'] = wasmExports['errposition'])(a0))
-  var _internalerrposition = (Module['_internalerrposition'] = (a0) =>
+  let _internalerrposition = (Module['_internalerrposition'] = (a0) =>
     (_internalerrposition = Module['_internalerrposition'] =
       wasmExports['internalerrposition'])(a0))
-  var _internalerrquery = (Module['_internalerrquery'] = (a0) =>
+  let _internalerrquery = (Module['_internalerrquery'] = (a0) =>
     (_internalerrquery = Module['_internalerrquery'] =
       wasmExports['internalerrquery'])(a0))
-  var _bms_num_members = (Module['_bms_num_members'] = (a0) =>
+  let _bms_num_members = (Module['_bms_num_members'] = (a0) =>
     (_bms_num_members = Module['_bms_num_members'] =
       wasmExports['bms_num_members'])(a0))
-  var _quote_literal_cstr = (Module['_quote_literal_cstr'] = (a0) =>
+  let _quote_literal_cstr = (Module['_quote_literal_cstr'] = (a0) =>
     (_quote_literal_cstr = Module['_quote_literal_cstr'] =
       wasmExports['quote_literal_cstr'])(a0))
-  var _get_array_type = (Module['_get_array_type'] = (a0) =>
+  let _get_array_type = (Module['_get_array_type'] = (a0) =>
     (_get_array_type = Module['_get_array_type'] =
       wasmExports['get_array_type'])(a0))
-  var _pnstrdup = (Module['_pnstrdup'] = (a0, a1) =>
+  let _pnstrdup = (Module['_pnstrdup'] = (a0, a1) =>
     (_pnstrdup = Module['_pnstrdup'] = wasmExports['pnstrdup'])(a0, a1))
-  var _smgrtruncate = (Module['_smgrtruncate'] = (a0, a1, a2, a3, a4) =>
+  let _smgrtruncate = (Module['_smgrtruncate'] = (a0, a1, a2, a3, a4) =>
     (_smgrtruncate = Module['_smgrtruncate'] = wasmExports['smgrtruncate'])(
       a0,
       a1,
@@ -12275,7 +12287,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _smgrreadv = (Module['_smgrreadv'] = (a0, a1, a2, a3, a4) =>
+  let _smgrreadv = (Module['_smgrreadv'] = (a0, a1, a2, a3, a4) =>
     (_smgrreadv = Module['_smgrreadv'] = wasmExports['smgrreadv'])(
       a0,
       a1,
@@ -12283,32 +12295,32 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _NewRelationCreateToastTable = (Module['_NewRelationCreateToastTable'] = (
+  let _NewRelationCreateToastTable = (Module['_NewRelationCreateToastTable'] = (
     a0,
     a1,
   ) =>
     (_NewRelationCreateToastTable = Module['_NewRelationCreateToastTable'] =
       wasmExports['NewRelationCreateToastTable'])(a0, a1))
-  var _transformStmt = (Module['_transformStmt'] = (a0, a1) =>
+  let _transformStmt = (Module['_transformStmt'] = (a0, a1) =>
     (_transformStmt = Module['_transformStmt'] = wasmExports['transformStmt'])(
       a0,
       a1,
     ))
-  var _free_parsestate = (Module['_free_parsestate'] = (a0) =>
+  let _free_parsestate = (Module['_free_parsestate'] = (a0) =>
     (_free_parsestate = Module['_free_parsestate'] =
       wasmExports['free_parsestate'])(a0))
-  var _makeFromExpr = (Module['_makeFromExpr'] = (a0, a1) =>
+  let _makeFromExpr = (Module['_makeFromExpr'] = (a0, a1) =>
     (_makeFromExpr = Module['_makeFromExpr'] = wasmExports['makeFromExpr'])(
       a0,
       a1,
     ))
-  var _assign_query_collations = (Module['_assign_query_collations'] = (
+  let _assign_query_collations = (Module['_assign_query_collations'] = (
     a0,
     a1,
   ) =>
     (_assign_query_collations = Module['_assign_query_collations'] =
       wasmExports['assign_query_collations'])(a0, a1))
-  var _ParseFuncOrColumn = (Module['_ParseFuncOrColumn'] = (
+  let _ParseFuncOrColumn = (Module['_ParseFuncOrColumn'] = (
     a0,
     a1,
     a2,
@@ -12319,11 +12331,11 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_ParseFuncOrColumn = Module['_ParseFuncOrColumn'] =
       wasmExports['ParseFuncOrColumn'])(a0, a1, a2, a3, a4, a5, a6))
-  var _exprCollation = (Module['_exprCollation'] = (a0) =>
+  let _exprCollation = (Module['_exprCollation'] = (a0) =>
     (_exprCollation = Module['_exprCollation'] = wasmExports['exprCollation'])(
       a0,
     ))
-  var _transformSortClause = (Module['_transformSortClause'] = (
+  let _transformSortClause = (Module['_transformSortClause'] = (
     a0,
     a1,
     a2,
@@ -12332,7 +12344,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_transformSortClause = Module['_transformSortClause'] =
       wasmExports['transformSortClause'])(a0, a1, a2, a3, a4))
-  var _transformDistinctClause = (Module['_transformDistinctClause'] = (
+  let _transformDistinctClause = (Module['_transformDistinctClause'] = (
     a0,
     a1,
     a2,
@@ -12340,13 +12352,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_transformDistinctClause = Module['_transformDistinctClause'] =
       wasmExports['transformDistinctClause'])(a0, a1, a2, a3))
-  var _makeTargetEntry = (Module['_makeTargetEntry'] = (a0, a1, a2, a3) =>
+  let _makeTargetEntry = (Module['_makeTargetEntry'] = (a0, a1, a2, a3) =>
     (_makeTargetEntry = Module['_makeTargetEntry'] =
       wasmExports['makeTargetEntry'])(a0, a1, a2, a3))
-  var _select_common_type = (Module['_select_common_type'] = (a0, a1, a2, a3) =>
+  let _select_common_type = (Module['_select_common_type'] = (a0, a1, a2, a3) =>
     (_select_common_type = Module['_select_common_type'] =
       wasmExports['select_common_type'])(a0, a1, a2, a3))
-  var _coerce_to_common_type = (Module['_coerce_to_common_type'] = (
+  let _coerce_to_common_type = (Module['_coerce_to_common_type'] = (
     a0,
     a1,
     a2,
@@ -12354,17 +12366,17 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_coerce_to_common_type = Module['_coerce_to_common_type'] =
       wasmExports['coerce_to_common_type'])(a0, a1, a2, a3))
-  var _select_common_collation = (Module['_select_common_collation'] = (
+  let _select_common_collation = (Module['_select_common_collation'] = (
     a0,
     a1,
     a2,
   ) =>
     (_select_common_collation = Module['_select_common_collation'] =
       wasmExports['select_common_collation'])(a0, a1, a2))
-  var _contain_vars_of_level = (Module['_contain_vars_of_level'] = (a0, a1) =>
+  let _contain_vars_of_level = (Module['_contain_vars_of_level'] = (a0, a1) =>
     (_contain_vars_of_level = Module['_contain_vars_of_level'] =
       wasmExports['contain_vars_of_level'])(a0, a1))
-  var _expandNSItemAttrs = (Module['_expandNSItemAttrs'] = (
+  let _expandNSItemAttrs = (Module['_expandNSItemAttrs'] = (
     a0,
     a1,
     a2,
@@ -12373,23 +12385,23 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_expandNSItemAttrs = Module['_expandNSItemAttrs'] =
       wasmExports['expandNSItemAttrs'])(a0, a1, a2, a3, a4))
-  var _makeAlias = (Module['_makeAlias'] = (a0, a1) =>
+  let _makeAlias = (Module['_makeAlias'] = (a0, a1) =>
     (_makeAlias = Module['_makeAlias'] = wasmExports['makeAlias'])(a0, a1))
-  var _addRangeTableEntryForSubquery = (Module[
+  let _addRangeTableEntryForSubquery = (Module[
     '_addRangeTableEntryForSubquery'
   ] = (a0, a1, a2, a3, a4) =>
     (_addRangeTableEntryForSubquery = Module['_addRangeTableEntryForSubquery'] =
       wasmExports['addRangeTableEntryForSubquery'])(a0, a1, a2, a3, a4))
-  var _assign_list_collations = (Module['_assign_list_collations'] = (a0, a1) =>
+  let _assign_list_collations = (Module['_assign_list_collations'] = (a0, a1) =>
     (_assign_list_collations = Module['_assign_list_collations'] =
       wasmExports['assign_list_collations'])(a0, a1))
-  var _expandNSItemVars = (Module['_expandNSItemVars'] = (a0, a1, a2, a3, a4) =>
+  let _expandNSItemVars = (Module['_expandNSItemVars'] = (a0, a1, a2, a3, a4) =>
     (_expandNSItemVars = Module['_expandNSItemVars'] =
       wasmExports['expandNSItemVars'])(a0, a1, a2, a3, a4))
-  var _markTargetListOrigins = (Module['_markTargetListOrigins'] = (a0, a1) =>
+  let _markTargetListOrigins = (Module['_markTargetListOrigins'] = (a0, a1) =>
     (_markTargetListOrigins = Module['_markTargetListOrigins'] =
       wasmExports['markTargetListOrigins'])(a0, a1))
-  var _addRangeTableEntryForJoin = (Module['_addRangeTableEntryForJoin'] = (
+  let _addRangeTableEntryForJoin = (Module['_addRangeTableEntryForJoin'] = (
     a0,
     a1,
     a2,
@@ -12416,12 +12428,12 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a9,
       a10,
     ))
-  var _list_truncate = (Module['_list_truncate'] = (a0, a1) =>
+  let _list_truncate = (Module['_list_truncate'] = (a0, a1) =>
     (_list_truncate = Module['_list_truncate'] = wasmExports['list_truncate'])(
       a0,
       a1,
     ))
-  var _makeVar = (Module['_makeVar'] = (a0, a1, a2, a3, a4, a5) =>
+  let _makeVar = (Module['_makeVar'] = (a0, a1, a2, a3, a4, a5) =>
     (_makeVar = Module['_makeVar'] = wasmExports['makeVar'])(
       a0,
       a1,
@@ -12430,13 +12442,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a4,
       a5,
     ))
-  var _makeNullConst = (Module['_makeNullConst'] = (a0, a1, a2) =>
+  let _makeNullConst = (Module['_makeNullConst'] = (a0, a1, a2) =>
     (_makeNullConst = Module['_makeNullConst'] = wasmExports['makeNullConst'])(
       a0,
       a1,
       a2,
     ))
-  var _get_sort_group_operators = (Module['_get_sort_group_operators'] = (
+  let _get_sort_group_operators = (Module['_get_sort_group_operators'] = (
     a0,
     a1,
     a2,
@@ -12448,7 +12460,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_get_sort_group_operators = Module['_get_sort_group_operators'] =
       wasmExports['get_sort_group_operators'])(a0, a1, a2, a3, a4, a5, a6, a7))
-  var _refnameNamespaceItem = (Module['_refnameNamespaceItem'] = (
+  let _refnameNamespaceItem = (Module['_refnameNamespaceItem'] = (
     a0,
     a1,
     a2,
@@ -12457,43 +12469,43 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_refnameNamespaceItem = Module['_refnameNamespaceItem'] =
       wasmExports['refnameNamespaceItem'])(a0, a1, a2, a3, a4))
-  var _setup_parser_errposition_callback = (Module[
+  let _setup_parser_errposition_callback = (Module[
     '_setup_parser_errposition_callback'
   ] = (a0, a1, a2) =>
     (_setup_parser_errposition_callback = Module[
       '_setup_parser_errposition_callback'
     ] =
       wasmExports['setup_parser_errposition_callback'])(a0, a1, a2))
-  var _cancel_parser_errposition_callback = (Module[
+  let _cancel_parser_errposition_callback = (Module[
     '_cancel_parser_errposition_callback'
   ] = (a0) =>
     (_cancel_parser_errposition_callback = Module[
       '_cancel_parser_errposition_callback'
     ] =
       wasmExports['cancel_parser_errposition_callback'])(a0))
-  var _locate_var_of_level = (Module['_locate_var_of_level'] = (a0, a1) =>
+  let _locate_var_of_level = (Module['_locate_var_of_level'] = (a0, a1) =>
     (_locate_var_of_level = Module['_locate_var_of_level'] =
       wasmExports['locate_var_of_level'])(a0, a1))
-  var _makeBoolean = (Module['_makeBoolean'] = (a0) =>
+  let _makeBoolean = (Module['_makeBoolean'] = (a0) =>
     (_makeBoolean = Module['_makeBoolean'] = wasmExports['makeBoolean'])(a0))
-  var _makeInteger = (Module['_makeInteger'] = (a0) =>
+  let _makeInteger = (Module['_makeInteger'] = (a0) =>
     (_makeInteger = Module['_makeInteger'] = wasmExports['makeInteger'])(a0))
-  var _makeSimpleA_Expr = (Module['_makeSimpleA_Expr'] = (a0, a1, a2, a3, a4) =>
+  let _makeSimpleA_Expr = (Module['_makeSimpleA_Expr'] = (a0, a1, a2, a3, a4) =>
     (_makeSimpleA_Expr = Module['_makeSimpleA_Expr'] =
       wasmExports['makeSimpleA_Expr'])(a0, a1, a2, a3, a4))
-  var _makeTypeName = (Module['_makeTypeName'] = (a0) =>
+  let _makeTypeName = (Module['_makeTypeName'] = (a0) =>
     (_makeTypeName = Module['_makeTypeName'] = wasmExports['makeTypeName'])(a0))
-  var _SystemTypeName = (Module['_SystemTypeName'] = (a0) =>
+  let _SystemTypeName = (Module['_SystemTypeName'] = (a0) =>
     (_SystemTypeName = Module['_SystemTypeName'] =
       wasmExports['SystemTypeName'])(a0))
-  var _makeFuncCall = (Module['_makeFuncCall'] = (a0, a1, a2, a3) =>
+  let _makeFuncCall = (Module['_makeFuncCall'] = (a0, a1, a2, a3) =>
     (_makeFuncCall = Module['_makeFuncCall'] = wasmExports['makeFuncCall'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _makeA_Expr = (Module['_makeA_Expr'] = (a0, a1, a2, a3, a4) =>
+  let _makeA_Expr = (Module['_makeA_Expr'] = (a0, a1, a2, a3, a4) =>
     (_makeA_Expr = Module['_makeA_Expr'] = wasmExports['makeA_Expr'])(
       a0,
       a1,
@@ -12501,10 +12513,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _list_make4_impl = (Module['_list_make4_impl'] = (a0, a1, a2, a3, a4) =>
+  let _list_make4_impl = (Module['_list_make4_impl'] = (a0, a1, a2, a3, a4) =>
     (_list_make4_impl = Module['_list_make4_impl'] =
       wasmExports['list_make4_impl'])(a0, a1, a2, a3, a4))
-  var _addTargetToSortList = (Module['_addTargetToSortList'] = (
+  let _addTargetToSortList = (Module['_addTargetToSortList'] = (
     a0,
     a1,
     a2,
@@ -12513,32 +12525,32 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_addTargetToSortList = Module['_addTargetToSortList'] =
       wasmExports['addTargetToSortList'])(a0, a1, a2, a3, a4))
-  var _locate_agg_of_level = (Module['_locate_agg_of_level'] = (a0, a1) =>
+  let _locate_agg_of_level = (Module['_locate_agg_of_level'] = (a0, a1) =>
     (_locate_agg_of_level = Module['_locate_agg_of_level'] =
       wasmExports['locate_agg_of_level'])(a0, a1))
-  var _list_intersection_int = (Module['_list_intersection_int'] = (a0, a1) =>
+  let _list_intersection_int = (Module['_list_intersection_int'] = (a0, a1) =>
     (_list_intersection_int = Module['_list_intersection_int'] =
       wasmExports['list_intersection_int'])(a0, a1))
-  var _get_sortgroupclause_tle = (Module['_get_sortgroupclause_tle'] = (
+  let _get_sortgroupclause_tle = (Module['_get_sortgroupclause_tle'] = (
     a0,
     a1,
   ) =>
     (_get_sortgroupclause_tle = Module['_get_sortgroupclause_tle'] =
       wasmExports['get_sortgroupclause_tle'])(a0, a1))
-  var _flatten_join_alias_vars = (Module['_flatten_join_alias_vars'] = (
+  let _flatten_join_alias_vars = (Module['_flatten_join_alias_vars'] = (
     a0,
     a1,
     a2,
   ) =>
     (_flatten_join_alias_vars = Module['_flatten_join_alias_vars'] =
       wasmExports['flatten_join_alias_vars'])(a0, a1, a2))
-  var _list_member_int = (Module['_list_member_int'] = (a0, a1) =>
+  let _list_member_int = (Module['_list_member_int'] = (a0, a1) =>
     (_list_member_int = Module['_list_member_int'] =
       wasmExports['list_member_int'])(a0, a1))
-  var _list_union_int = (Module['_list_union_int'] = (a0, a1) =>
+  let _list_union_int = (Module['_list_union_int'] = (a0, a1) =>
     (_list_union_int = Module['_list_union_int'] =
       wasmExports['list_union_int'])(a0, a1))
-  var _makeFuncExpr = (Module['_makeFuncExpr'] = (a0, a1, a2, a3, a4, a5) =>
+  let _makeFuncExpr = (Module['_makeFuncExpr'] = (a0, a1, a2, a3, a4, a5) =>
     (_makeFuncExpr = Module['_makeFuncExpr'] = wasmExports['makeFuncExpr'])(
       a0,
       a1,
@@ -12547,28 +12559,28 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a4,
       a5,
     ))
-  var _get_rte_attribute_name = (Module['_get_rte_attribute_name'] = (a0, a1) =>
+  let _get_rte_attribute_name = (Module['_get_rte_attribute_name'] = (a0, a1) =>
     (_get_rte_attribute_name = Module['_get_rte_attribute_name'] =
       wasmExports['get_rte_attribute_name'])(a0, a1))
-  var _expression_tree_mutator_impl = (Module['_expression_tree_mutator_impl'] =
+  let _expression_tree_mutator_impl = (Module['_expression_tree_mutator_impl'] =
     (a0, a1, a2) =>
       (_expression_tree_mutator_impl = Module['_expression_tree_mutator_impl'] =
         wasmExports['expression_tree_mutator_impl'])(a0, a1, a2))
-  var _checkNameSpaceConflicts = (Module['_checkNameSpaceConflicts'] = (
+  let _checkNameSpaceConflicts = (Module['_checkNameSpaceConflicts'] = (
     a0,
     a1,
     a2,
   ) =>
     (_checkNameSpaceConflicts = Module['_checkNameSpaceConflicts'] =
       wasmExports['checkNameSpaceConflicts'])(a0, a1, a2))
-  var _addRangeTableEntryForENR = (Module['_addRangeTableEntryForENR'] = (
+  let _addRangeTableEntryForENR = (Module['_addRangeTableEntryForENR'] = (
     a0,
     a1,
     a2,
   ) =>
     (_addRangeTableEntryForENR = Module['_addRangeTableEntryForENR'] =
       wasmExports['addRangeTableEntryForENR'])(a0, a1, a2))
-  var _addRangeTableEntry = (Module['_addRangeTableEntry'] = (
+  let _addRangeTableEntry = (Module['_addRangeTableEntry'] = (
     a0,
     a1,
     a2,
@@ -12577,11 +12589,11 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_addRangeTableEntry = Module['_addRangeTableEntry'] =
       wasmExports['addRangeTableEntry'])(a0, a1, a2, a3, a4))
-  var _FigureColname = (Module['_FigureColname'] = (a0) =>
+  let _FigureColname = (Module['_FigureColname'] = (a0) =>
     (_FigureColname = Module['_FigureColname'] = wasmExports['FigureColname'])(
       a0,
     ))
-  var _coerce_to_specific_type = (Module['_coerce_to_specific_type'] = (
+  let _coerce_to_specific_type = (Module['_coerce_to_specific_type'] = (
     a0,
     a1,
     a2,
@@ -12589,7 +12601,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_coerce_to_specific_type = Module['_coerce_to_specific_type'] =
       wasmExports['coerce_to_specific_type'])(a0, a1, a2, a3))
-  var _typenameTypeIdAndMod = (Module['_typenameTypeIdAndMod'] = (
+  let _typenameTypeIdAndMod = (Module['_typenameTypeIdAndMod'] = (
     a0,
     a1,
     a2,
@@ -12597,16 +12609,16 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_typenameTypeIdAndMod = Module['_typenameTypeIdAndMod'] =
       wasmExports['typenameTypeIdAndMod'])(a0, a1, a2, a3))
-  var _get_typcollation = (Module['_get_typcollation'] = (a0) =>
+  let _get_typcollation = (Module['_get_typcollation'] = (a0) =>
     (_get_typcollation = Module['_get_typcollation'] =
       wasmExports['get_typcollation'])(a0))
-  var _markNullableIfNeeded = (Module['_markNullableIfNeeded'] = (a0, a1) =>
+  let _markNullableIfNeeded = (Module['_markNullableIfNeeded'] = (a0, a1) =>
     (_markNullableIfNeeded = Module['_markNullableIfNeeded'] =
       wasmExports['markNullableIfNeeded'])(a0, a1))
-  var _markVarForSelectPriv = (Module['_markVarForSelectPriv'] = (a0, a1) =>
+  let _markVarForSelectPriv = (Module['_markVarForSelectPriv'] = (a0, a1) =>
     (_markVarForSelectPriv = Module['_markVarForSelectPriv'] =
       wasmExports['markVarForSelectPriv'])(a0, a1))
-  var _coerce_type = (Module['_coerce_type'] = (
+  let _coerce_type = (Module['_coerce_type'] = (
     a0,
     a1,
     a2,
@@ -12626,49 +12638,49 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a6,
       a7,
     ))
-  var _LookupFuncName = (Module['_LookupFuncName'] = (a0, a1, a2, a3) =>
+  let _LookupFuncName = (Module['_LookupFuncName'] = (a0, a1, a2, a3) =>
     (_LookupFuncName = Module['_LookupFuncName'] =
       wasmExports['LookupFuncName'])(a0, a1, a2, a3))
-  var _addRangeTableEntryForFunction = (Module[
+  let _addRangeTableEntryForFunction = (Module[
     '_addRangeTableEntryForFunction'
   ] = (a0, a1, a2, a3, a4, a5, a6) =>
     (_addRangeTableEntryForFunction = Module['_addRangeTableEntryForFunction'] =
       wasmExports['addRangeTableEntryForFunction'])(a0, a1, a2, a3, a4, a5, a6))
-  var _parserOpenTable = (Module['_parserOpenTable'] = (a0, a1, a2) =>
+  let _parserOpenTable = (Module['_parserOpenTable'] = (a0, a1, a2) =>
     (_parserOpenTable = Module['_parserOpenTable'] =
       wasmExports['parserOpenTable'])(a0, a1, a2))
-  var _strip_implicit_coercions = (Module['_strip_implicit_coercions'] = (a0) =>
+  let _strip_implicit_coercions = (Module['_strip_implicit_coercions'] = (a0) =>
     (_strip_implicit_coercions = Module['_strip_implicit_coercions'] =
       wasmExports['strip_implicit_coercions'])(a0))
-  var _colNameToVar = (Module['_colNameToVar'] = (a0, a1, a2, a3) =>
+  let _colNameToVar = (Module['_colNameToVar'] = (a0, a1, a2, a3) =>
     (_colNameToVar = Module['_colNameToVar'] = wasmExports['colNameToVar'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _op_hashjoinable = (Module['_op_hashjoinable'] = (a0, a1) =>
+  let _op_hashjoinable = (Module['_op_hashjoinable'] = (a0, a1) =>
     (_op_hashjoinable = Module['_op_hashjoinable'] =
       wasmExports['op_hashjoinable'])(a0, a1))
-  var _get_commutator = (Module['_get_commutator'] = (a0) =>
+  let _get_commutator = (Module['_get_commutator'] = (a0) =>
     (_get_commutator = Module['_get_commutator'] =
       wasmExports['get_commutator'])(a0))
-  var _can_coerce_type = (Module['_can_coerce_type'] = (a0, a1, a2, a3) =>
+  let _can_coerce_type = (Module['_can_coerce_type'] = (a0, a1, a2, a3) =>
     (_can_coerce_type = Module['_can_coerce_type'] =
       wasmExports['can_coerce_type'])(a0, a1, a2, a3))
-  var _get_sortgroupref_tle = (Module['_get_sortgroupref_tle'] = (a0, a1) =>
+  let _get_sortgroupref_tle = (Module['_get_sortgroupref_tle'] = (a0, a1) =>
     (_get_sortgroupref_tle = Module['_get_sortgroupref_tle'] =
       wasmExports['get_sortgroupref_tle'])(a0, a1))
-  var _assignSortGroupRef = (Module['_assignSortGroupRef'] = (a0, a1) =>
+  let _assignSortGroupRef = (Module['_assignSortGroupRef'] = (a0, a1) =>
     (_assignSortGroupRef = Module['_assignSortGroupRef'] =
       wasmExports['assignSortGroupRef'])(a0, a1))
-  var _targetIsInSortList = (Module['_targetIsInSortList'] = (a0, a1, a2) =>
+  let _targetIsInSortList = (Module['_targetIsInSortList'] = (a0, a1, a2) =>
     (_targetIsInSortList = Module['_targetIsInSortList'] =
       wasmExports['targetIsInSortList'])(a0, a1, a2))
-  var _contain_aggs_of_level = (Module['_contain_aggs_of_level'] = (a0, a1) =>
+  let _contain_aggs_of_level = (Module['_contain_aggs_of_level'] = (a0, a1) =>
     (_contain_aggs_of_level = Module['_contain_aggs_of_level'] =
       wasmExports['contain_aggs_of_level'])(a0, a1))
-  var _find_coercion_pathway = (Module['_find_coercion_pathway'] = (
+  let _find_coercion_pathway = (Module['_find_coercion_pathway'] = (
     a0,
     a1,
     a2,
@@ -12676,16 +12688,16 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_find_coercion_pathway = Module['_find_coercion_pathway'] =
       wasmExports['find_coercion_pathway'])(a0, a1, a2, a3))
-  var _typeidType = (Module['_typeidType'] = (a0) =>
+  let _typeidType = (Module['_typeidType'] = (a0) =>
     (_typeidType = Module['_typeidType'] = wasmExports['typeidType'])(a0))
-  var _typeTypeCollation = (Module['_typeTypeCollation'] = (a0) =>
+  let _typeTypeCollation = (Module['_typeTypeCollation'] = (a0) =>
     (_typeTypeCollation = Module['_typeTypeCollation'] =
       wasmExports['typeTypeCollation'])(a0))
-  var _typeLen = (Module['_typeLen'] = (a0) =>
+  let _typeLen = (Module['_typeLen'] = (a0) =>
     (_typeLen = Module['_typeLen'] = wasmExports['typeLen'])(a0))
-  var _typeByVal = (Module['_typeByVal'] = (a0) =>
+  let _typeByVal = (Module['_typeByVal'] = (a0) =>
     (_typeByVal = Module['_typeByVal'] = wasmExports['typeByVal'])(a0))
-  var _makeConst = (Module['_makeConst'] = (a0, a1, a2, a3, a4, a5, a6) =>
+  let _makeConst = (Module['_makeConst'] = (a0, a1, a2, a3, a4, a5, a6) =>
     (_makeConst = Module['_makeConst'] = wasmExports['makeConst'])(
       a0,
       a1,
@@ -12695,31 +12707,31 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a5,
       a6,
     ))
-  var _lookup_rowtype_tupdesc = (Module['_lookup_rowtype_tupdesc'] = (a0, a1) =>
+  let _lookup_rowtype_tupdesc = (Module['_lookup_rowtype_tupdesc'] = (a0, a1) =>
     (_lookup_rowtype_tupdesc = Module['_lookup_rowtype_tupdesc'] =
       wasmExports['lookup_rowtype_tupdesc'])(a0, a1))
-  var _verify_common_type = (Module['_verify_common_type'] = (a0, a1) =>
+  let _verify_common_type = (Module['_verify_common_type'] = (a0, a1) =>
     (_verify_common_type = Module['_verify_common_type'] =
       wasmExports['verify_common_type'])(a0, a1))
-  var _bms_del_member = (Module['_bms_del_member'] = (a0, a1) =>
+  let _bms_del_member = (Module['_bms_del_member'] = (a0, a1) =>
     (_bms_del_member = Module['_bms_del_member'] =
       wasmExports['bms_del_member'])(a0, a1))
-  var _list_member = (Module['_list_member'] = (a0, a1) =>
+  let _list_member = (Module['_list_member'] = (a0, a1) =>
     (_list_member = Module['_list_member'] = wasmExports['list_member'])(
       a0,
       a1,
     ))
-  var _raw_expression_tree_walker_impl = (Module[
+  let _raw_expression_tree_walker_impl = (Module[
     '_raw_expression_tree_walker_impl'
   ] = (a0, a1, a2) =>
     (_raw_expression_tree_walker_impl = Module[
       '_raw_expression_tree_walker_impl'
     ] =
       wasmExports['raw_expression_tree_walker_impl'])(a0, a1, a2))
-  var _type_is_rowtype = (Module['_type_is_rowtype'] = (a0) =>
+  let _type_is_rowtype = (Module['_type_is_rowtype'] = (a0) =>
     (_type_is_rowtype = Module['_type_is_rowtype'] =
       wasmExports['type_is_rowtype'])(a0))
-  var _scanNSItemForColumn = (Module['_scanNSItemForColumn'] = (
+  let _scanNSItemForColumn = (Module['_scanNSItemForColumn'] = (
     a0,
     a1,
     a2,
@@ -12728,7 +12740,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_scanNSItemForColumn = Module['_scanNSItemForColumn'] =
       wasmExports['scanNSItemForColumn'])(a0, a1, a2, a3, a4))
-  var _make_op = (Module['_make_op'] = (a0, a1, a2, a3, a4, a5) =>
+  let _make_op = (Module['_make_op'] = (a0, a1, a2, a3, a4, a5) =>
     (_make_op = Module['_make_op'] = wasmExports['make_op'])(
       a0,
       a1,
@@ -12737,7 +12749,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a4,
       a5,
     ))
-  var _make_scalar_array_op = (Module['_make_scalar_array_op'] = (
+  let _make_scalar_array_op = (Module['_make_scalar_array_op'] = (
     a0,
     a1,
     a2,
@@ -12747,15 +12759,15 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_make_scalar_array_op = Module['_make_scalar_array_op'] =
       wasmExports['make_scalar_array_op'])(a0, a1, a2, a3, a4, a5))
-  var _count_nonjunk_tlist_entries = (Module['_count_nonjunk_tlist_entries'] = (
+  let _count_nonjunk_tlist_entries = (Module['_count_nonjunk_tlist_entries'] = (
     a0,
   ) =>
     (_count_nonjunk_tlist_entries = Module['_count_nonjunk_tlist_entries'] =
       wasmExports['count_nonjunk_tlist_entries'])(a0))
-  var _makeWholeRowVar = (Module['_makeWholeRowVar'] = (a0, a1, a2, a3) =>
+  let _makeWholeRowVar = (Module['_makeWholeRowVar'] = (a0, a1, a2, a3) =>
     (_makeWholeRowVar = Module['_makeWholeRowVar'] =
       wasmExports['makeWholeRowVar'])(a0, a1, a2, a3))
-  var _expandRTE = (Module['_expandRTE'] = (a0, a1, a2, a3, a4, a5, a6, a7) =>
+  let _expandRTE = (Module['_expandRTE'] = (a0, a1, a2, a3, a4, a5, a6, a7) =>
     (_expandRTE = Module['_expandRTE'] = wasmExports['expandRTE'])(
       a0,
       a1,
@@ -12766,28 +12778,28 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a6,
       a7,
     ))
-  var _bms_int_members = (Module['_bms_int_members'] = (a0, a1) =>
+  let _bms_int_members = (Module['_bms_int_members'] = (a0, a1) =>
     (_bms_int_members = Module['_bms_int_members'] =
       wasmExports['bms_int_members'])(a0, a1))
-  var _contain_var_clause = (Module['_contain_var_clause'] = (a0) =>
+  let _contain_var_clause = (Module['_contain_var_clause'] = (a0) =>
     (_contain_var_clause = Module['_contain_var_clause'] =
       wasmExports['contain_var_clause'])(a0))
-  var _jsonb_in = (Module['_jsonb_in'] = (a0) =>
+  let _jsonb_in = (Module['_jsonb_in'] = (a0) =>
     (_jsonb_in = Module['_jsonb_in'] = wasmExports['jsonb_in'])(a0))
-  var _escape_json = (Module['_escape_json'] = (a0, a1) =>
+  let _escape_json = (Module['_escape_json'] = (a0, a1) =>
     (_escape_json = Module['_escape_json'] = wasmExports['escape_json'])(
       a0,
       a1,
     ))
-  var _geterrcode = (Module['_geterrcode'] = () =>
+  let _geterrcode = (Module['_geterrcode'] = () =>
     (_geterrcode = Module['_geterrcode'] = wasmExports['geterrcode'])())
-  var _bit_in = (Module['_bit_in'] = (a0) =>
+  let _bit_in = (Module['_bit_in'] = (a0) =>
     (_bit_in = Module['_bit_in'] = wasmExports['bit_in'])(a0))
-  var _repalloc0 = (Module['_repalloc0'] = (a0, a1, a2) =>
+  let _repalloc0 = (Module['_repalloc0'] = (a0, a1, a2) =>
     (_repalloc0 = Module['_repalloc0'] = wasmExports['repalloc0'])(a0, a1, a2))
-  var _bms_union = (Module['_bms_union'] = (a0, a1) =>
+  let _bms_union = (Module['_bms_union'] = (a0, a1) =>
     (_bms_union = Module['_bms_union'] = wasmExports['bms_union'])(a0, a1))
-  var _varstr_levenshtein_less_equal = (Module[
+  let _varstr_levenshtein_less_equal = (Module[
     '_varstr_levenshtein_less_equal'
   ] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) =>
     (_varstr_levenshtein_less_equal = Module['_varstr_levenshtein_less_equal'] =
@@ -12802,27 +12814,27 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a7,
       a8,
     ))
-  var _raw_parser = (Module['_raw_parser'] = (a0, a1) =>
+  let _raw_parser = (Module['_raw_parser'] = (a0, a1) =>
     (_raw_parser = Module['_raw_parser'] = wasmExports['raw_parser'])(a0, a1))
-  var _errsave_start = (Module['_errsave_start'] = (a0, a1) =>
+  let _errsave_start = (Module['_errsave_start'] = (a0, a1) =>
     (_errsave_start = Module['_errsave_start'] = wasmExports['errsave_start'])(
       a0,
       a1,
     ))
-  var _errsave_finish = (Module['_errsave_finish'] = (a0, a1, a2, a3) =>
+  let _errsave_finish = (Module['_errsave_finish'] = (a0, a1, a2, a3) =>
     (_errsave_finish = Module['_errsave_finish'] =
       wasmExports['errsave_finish'])(a0, a1, a2, a3))
-  var _makeColumnDef = (Module['_makeColumnDef'] = (a0, a1, a2, a3) =>
+  let _makeColumnDef = (Module['_makeColumnDef'] = (a0, a1, a2, a3) =>
     (_makeColumnDef = Module['_makeColumnDef'] = wasmExports['makeColumnDef'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _GetDefaultOpClass = (Module['_GetDefaultOpClass'] = (a0, a1) =>
+  let _GetDefaultOpClass = (Module['_GetDefaultOpClass'] = (a0, a1) =>
     (_GetDefaultOpClass = Module['_GetDefaultOpClass'] =
       wasmExports['GetDefaultOpClass'])(a0, a1))
-  var _ChooseRelationName = (Module['_ChooseRelationName'] = (
+  let _ChooseRelationName = (Module['_ChooseRelationName'] = (
     a0,
     a1,
     a2,
@@ -12831,96 +12843,96 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_ChooseRelationName = Module['_ChooseRelationName'] =
       wasmExports['ChooseRelationName'])(a0, a1, a2, a3, a4))
-  var _scanner_init = (Module['_scanner_init'] = (a0, a1, a2, a3) =>
+  let _scanner_init = (Module['_scanner_init'] = (a0, a1, a2, a3) =>
     (_scanner_init = Module['_scanner_init'] = wasmExports['scanner_init'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _scanner_finish = (Module['_scanner_finish'] = (a0) =>
+  let _scanner_finish = (Module['_scanner_finish'] = (a0) =>
     (_scanner_finish = Module['_scanner_finish'] =
       wasmExports['scanner_finish'])(a0))
-  var _core_yylex = (Module['_core_yylex'] = (a0, a1, a2) =>
+  let _core_yylex = (Module['_core_yylex'] = (a0, a1, a2) =>
     (_core_yylex = Module['_core_yylex'] = wasmExports['core_yylex'])(
       a0,
       a1,
       a2,
     ))
-  var _isxdigit = (Module['_isxdigit'] = (a0) =>
+  let _isxdigit = (Module['_isxdigit'] = (a0) =>
     (_isxdigit = Module['_isxdigit'] = wasmExports['isxdigit'])(a0))
-  var _scanner_isspace = (Module['_scanner_isspace'] = (a0) =>
+  let _scanner_isspace = (Module['_scanner_isspace'] = (a0) =>
     (_scanner_isspace = Module['_scanner_isspace'] =
       wasmExports['scanner_isspace'])(a0))
-  var _truncate_identifier = (Module['_truncate_identifier'] = (a0, a1, a2) =>
+  let _truncate_identifier = (Module['_truncate_identifier'] = (a0, a1, a2) =>
     (_truncate_identifier = Module['_truncate_identifier'] =
       wasmExports['truncate_identifier'])(a0, a1, a2))
-  var _ScanKeywordLookup = (Module['_ScanKeywordLookup'] = (a0, a1) =>
+  let _ScanKeywordLookup = (Module['_ScanKeywordLookup'] = (a0, a1) =>
     (_ScanKeywordLookup = Module['_ScanKeywordLookup'] =
       wasmExports['ScanKeywordLookup'])(a0, a1))
-  var _pg_verifymbstr = (Module['_pg_verifymbstr'] = (a0, a1, a2) =>
+  let _pg_verifymbstr = (Module['_pg_verifymbstr'] = (a0, a1, a2) =>
     (_pg_verifymbstr = Module['_pg_verifymbstr'] =
       wasmExports['pg_verifymbstr'])(a0, a1, a2))
-  var _downcase_truncate_identifier = (Module['_downcase_truncate_identifier'] =
+  let _downcase_truncate_identifier = (Module['_downcase_truncate_identifier'] =
     (a0, a1, a2) =>
       (_downcase_truncate_identifier = Module['_downcase_truncate_identifier'] =
         wasmExports['downcase_truncate_identifier'])(a0, a1, a2))
-  var _pg_database_encoding_max_length = (Module[
+  let _pg_database_encoding_max_length = (Module[
     '_pg_database_encoding_max_length'
   ] = () =>
     (_pg_database_encoding_max_length = Module[
       '_pg_database_encoding_max_length'
     ] =
       wasmExports['pg_database_encoding_max_length'])())
-  var _getTypeInputInfo = (Module['_getTypeInputInfo'] = (a0, a1, a2) =>
+  let _getTypeInputInfo = (Module['_getTypeInputInfo'] = (a0, a1, a2) =>
     (_getTypeInputInfo = Module['_getTypeInputInfo'] =
       wasmExports['getTypeInputInfo'])(a0, a1, a2))
-  var _RenameSchema = (Module['_RenameSchema'] = (a0, a1, a2) =>
+  let _RenameSchema = (Module['_RenameSchema'] = (a0, a1, a2) =>
     (_RenameSchema = Module['_RenameSchema'] = wasmExports['RenameSchema'])(
       a0,
       a1,
       a2,
     ))
-  var _namein = (Module['_namein'] = (a0) =>
+  let _namein = (Module['_namein'] = (a0) =>
     (_namein = Module['_namein'] = wasmExports['namein'])(a0))
-  var _BlockSampler_Init = (Module['_BlockSampler_Init'] = (a0, a1, a2, a3) =>
+  let _BlockSampler_Init = (Module['_BlockSampler_Init'] = (a0, a1, a2, a3) =>
     (_BlockSampler_Init = Module['_BlockSampler_Init'] =
       wasmExports['BlockSampler_Init'])(a0, a1, a2, a3))
-  var _reservoir_init_selection_state = (Module[
+  let _reservoir_init_selection_state = (Module[
     '_reservoir_init_selection_state'
   ] = (a0, a1) =>
     (_reservoir_init_selection_state = Module[
       '_reservoir_init_selection_state'
     ] =
       wasmExports['reservoir_init_selection_state'])(a0, a1))
-  var _reservoir_get_next_S = (Module['_reservoir_get_next_S'] = (a0, a1, a2) =>
+  let _reservoir_get_next_S = (Module['_reservoir_get_next_S'] = (a0, a1, a2) =>
     (_reservoir_get_next_S = Module['_reservoir_get_next_S'] =
       wasmExports['reservoir_get_next_S'])(a0, a1, a2))
-  var _sampler_random_fract = (Module['_sampler_random_fract'] = (a0) =>
+  let _sampler_random_fract = (Module['_sampler_random_fract'] = (a0) =>
     (_sampler_random_fract = Module['_sampler_random_fract'] =
       wasmExports['sampler_random_fract'])(a0))
-  var _std_typanalyze = (Module['_std_typanalyze'] = (a0) =>
+  let _std_typanalyze = (Module['_std_typanalyze'] = (a0) =>
     (_std_typanalyze = Module['_std_typanalyze'] =
       wasmExports['std_typanalyze'])(a0))
-  var _BlockSampler_HasMore = (Module['_BlockSampler_HasMore'] = (a0) =>
+  let _BlockSampler_HasMore = (Module['_BlockSampler_HasMore'] = (a0) =>
     (_BlockSampler_HasMore = Module['_BlockSampler_HasMore'] =
       wasmExports['BlockSampler_HasMore'])(a0))
-  var _BlockSampler_Next = (Module['_BlockSampler_Next'] = (a0) =>
+  let _BlockSampler_Next = (Module['_BlockSampler_Next'] = (a0) =>
     (_BlockSampler_Next = Module['_BlockSampler_Next'] =
       wasmExports['BlockSampler_Next'])(a0))
-  var _Async_Notify = (Module['_Async_Notify'] = (a0, a1) =>
+  let _Async_Notify = (Module['_Async_Notify'] = (a0, a1) =>
     (_Async_Notify = Module['_Async_Notify'] = wasmExports['Async_Notify'])(
       a0,
       a1,
     ))
-  var _RangeVarCallbackMaintainsTable = (Module[
+  let _RangeVarCallbackMaintainsTable = (Module[
     '_RangeVarCallbackMaintainsTable'
   ] = (a0, a1, a2, a3) =>
     (_RangeVarCallbackMaintainsTable = Module[
       '_RangeVarCallbackMaintainsTable'
     ] =
       wasmExports['RangeVarCallbackMaintainsTable'])(a0, a1, a2, a3))
-  var _make_new_heap = (Module['_make_new_heap'] = (a0, a1, a2, a3, a4) =>
+  let _make_new_heap = (Module['_make_new_heap'] = (a0, a1, a2, a3, a4) =>
     (_make_new_heap = Module['_make_new_heap'] = wasmExports['make_new_heap'])(
       a0,
       a1,
@@ -12928,7 +12940,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _finish_heap_swap = (Module['_finish_heap_swap'] = (
+  let _finish_heap_swap = (Module['_finish_heap_swap'] = (
     a0,
     a1,
     a2,
@@ -12941,15 +12953,15 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_finish_heap_swap = Module['_finish_heap_swap'] =
       wasmExports['finish_heap_swap'])(a0, a1, a2, a3, a4, a5, a6, a7, a8))
-  var _OpenPipeStream = (Module['_OpenPipeStream'] = (a0, a1) =>
+  let _OpenPipeStream = (Module['_OpenPipeStream'] = (a0, a1) =>
     (_OpenPipeStream = Module['_OpenPipeStream'] =
       wasmExports['OpenPipeStream'])(a0, a1))
-  var _pg_is_ascii = (Module['_pg_is_ascii'] = (a0) =>
+  let _pg_is_ascii = (Module['_pg_is_ascii'] = (a0) =>
     (_pg_is_ascii = Module['_pg_is_ascii'] = wasmExports['pg_is_ascii'])(a0))
-  var _ClosePipeStream = (Module['_ClosePipeStream'] = (a0) =>
+  let _ClosePipeStream = (Module['_ClosePipeStream'] = (a0) =>
     (_ClosePipeStream = Module['_ClosePipeStream'] =
       wasmExports['ClosePipeStream'])(a0))
-  var _BeginCopyFrom = (Module['_BeginCopyFrom'] = (
+  let _BeginCopyFrom = (Module['_BeginCopyFrom'] = (
     a0,
     a1,
     a2,
@@ -12969,54 +12981,54 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a6,
       a7,
     ))
-  var _EndCopyFrom = (Module['_EndCopyFrom'] = (a0) =>
+  let _EndCopyFrom = (Module['_EndCopyFrom'] = (a0) =>
     (_EndCopyFrom = Module['_EndCopyFrom'] = wasmExports['EndCopyFrom'])(a0))
-  var _ProcessCopyOptions = (Module['_ProcessCopyOptions'] = (a0, a1, a2, a3) =>
+  let _ProcessCopyOptions = (Module['_ProcessCopyOptions'] = (a0, a1, a2, a3) =>
     (_ProcessCopyOptions = Module['_ProcessCopyOptions'] =
       wasmExports['ProcessCopyOptions'])(a0, a1, a2, a3))
-  var _pg_strtoint64 = (Module['_pg_strtoint64'] = (a0) =>
+  let _pg_strtoint64 = (Module['_pg_strtoint64'] = (a0) =>
     (_pg_strtoint64 = Module['_pg_strtoint64'] = wasmExports['pg_strtoint64'])(
       a0,
     ))
-  var _CopyFromErrorCallback = (Module['_CopyFromErrorCallback'] = (a0) =>
+  let _CopyFromErrorCallback = (Module['_CopyFromErrorCallback'] = (a0) =>
     (_CopyFromErrorCallback = Module['_CopyFromErrorCallback'] =
       wasmExports['CopyFromErrorCallback'])(a0))
-  var _bms_make_singleton = (Module['_bms_make_singleton'] = (a0) =>
+  let _bms_make_singleton = (Module['_bms_make_singleton'] = (a0) =>
     (_bms_make_singleton = Module['_bms_make_singleton'] =
       wasmExports['bms_make_singleton'])(a0))
-  var _ExecInitRangeTable = (Module['_ExecInitRangeTable'] = (a0, a1, a2, a3) =>
+  let _ExecInitRangeTable = (Module['_ExecInitRangeTable'] = (a0, a1, a2, a3) =>
     (_ExecInitRangeTable = Module['_ExecInitRangeTable'] =
       wasmExports['ExecInitRangeTable'])(a0, a1, a2, a3))
-  var _ExecInitResultRelation = (Module['_ExecInitResultRelation'] = (
+  let _ExecInitResultRelation = (Module['_ExecInitResultRelation'] = (
     a0,
     a1,
     a2,
   ) =>
     (_ExecInitResultRelation = Module['_ExecInitResultRelation'] =
       wasmExports['ExecInitResultRelation'])(a0, a1, a2))
-  var _ExecInitQual = (Module['_ExecInitQual'] = (a0, a1) =>
+  let _ExecInitQual = (Module['_ExecInitQual'] = (a0, a1) =>
     (_ExecInitQual = Module['_ExecInitQual'] = wasmExports['ExecInitQual'])(
       a0,
       a1,
     ))
-  var _NextCopyFrom = (Module['_NextCopyFrom'] = (a0, a1, a2, a3) =>
+  let _NextCopyFrom = (Module['_NextCopyFrom'] = (a0, a1, a2, a3) =>
     (_NextCopyFrom = Module['_NextCopyFrom'] = wasmExports['NextCopyFrom'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _ExecCloseResultRelations = (Module['_ExecCloseResultRelations'] = (a0) =>
+  let _ExecCloseResultRelations = (Module['_ExecCloseResultRelations'] = (a0) =>
     (_ExecCloseResultRelations = Module['_ExecCloseResultRelations'] =
       wasmExports['ExecCloseResultRelations'])(a0))
-  var _ExecCloseRangeTableRelations = (Module['_ExecCloseRangeTableRelations'] =
+  let _ExecCloseRangeTableRelations = (Module['_ExecCloseRangeTableRelations'] =
     (a0) =>
       (_ExecCloseRangeTableRelations = Module['_ExecCloseRangeTableRelations'] =
         wasmExports['ExecCloseRangeTableRelations'])(a0))
-  var _ExecConstraints = (Module['_ExecConstraints'] = (a0, a1, a2) =>
+  let _ExecConstraints = (Module['_ExecConstraints'] = (a0, a1, a2) =>
     (_ExecConstraints = Module['_ExecConstraints'] =
       wasmExports['ExecConstraints'])(a0, a1, a2))
-  var _ExecInsertIndexTuples = (Module['_ExecInsertIndexTuples'] = (
+  let _ExecInsertIndexTuples = (Module['_ExecInsertIndexTuples'] = (
     a0,
     a1,
     a2,
@@ -13028,50 +13040,50 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_ExecInsertIndexTuples = Module['_ExecInsertIndexTuples'] =
       wasmExports['ExecInsertIndexTuples'])(a0, a1, a2, a3, a4, a5, a6, a7))
-  var _build_column_default = (Module['_build_column_default'] = (a0, a1) =>
+  let _build_column_default = (Module['_build_column_default'] = (a0, a1) =>
     (_build_column_default = Module['_build_column_default'] =
       wasmExports['build_column_default'])(a0, a1))
-  var _ExecInitExpr = (Module['_ExecInitExpr'] = (a0, a1) =>
+  let _ExecInitExpr = (Module['_ExecInitExpr'] = (a0, a1) =>
     (_ExecInitExpr = Module['_ExecInitExpr'] = wasmExports['ExecInitExpr'])(
       a0,
       a1,
     ))
-  var _fileno = (Module['_fileno'] = (a0) =>
+  let _fileno = (Module['_fileno'] = (a0) =>
     (_fileno = Module['_fileno'] = wasmExports['fileno'])(a0))
-  var _NextCopyFromRawFields = (Module['_NextCopyFromRawFields'] = (
+  let _NextCopyFromRawFields = (Module['_NextCopyFromRawFields'] = (
     a0,
     a1,
     a2,
   ) =>
     (_NextCopyFromRawFields = Module['_NextCopyFromRawFields'] =
       wasmExports['NextCopyFromRawFields'])(a0, a1, a2))
-  var _resetStringInfo = (Module['_resetStringInfo'] = (a0) =>
+  let _resetStringInfo = (Module['_resetStringInfo'] = (a0) =>
     (_resetStringInfo = Module['_resetStringInfo'] =
       wasmExports['resetStringInfo'])(a0))
-  var _pq_copymsgbytes = (Module['_pq_copymsgbytes'] = (a0, a1, a2) =>
+  let _pq_copymsgbytes = (Module['_pq_copymsgbytes'] = (a0, a1, a2) =>
     (_pq_copymsgbytes = Module['_pq_copymsgbytes'] =
       wasmExports['pq_copymsgbytes'])(a0, a1, a2))
-  var _pg_encoding_max_length = (Module['_pg_encoding_max_length'] = (a0) =>
+  let _pg_encoding_max_length = (Module['_pg_encoding_max_length'] = (a0) =>
     (_pg_encoding_max_length = Module['_pg_encoding_max_length'] =
       wasmExports['pg_encoding_max_length'])(a0))
-  var _tolower = (Module['_tolower'] = (a0) =>
+  let _tolower = (Module['_tolower'] = (a0) =>
     (_tolower = Module['_tolower'] = wasmExports['tolower'])(a0))
-  var _pg_plan_query = (Module['_pg_plan_query'] = (a0, a1, a2, a3) =>
+  let _pg_plan_query = (Module['_pg_plan_query'] = (a0, a1, a2, a3) =>
     (_pg_plan_query = Module['_pg_plan_query'] = wasmExports['pg_plan_query'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _PushCopiedSnapshot = (Module['_PushCopiedSnapshot'] = (a0) =>
+  let _PushCopiedSnapshot = (Module['_PushCopiedSnapshot'] = (a0) =>
     (_PushCopiedSnapshot = Module['_PushCopiedSnapshot'] =
       wasmExports['PushCopiedSnapshot'])(a0))
-  var _UpdateActiveSnapshotCommandId = (Module[
+  let _UpdateActiveSnapshotCommandId = (Module[
     '_UpdateActiveSnapshotCommandId'
   ] = () =>
     (_UpdateActiveSnapshotCommandId = Module['_UpdateActiveSnapshotCommandId'] =
       wasmExports['UpdateActiveSnapshotCommandId'])())
-  var _CreateQueryDesc = (Module['_CreateQueryDesc'] = (
+  let _CreateQueryDesc = (Module['_CreateQueryDesc'] = (
     a0,
     a1,
     a2,
@@ -13083,73 +13095,73 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_CreateQueryDesc = Module['_CreateQueryDesc'] =
       wasmExports['CreateQueryDesc'])(a0, a1, a2, a3, a4, a5, a6, a7))
-  var _ExecutorStart = (Module['_ExecutorStart'] = (a0, a1) =>
+  let _ExecutorStart = (Module['_ExecutorStart'] = (a0, a1) =>
     (_ExecutorStart = Module['_ExecutorStart'] = wasmExports['ExecutorStart'])(
       a0,
       a1,
     ))
-  var _ExecutorFinish = (Module['_ExecutorFinish'] = (a0) =>
+  let _ExecutorFinish = (Module['_ExecutorFinish'] = (a0) =>
     (_ExecutorFinish = Module['_ExecutorFinish'] =
       wasmExports['ExecutorFinish'])(a0))
-  var _ExecutorEnd = (Module['_ExecutorEnd'] = (a0) =>
+  let _ExecutorEnd = (Module['_ExecutorEnd'] = (a0) =>
     (_ExecutorEnd = Module['_ExecutorEnd'] = wasmExports['ExecutorEnd'])(a0))
-  var _FreeQueryDesc = (Module['_FreeQueryDesc'] = (a0) =>
+  let _FreeQueryDesc = (Module['_FreeQueryDesc'] = (a0) =>
     (_FreeQueryDesc = Module['_FreeQueryDesc'] = wasmExports['FreeQueryDesc'])(
       a0,
     ))
-  var _ExecutorRun = (Module['_ExecutorRun'] = (a0, a1, a2) =>
+  let _ExecutorRun = (Module['_ExecutorRun'] = (a0, a1, a2) =>
     (_ExecutorRun = Module['_ExecutorRun'] = wasmExports['ExecutorRun'])(
       a0,
       a1,
       a2,
     ))
-  var _pg_server_to_any = (Module['_pg_server_to_any'] = (a0, a1, a2) =>
+  let _pg_server_to_any = (Module['_pg_server_to_any'] = (a0, a1, a2) =>
     (_pg_server_to_any = Module['_pg_server_to_any'] =
       wasmExports['pg_server_to_any'])(a0, a1, a2))
-  var _fwrite = (Module['_fwrite'] = (a0, a1, a2, a3) =>
+  let _fwrite = (Module['_fwrite'] = (a0, a1, a2, a3) =>
     (_fwrite = Module['_fwrite'] = wasmExports['fwrite'])(a0, a1, a2, a3))
-  var _CreateTableAsRelExists = (Module['_CreateTableAsRelExists'] = (a0) =>
+  let _CreateTableAsRelExists = (Module['_CreateTableAsRelExists'] = (a0) =>
     (_CreateTableAsRelExists = Module['_CreateTableAsRelExists'] =
       wasmExports['CreateTableAsRelExists'])(a0))
-  var _QueryRewrite = (Module['_QueryRewrite'] = (a0) =>
+  let _QueryRewrite = (Module['_QueryRewrite'] = (a0) =>
     (_QueryRewrite = Module['_QueryRewrite'] = wasmExports['QueryRewrite'])(a0))
-  var _DefineRelation = (Module['_DefineRelation'] = (a0, a1, a2, a3, a4, a5) =>
+  let _DefineRelation = (Module['_DefineRelation'] = (a0, a1, a2, a3, a4, a5) =>
     (_DefineRelation = Module['_DefineRelation'] =
       wasmExports['DefineRelation'])(a0, a1, a2, a3, a4, a5))
-  var _rmdir = (Module['_rmdir'] = (a0) =>
+  let _rmdir = (Module['_rmdir'] = (a0) =>
     (_rmdir = Module['_rmdir'] = wasmExports['rmdir'])(a0))
-  var _atof = (Module['_atof'] = (a0) =>
+  let _atof = (Module['_atof'] = (a0) =>
     (_atof = Module['_atof'] = wasmExports['atof'])(a0))
-  var _int8in = (Module['_int8in'] = (a0) =>
+  let _int8in = (Module['_int8in'] = (a0) =>
     (_int8in = Module['_int8in'] = wasmExports['int8in'])(a0))
-  var _oidin = (Module['_oidin'] = (a0) =>
+  let _oidin = (Module['_oidin'] = (a0) =>
     (_oidin = Module['_oidin'] = wasmExports['oidin'])(a0))
-  var _RemoveObjects = (Module['_RemoveObjects'] = (a0) =>
+  let _RemoveObjects = (Module['_RemoveObjects'] = (a0) =>
     (_RemoveObjects = Module['_RemoveObjects'] = wasmExports['RemoveObjects'])(
       a0,
     ))
-  var _GetCommandTagName = (Module['_GetCommandTagName'] = (a0) =>
+  let _GetCommandTagName = (Module['_GetCommandTagName'] = (a0) =>
     (_GetCommandTagName = Module['_GetCommandTagName'] =
       wasmExports['GetCommandTagName'])(a0))
-  var _NewExplainState = (Module['_NewExplainState'] = () =>
+  let _NewExplainState = (Module['_NewExplainState'] = () =>
     (_NewExplainState = Module['_NewExplainState'] =
       wasmExports['NewExplainState'])())
-  var _ExplainBeginOutput = (Module['_ExplainBeginOutput'] = (a0) =>
+  let _ExplainBeginOutput = (Module['_ExplainBeginOutput'] = (a0) =>
     (_ExplainBeginOutput = Module['_ExplainBeginOutput'] =
       wasmExports['ExplainBeginOutput'])(a0))
-  var _ExplainEndOutput = (Module['_ExplainEndOutput'] = (a0) =>
+  let _ExplainEndOutput = (Module['_ExplainEndOutput'] = (a0) =>
     (_ExplainEndOutput = Module['_ExplainEndOutput'] =
       wasmExports['ExplainEndOutput'])(a0))
-  var _ExplainOpenGroup = (Module['_ExplainOpenGroup'] = (a0, a1, a2, a3) =>
+  let _ExplainOpenGroup = (Module['_ExplainOpenGroup'] = (a0, a1, a2, a3) =>
     (_ExplainOpenGroup = Module['_ExplainOpenGroup'] =
       wasmExports['ExplainOpenGroup'])(a0, a1, a2, a3))
-  var _ExplainPrintPlan = (Module['_ExplainPrintPlan'] = (a0, a1) =>
+  let _ExplainPrintPlan = (Module['_ExplainPrintPlan'] = (a0, a1) =>
     (_ExplainPrintPlan = Module['_ExplainPrintPlan'] =
       wasmExports['ExplainPrintPlan'])(a0, a1))
-  var _ExplainIndentText = (Module['_ExplainIndentText'] = (a0) =>
+  let _ExplainIndentText = (Module['_ExplainIndentText'] = (a0) =>
     (_ExplainIndentText = Module['_ExplainIndentText'] =
       wasmExports['ExplainIndentText'])(a0))
-  var _ExplainPropertyInteger = (Module['_ExplainPropertyInteger'] = (
+  let _ExplainPropertyInteger = (Module['_ExplainPropertyInteger'] = (
     a0,
     a1,
     a2,
@@ -13157,10 +13169,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_ExplainPropertyInteger = Module['_ExplainPropertyInteger'] =
       wasmExports['ExplainPropertyInteger'])(a0, a1, a2, a3))
-  var _ExplainCloseGroup = (Module['_ExplainCloseGroup'] = (a0, a1, a2, a3) =>
+  let _ExplainCloseGroup = (Module['_ExplainCloseGroup'] = (a0, a1, a2, a3) =>
     (_ExplainCloseGroup = Module['_ExplainCloseGroup'] =
       wasmExports['ExplainCloseGroup'])(a0, a1, a2, a3))
-  var _ExplainPropertyFloat = (Module['_ExplainPropertyFloat'] = (
+  let _ExplainPropertyFloat = (Module['_ExplainPropertyFloat'] = (
     a0,
     a1,
     a2,
@@ -13169,10 +13181,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_ExplainPropertyFloat = Module['_ExplainPropertyFloat'] =
       wasmExports['ExplainPropertyFloat'])(a0, a1, a2, a3, a4))
-  var _ExplainPrintTriggers = (Module['_ExplainPrintTriggers'] = (a0, a1) =>
+  let _ExplainPrintTriggers = (Module['_ExplainPrintTriggers'] = (a0, a1) =>
     (_ExplainPrintTriggers = Module['_ExplainPrintTriggers'] =
       wasmExports['ExplainPrintTriggers'])(a0, a1))
-  var _ExplainPropertyUInteger = (Module['_ExplainPropertyUInteger'] = (
+  let _ExplainPropertyUInteger = (Module['_ExplainPropertyUInteger'] = (
     a0,
     a1,
     a2,
@@ -13180,70 +13192,70 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_ExplainPropertyUInteger = Module['_ExplainPropertyUInteger'] =
       wasmExports['ExplainPropertyUInteger'])(a0, a1, a2, a3))
-  var _ExplainPropertyText = (Module['_ExplainPropertyText'] = (a0, a1, a2) =>
+  let _ExplainPropertyText = (Module['_ExplainPropertyText'] = (a0, a1, a2) =>
     (_ExplainPropertyText = Module['_ExplainPropertyText'] =
       wasmExports['ExplainPropertyText'])(a0, a1, a2))
-  var _GetConfigOptionByName = (Module['_GetConfigOptionByName'] = (
+  let _GetConfigOptionByName = (Module['_GetConfigOptionByName'] = (
     a0,
     a1,
     a2,
   ) =>
     (_GetConfigOptionByName = Module['_GetConfigOptionByName'] =
       wasmExports['GetConfigOptionByName'])(a0, a1, a2))
-  var _ExplainPrintJITSummary = (Module['_ExplainPrintJITSummary'] = (a0, a1) =>
+  let _ExplainPrintJITSummary = (Module['_ExplainPrintJITSummary'] = (a0, a1) =>
     (_ExplainPrintJITSummary = Module['_ExplainPrintJITSummary'] =
       wasmExports['ExplainPrintJITSummary'])(a0, a1))
-  var _ExplainPropertyBool = (Module['_ExplainPropertyBool'] = (a0, a1, a2) =>
+  let _ExplainPropertyBool = (Module['_ExplainPropertyBool'] = (a0, a1, a2) =>
     (_ExplainPropertyBool = Module['_ExplainPropertyBool'] =
       wasmExports['ExplainPropertyBool'])(a0, a1, a2))
-  var _InstrEndLoop = (Module['_InstrEndLoop'] = (a0) =>
+  let _InstrEndLoop = (Module['_InstrEndLoop'] = (a0) =>
     (_InstrEndLoop = Module['_InstrEndLoop'] = wasmExports['InstrEndLoop'])(a0))
-  var _appendStringInfoSpaces = (Module['_appendStringInfoSpaces'] = (a0, a1) =>
+  let _appendStringInfoSpaces = (Module['_appendStringInfoSpaces'] = (a0, a1) =>
     (_appendStringInfoSpaces = Module['_appendStringInfoSpaces'] =
       wasmExports['appendStringInfoSpaces'])(a0, a1))
-  var _ExplainQueryText = (Module['_ExplainQueryText'] = (a0, a1) =>
+  let _ExplainQueryText = (Module['_ExplainQueryText'] = (a0, a1) =>
     (_ExplainQueryText = Module['_ExplainQueryText'] =
       wasmExports['ExplainQueryText'])(a0, a1))
-  var _ExplainQueryParameters = (Module['_ExplainQueryParameters'] = (
+  let _ExplainQueryParameters = (Module['_ExplainQueryParameters'] = (
     a0,
     a1,
     a2,
   ) =>
     (_ExplainQueryParameters = Module['_ExplainQueryParameters'] =
       wasmExports['ExplainQueryParameters'])(a0, a1, a2))
-  var _get_func_namespace = (Module['_get_func_namespace'] = (a0) =>
+  let _get_func_namespace = (Module['_get_func_namespace'] = (a0) =>
     (_get_func_namespace = Module['_get_func_namespace'] =
       wasmExports['get_func_namespace'])(a0))
-  var _GetExplainExtensionId = (Module['_GetExplainExtensionId'] = (a0) =>
+  let _GetExplainExtensionId = (Module['_GetExplainExtensionId'] = (a0) =>
     (_GetExplainExtensionId = Module['_GetExplainExtensionId'] =
       wasmExports['GetExplainExtensionId'])(a0))
-  var _GetExplainExtensionState = (Module['_GetExplainExtensionState'] = (
+  let _GetExplainExtensionState = (Module['_GetExplainExtensionState'] = (
     a0,
     a1,
   ) =>
     (_GetExplainExtensionState = Module['_GetExplainExtensionState'] =
       wasmExports['GetExplainExtensionState'])(a0, a1))
-  var _SetExplainExtensionState = (Module['_SetExplainExtensionState'] = (
+  let _SetExplainExtensionState = (Module['_SetExplainExtensionState'] = (
     a0,
     a1,
     a2,
   ) =>
     (_SetExplainExtensionState = Module['_SetExplainExtensionState'] =
       wasmExports['SetExplainExtensionState'])(a0, a1, a2))
-  var _RegisterExtensionExplainOption = (Module[
+  let _RegisterExtensionExplainOption = (Module[
     '_RegisterExtensionExplainOption'
   ] = (a0, a1) =>
     (_RegisterExtensionExplainOption = Module[
       '_RegisterExtensionExplainOption'
     ] =
       wasmExports['RegisterExtensionExplainOption'])(a0, a1))
-  var _get_function_sibling_type = (Module['_get_function_sibling_type'] = (
+  let _get_function_sibling_type = (Module['_get_function_sibling_type'] = (
     a0,
     a1,
   ) =>
     (_get_function_sibling_type = Module['_get_function_sibling_type'] =
       wasmExports['get_function_sibling_type'])(a0, a1))
-  var _GetSysCacheHashValue = (Module['_GetSysCacheHashValue'] = (
+  let _GetSysCacheHashValue = (Module['_GetSysCacheHashValue'] = (
     a0,
     a1,
     a2,
@@ -13252,7 +13264,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_GetSysCacheHashValue = Module['_GetSysCacheHashValue'] =
       wasmExports['GetSysCacheHashValue'])(a0, a1, a2, a3, a4))
-  var _CreateSchemaCommand = (Module['_CreateSchemaCommand'] = (
+  let _CreateSchemaCommand = (Module['_CreateSchemaCommand'] = (
     a0,
     a1,
     a2,
@@ -13260,10 +13272,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_CreateSchemaCommand = Module['_CreateSchemaCommand'] =
       wasmExports['CreateSchemaCommand'])(a0, a1, a2, a3))
-  var _get_rel_type_id = (Module['_get_rel_type_id'] = (a0) =>
+  let _get_rel_type_id = (Module['_get_rel_type_id'] = (a0) =>
     (_get_rel_type_id = Module['_get_rel_type_id'] =
       wasmExports['get_rel_type_id'])(a0))
-  var _set_config_option = (Module['_set_config_option'] = (
+  let _set_config_option = (Module['_set_config_option'] = (
     a0,
     a1,
     a2,
@@ -13275,10 +13287,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_set_config_option = Module['_set_config_option'] =
       wasmExports['set_config_option'])(a0, a1, a2, a3, a4, a5, a6, a7))
-  var _pg_any_to_server = (Module['_pg_any_to_server'] = (a0, a1, a2) =>
+  let _pg_any_to_server = (Module['_pg_any_to_server'] = (a0, a1, a2) =>
     (_pg_any_to_server = Module['_pg_any_to_server'] =
       wasmExports['pg_any_to_server'])(a0, a1, a2))
-  var _DirectFunctionCall4Coll = (Module['_DirectFunctionCall4Coll'] = (
+  let _DirectFunctionCall4Coll = (Module['_DirectFunctionCall4Coll'] = (
     a0,
     a1,
     a2,
@@ -13288,9 +13300,9 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_DirectFunctionCall4Coll = Module['_DirectFunctionCall4Coll'] =
       wasmExports['DirectFunctionCall4Coll'])(a0, a1, a2, a3, a4, a5))
-  var _replace_text = (Module['_replace_text'] = (a0) =>
+  let _replace_text = (Module['_replace_text'] = (a0) =>
     (_replace_text = Module['_replace_text'] = wasmExports['replace_text'])(a0))
-  var _ProcessUtility = (Module['_ProcessUtility'] = (
+  let _ProcessUtility = (Module['_ProcessUtility'] = (
     a0,
     a1,
     a2,
@@ -13302,23 +13314,23 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_ProcessUtility = Module['_ProcessUtility'] =
       wasmExports['ProcessUtility'])(a0, a1, a2, a3, a4, a5, a6, a7))
-  var _CleanQuerytext = (Module['_CleanQuerytext'] = (a0, a1, a2) =>
+  let _CleanQuerytext = (Module['_CleanQuerytext'] = (a0, a1, a2) =>
     (_CleanQuerytext = Module['_CleanQuerytext'] =
       wasmExports['CleanQuerytext'])(a0, a1, a2))
-  var _list_delete_cell = (Module['_list_delete_cell'] = (a0, a1) =>
+  let _list_delete_cell = (Module['_list_delete_cell'] = (a0, a1) =>
     (_list_delete_cell = Module['_list_delete_cell'] =
       wasmExports['list_delete_cell'])(a0, a1))
-  var _GetForeignDataWrapper = (Module['_GetForeignDataWrapper'] = (a0) =>
+  let _GetForeignDataWrapper = (Module['_GetForeignDataWrapper'] = (a0) =>
     (_GetForeignDataWrapper = Module['_GetForeignDataWrapper'] =
       wasmExports['GetForeignDataWrapper'])(a0))
-  var _CreateExprContext = (Module['_CreateExprContext'] = (a0) =>
+  let _CreateExprContext = (Module['_CreateExprContext'] = (a0) =>
     (_CreateExprContext = Module['_CreateExprContext'] =
       wasmExports['CreateExprContext'])(a0))
-  var _EnsurePortalSnapshotExists = (Module['_EnsurePortalSnapshotExists'] =
+  let _EnsurePortalSnapshotExists = (Module['_EnsurePortalSnapshotExists'] =
     () =>
       (_EnsurePortalSnapshotExists = Module['_EnsurePortalSnapshotExists'] =
         wasmExports['EnsurePortalSnapshotExists'])())
-  var _CheckIndexCompatible = (Module['_CheckIndexCompatible'] = (
+  let _CheckIndexCompatible = (Module['_CheckIndexCompatible'] = (
     a0,
     a1,
     a2,
@@ -13327,33 +13339,33 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_CheckIndexCompatible = Module['_CheckIndexCompatible'] =
       wasmExports['CheckIndexCompatible'])(a0, a1, a2, a3, a4))
-  var _get_opfamily_member_for_cmptype = (Module[
+  let _get_opfamily_member_for_cmptype = (Module[
     '_get_opfamily_member_for_cmptype'
   ] = (a0, a1, a2, a3) =>
     (_get_opfamily_member_for_cmptype = Module[
       '_get_opfamily_member_for_cmptype'
     ] =
       wasmExports['get_opfamily_member_for_cmptype'])(a0, a1, a2, a3))
-  var _pgstat_count_truncate = (Module['_pgstat_count_truncate'] = (a0) =>
+  let _pgstat_count_truncate = (Module['_pgstat_count_truncate'] = (a0) =>
     (_pgstat_count_truncate = Module['_pgstat_count_truncate'] =
       wasmExports['pgstat_count_truncate'])(a0))
-  var _SPI_connect = (Module['_SPI_connect'] = () =>
+  let _SPI_connect = (Module['_SPI_connect'] = () =>
     (_SPI_connect = Module['_SPI_connect'] = wasmExports['SPI_connect'])())
-  var _SPI_exec = (Module['_SPI_exec'] = (a0, a1) =>
+  let _SPI_exec = (Module['_SPI_exec'] = (a0, a1) =>
     (_SPI_exec = Module['_SPI_exec'] = wasmExports['SPI_exec'])(a0, a1))
-  var _SPI_execute = (Module['_SPI_execute'] = (a0, a1, a2) =>
+  let _SPI_execute = (Module['_SPI_execute'] = (a0, a1, a2) =>
     (_SPI_execute = Module['_SPI_execute'] = wasmExports['SPI_execute'])(
       a0,
       a1,
       a2,
     ))
-  var _SPI_getvalue = (Module['_SPI_getvalue'] = (a0, a1, a2) =>
+  let _SPI_getvalue = (Module['_SPI_getvalue'] = (a0, a1, a2) =>
     (_SPI_getvalue = Module['_SPI_getvalue'] = wasmExports['SPI_getvalue'])(
       a0,
       a1,
       a2,
     ))
-  var _generate_operator_clause = (Module['_generate_operator_clause'] = (
+  let _generate_operator_clause = (Module['_generate_operator_clause'] = (
     a0,
     a1,
     a2,
@@ -13363,81 +13375,81 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_generate_operator_clause = Module['_generate_operator_clause'] =
       wasmExports['generate_operator_clause'])(a0, a1, a2, a3, a4, a5))
-  var _SPI_finish = (Module['_SPI_finish'] = () =>
+  let _SPI_finish = (Module['_SPI_finish'] = () =>
     (_SPI_finish = Module['_SPI_finish'] = wasmExports['SPI_finish'])())
-  var _CreateTransientRelDestReceiver = (Module[
+  let _CreateTransientRelDestReceiver = (Module[
     '_CreateTransientRelDestReceiver'
   ] = (a0) =>
     (_CreateTransientRelDestReceiver = Module[
       '_CreateTransientRelDestReceiver'
     ] =
       wasmExports['CreateTransientRelDestReceiver'])(a0))
-  var _MemoryContextSetIdentifier = (Module['_MemoryContextSetIdentifier'] = (
+  let _MemoryContextSetIdentifier = (Module['_MemoryContextSetIdentifier'] = (
     a0,
     a1,
   ) =>
     (_MemoryContextSetIdentifier = Module['_MemoryContextSetIdentifier'] =
       wasmExports['MemoryContextSetIdentifier'])(a0, a1))
-  var _checkExprHasSubLink = (Module['_checkExprHasSubLink'] = (a0) =>
+  let _checkExprHasSubLink = (Module['_checkExprHasSubLink'] = (a0) =>
     (_checkExprHasSubLink = Module['_checkExprHasSubLink'] =
       wasmExports['checkExprHasSubLink'])(a0))
-  var _MemoryContextSetParent = (Module['_MemoryContextSetParent'] = (a0, a1) =>
+  let _MemoryContextSetParent = (Module['_MemoryContextSetParent'] = (a0, a1) =>
     (_MemoryContextSetParent = Module['_MemoryContextSetParent'] =
       wasmExports['MemoryContextSetParent'])(a0, a1))
-  var _SetTuplestoreDestReceiverParams = (Module[
+  let _SetTuplestoreDestReceiverParams = (Module[
     '_SetTuplestoreDestReceiverParams'
   ] = (a0, a1, a2, a3, a4, a5) =>
     (_SetTuplestoreDestReceiverParams = Module[
       '_SetTuplestoreDestReceiverParams'
     ] =
       wasmExports['SetTuplestoreDestReceiverParams'])(a0, a1, a2, a3, a4, a5))
-  var _tuplestore_rescan = (Module['_tuplestore_rescan'] = (a0) =>
+  let _tuplestore_rescan = (Module['_tuplestore_rescan'] = (a0) =>
     (_tuplestore_rescan = Module['_tuplestore_rescan'] =
       wasmExports['tuplestore_rescan'])(a0))
-  var _MemoryContextDeleteChildren = (Module['_MemoryContextDeleteChildren'] = (
+  let _MemoryContextDeleteChildren = (Module['_MemoryContextDeleteChildren'] = (
     a0,
   ) =>
     (_MemoryContextDeleteChildren = Module['_MemoryContextDeleteChildren'] =
       wasmExports['MemoryContextDeleteChildren'])(a0))
-  var _makeParamList = (Module['_makeParamList'] = (a0) =>
+  let _makeParamList = (Module['_makeParamList'] = (a0) =>
     (_makeParamList = Module['_makeParamList'] = wasmExports['makeParamList'])(
       a0,
     ))
-  var _ReleaseCachedPlan = (Module['_ReleaseCachedPlan'] = (a0, a1) =>
+  let _ReleaseCachedPlan = (Module['_ReleaseCachedPlan'] = (a0, a1) =>
     (_ReleaseCachedPlan = Module['_ReleaseCachedPlan'] =
       wasmExports['ReleaseCachedPlan'])(a0, a1))
-  var _bms_equal = (Module['_bms_equal'] = (a0, a1) =>
+  let _bms_equal = (Module['_bms_equal'] = (a0, a1) =>
     (_bms_equal = Module['_bms_equal'] = wasmExports['bms_equal'])(a0, a1))
-  var _func_volatile = (Module['_func_volatile'] = (a0) =>
+  let _func_volatile = (Module['_func_volatile'] = (a0) =>
     (_func_volatile = Module['_func_volatile'] = wasmExports['func_volatile'])(
       a0,
     ))
-  var _register_label_provider = (Module['_register_label_provider'] = (
+  let _register_label_provider = (Module['_register_label_provider'] = (
     a0,
     a1,
   ) =>
     (_register_label_provider = Module['_register_label_provider'] =
       wasmExports['register_label_provider'])(a0, a1))
-  var _DefineSequence = (Module['_DefineSequence'] = (a0, a1, a2) =>
+  let _DefineSequence = (Module['_DefineSequence'] = (a0, a1, a2) =>
     (_DefineSequence = Module['_DefineSequence'] =
       wasmExports['DefineSequence'])(a0, a1, a2))
-  var _AlterSequence = (Module['_AlterSequence'] = (a0, a1, a2) =>
+  let _AlterSequence = (Module['_AlterSequence'] = (a0, a1, a2) =>
     (_AlterSequence = Module['_AlterSequence'] = wasmExports['AlterSequence'])(
       a0,
       a1,
       a2,
     ))
-  var _nextval = (Module['_nextval'] = (a0) =>
+  let _nextval = (Module['_nextval'] = (a0) =>
     (_nextval = Module['_nextval'] = wasmExports['nextval'])(a0))
-  var _textToQualifiedNameList = (Module['_textToQualifiedNameList'] = (a0) =>
+  let _textToQualifiedNameList = (Module['_textToQualifiedNameList'] = (a0) =>
     (_textToQualifiedNameList = Module['_textToQualifiedNameList'] =
       wasmExports['textToQualifiedNameList'])(a0))
-  var _nextval_internal = (Module['_nextval_internal'] = (a0, a1) =>
+  let _nextval_internal = (Module['_nextval_internal'] = (a0, a1) =>
     (_nextval_internal = Module['_nextval_internal'] =
       wasmExports['nextval_internal'])(a0, a1))
-  var _setval_oid = (Module['_setval_oid'] = (a0) =>
+  let _setval_oid = (Module['_setval_oid'] = (a0) =>
     (_setval_oid = Module['_setval_oid'] = wasmExports['setval_oid'])(a0))
-  var _tuplestore_gettupleslot = (Module['_tuplestore_gettupleslot'] = (
+  let _tuplestore_gettupleslot = (Module['_tuplestore_gettupleslot'] = (
     a0,
     a1,
     a2,
@@ -13445,26 +13457,26 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_tuplestore_gettupleslot = Module['_tuplestore_gettupleslot'] =
       wasmExports['tuplestore_gettupleslot'])(a0, a1, a2, a3))
-  var _list_delete = (Module['_list_delete'] = (a0, a1) =>
+  let _list_delete = (Module['_list_delete'] = (a0, a1) =>
     (_list_delete = Module['_list_delete'] = wasmExports['list_delete'])(
       a0,
       a1,
     ))
-  var _tuplestore_end = (Module['_tuplestore_end'] = (a0) =>
+  let _tuplestore_end = (Module['_tuplestore_end'] = (a0) =>
     (_tuplestore_end = Module['_tuplestore_end'] =
       wasmExports['tuplestore_end'])(a0))
-  var _list_append_unique = (Module['_list_append_unique'] = (a0, a1) =>
+  let _list_append_unique = (Module['_list_append_unique'] = (a0, a1) =>
     (_list_append_unique = Module['_list_append_unique'] =
       wasmExports['list_append_unique'])(a0, a1))
-  var _contain_mutable_functions = (Module['_contain_mutable_functions'] = (
+  let _contain_mutable_functions = (Module['_contain_mutable_functions'] = (
     a0,
   ) =>
     (_contain_mutable_functions = Module['_contain_mutable_functions'] =
       wasmExports['contain_mutable_functions'])(a0))
-  var _RemoveRelations = (Module['_RemoveRelations'] = (a0) =>
+  let _RemoveRelations = (Module['_RemoveRelations'] = (a0) =>
     (_RemoveRelations = Module['_RemoveRelations'] =
       wasmExports['RemoveRelations'])(a0))
-  var _ExecuteTruncateGuts = (Module['_ExecuteTruncateGuts'] = (
+  let _ExecuteTruncateGuts = (Module['_ExecuteTruncateGuts'] = (
     a0,
     a1,
     a2,
@@ -13474,7 +13486,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_ExecuteTruncateGuts = Module['_ExecuteTruncateGuts'] =
       wasmExports['ExecuteTruncateGuts'])(a0, a1, a2, a3, a4, a5))
-  var _InitResultRelInfo = (Module['_InitResultRelInfo'] = (
+  let _InitResultRelInfo = (Module['_InitResultRelInfo'] = (
     a0,
     a1,
     a2,
@@ -13483,176 +13495,176 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_InitResultRelInfo = Module['_InitResultRelInfo'] =
       wasmExports['InitResultRelInfo'])(a0, a1, a2, a3, a4))
-  var _AlterTable = (Module['_AlterTable'] = (a0, a1, a2) =>
+  let _AlterTable = (Module['_AlterTable'] = (a0, a1, a2) =>
     (_AlterTable = Module['_AlterTable'] = wasmExports['AlterTable'])(
       a0,
       a1,
       a2,
     ))
-  var _ExecStoreAllNullTuple = (Module['_ExecStoreAllNullTuple'] = (a0) =>
+  let _ExecStoreAllNullTuple = (Module['_ExecStoreAllNullTuple'] = (a0) =>
     (_ExecStoreAllNullTuple = Module['_ExecStoreAllNullTuple'] =
       wasmExports['ExecStoreAllNullTuple'])(a0))
-  var _ChangeVarNodes = (Module['_ChangeVarNodes'] = (a0, a1, a2, a3) =>
+  let _ChangeVarNodes = (Module['_ChangeVarNodes'] = (a0, a1, a2, a3) =>
     (_ChangeVarNodes = Module['_ChangeVarNodes'] =
       wasmExports['ChangeVarNodes'])(a0, a1, a2, a3))
-  var _tuplestore_begin_heap = (Module['_tuplestore_begin_heap'] = (
+  let _tuplestore_begin_heap = (Module['_tuplestore_begin_heap'] = (
     a0,
     a1,
     a2,
   ) =>
     (_tuplestore_begin_heap = Module['_tuplestore_begin_heap'] =
       wasmExports['tuplestore_begin_heap'])(a0, a1, a2))
-  var _tuplestore_puttupleslot = (Module['_tuplestore_puttupleslot'] = (
+  let _tuplestore_puttupleslot = (Module['_tuplestore_puttupleslot'] = (
     a0,
     a1,
   ) =>
     (_tuplestore_puttupleslot = Module['_tuplestore_puttupleslot'] =
       wasmExports['tuplestore_puttupleslot'])(a0, a1))
-  var _ExecForceStoreHeapTuple = (Module['_ExecForceStoreHeapTuple'] = (
+  let _ExecForceStoreHeapTuple = (Module['_ExecForceStoreHeapTuple'] = (
     a0,
     a1,
     a2,
   ) =>
     (_ExecForceStoreHeapTuple = Module['_ExecForceStoreHeapTuple'] =
       wasmExports['ExecForceStoreHeapTuple'])(a0, a1, a2))
-  var _ExecUpdateLockMode = (Module['_ExecUpdateLockMode'] = (a0, a1) =>
+  let _ExecUpdateLockMode = (Module['_ExecUpdateLockMode'] = (a0, a1) =>
     (_ExecUpdateLockMode = Module['_ExecUpdateLockMode'] =
       wasmExports['ExecUpdateLockMode'])(a0, a1))
-  var _bms_copy = (Module['_bms_copy'] = (a0) =>
+  let _bms_copy = (Module['_bms_copy'] = (a0) =>
     (_bms_copy = Module['_bms_copy'] = wasmExports['bms_copy'])(a0))
-  var _strtoint = (Module['_strtoint'] = (a0, a1, a2) =>
+  let _strtoint = (Module['_strtoint'] = (a0, a1, a2) =>
     (_strtoint = Module['_strtoint'] = wasmExports['strtoint'])(a0, a1, a2))
-  var _strtod = (Module['_strtod'] = (a0, a1) =>
+  let _strtod = (Module['_strtod'] = (a0, a1) =>
     (_strtod = Module['_strtod'] = wasmExports['strtod'])(a0, a1))
-  var _plain_crypt_verify = (Module['_plain_crypt_verify'] = (a0, a1, a2, a3) =>
+  let _plain_crypt_verify = (Module['_plain_crypt_verify'] = (a0, a1, a2, a3) =>
     (_plain_crypt_verify = Module['_plain_crypt_verify'] =
       wasmExports['plain_crypt_verify'])(a0, a1, a2, a3))
-  var _ProcessConfigFile = (Module['_ProcessConfigFile'] = (a0) =>
+  let _ProcessConfigFile = (Module['_ProcessConfigFile'] = (a0) =>
     (_ProcessConfigFile = Module['_ProcessConfigFile'] =
       wasmExports['ProcessConfigFile'])(a0))
-  var _pgl_exit = (Module['_pgl_exit'] = (a0) =>
+  let _pgl_exit = (Module['_pgl_exit'] = (a0) =>
     (_pgl_exit = Module['_pgl_exit'] = wasmExports['pgl_exit'])(a0))
-  var _dsa_get_handle = (Module['_dsa_get_handle'] = (a0) =>
+  let _dsa_get_handle = (Module['_dsa_get_handle'] = (a0) =>
     (_dsa_get_handle = Module['_dsa_get_handle'] =
       wasmExports['dsa_get_handle'])(a0))
-  var _pg_strncasecmp = (Module['_pg_strncasecmp'] = (a0, a1, a2) =>
+  let _pg_strncasecmp = (Module['_pg_strncasecmp'] = (a0, a1, a2) =>
     (_pg_strncasecmp = Module['_pg_strncasecmp'] =
       wasmExports['pg_strncasecmp'])(a0, a1, a2))
-  var _ExecReScan = (Module['_ExecReScan'] = (a0) =>
+  let _ExecReScan = (Module['_ExecReScan'] = (a0) =>
     (_ExecReScan = Module['_ExecReScan'] = wasmExports['ExecReScan'])(a0))
-  var _ExecAsyncResponse = (Module['_ExecAsyncResponse'] = (a0) =>
+  let _ExecAsyncResponse = (Module['_ExecAsyncResponse'] = (a0) =>
     (_ExecAsyncResponse = Module['_ExecAsyncResponse'] =
       wasmExports['ExecAsyncResponse'])(a0))
-  var _ExecAsyncRequestDone = (Module['_ExecAsyncRequestDone'] = (a0, a1) =>
+  let _ExecAsyncRequestDone = (Module['_ExecAsyncRequestDone'] = (a0, a1) =>
     (_ExecAsyncRequestDone = Module['_ExecAsyncRequestDone'] =
       wasmExports['ExecAsyncRequestDone'])(a0, a1))
-  var _ExecAsyncRequestPending = (Module['_ExecAsyncRequestPending'] = (a0) =>
+  let _ExecAsyncRequestPending = (Module['_ExecAsyncRequestPending'] = (a0) =>
     (_ExecAsyncRequestPending = Module['_ExecAsyncRequestPending'] =
       wasmExports['ExecAsyncRequestPending'])(a0))
-  var _ExprEvalPushStep = (Module['_ExprEvalPushStep'] = (a0, a1) =>
+  let _ExprEvalPushStep = (Module['_ExprEvalPushStep'] = (a0, a1) =>
     (_ExprEvalPushStep = Module['_ExprEvalPushStep'] =
       wasmExports['ExprEvalPushStep'])(a0, a1))
-  var _ExecInitExprWithParams = (Module['_ExecInitExprWithParams'] = (a0, a1) =>
+  let _ExecInitExprWithParams = (Module['_ExecInitExprWithParams'] = (a0, a1) =>
     (_ExecInitExprWithParams = Module['_ExecInitExprWithParams'] =
       wasmExports['ExecInitExprWithParams'])(a0, a1))
-  var _ExecInitExprList = (Module['_ExecInitExprList'] = (a0, a1) =>
+  let _ExecInitExprList = (Module['_ExecInitExprList'] = (a0, a1) =>
     (_ExecInitExprList = Module['_ExecInitExprList'] =
       wasmExports['ExecInitExprList'])(a0, a1))
-  var _ExecGetResultType = (Module['_ExecGetResultType'] = (a0) =>
+  let _ExecGetResultType = (Module['_ExecGetResultType'] = (a0) =>
     (_ExecGetResultType = Module['_ExecGetResultType'] =
       wasmExports['ExecGetResultType'])(a0))
-  var _ExecInitExtraTupleSlot = (Module['_ExecInitExtraTupleSlot'] = (
+  let _ExecInitExtraTupleSlot = (Module['_ExecInitExtraTupleSlot'] = (
     a0,
     a1,
     a2,
   ) =>
     (_ExecInitExtraTupleSlot = Module['_ExecInitExtraTupleSlot'] =
       wasmExports['ExecInitExtraTupleSlot'])(a0, a1, a2))
-  var _MakeExpandedObjectReadOnlyInternal = (Module[
+  let _MakeExpandedObjectReadOnlyInternal = (Module[
     '_MakeExpandedObjectReadOnlyInternal'
   ] = (a0) =>
     (_MakeExpandedObjectReadOnlyInternal = Module[
       '_MakeExpandedObjectReadOnlyInternal'
     ] =
       wasmExports['MakeExpandedObjectReadOnlyInternal'])(a0))
-  var _tuplesort_puttupleslot = (Module['_tuplesort_puttupleslot'] = (a0, a1) =>
+  let _tuplesort_puttupleslot = (Module['_tuplesort_puttupleslot'] = (a0, a1) =>
     (_tuplesort_puttupleslot = Module['_tuplesort_puttupleslot'] =
       wasmExports['tuplesort_puttupleslot'])(a0, a1))
-  var _ArrayGetNItems = (Module['_ArrayGetNItems'] = (a0, a1) =>
+  let _ArrayGetNItems = (Module['_ArrayGetNItems'] = (a0, a1) =>
     (_ArrayGetNItems = Module['_ArrayGetNItems'] =
       wasmExports['ArrayGetNItems'])(a0, a1))
-  var _expanded_record_fetch_tupdesc = (Module[
+  let _expanded_record_fetch_tupdesc = (Module[
     '_expanded_record_fetch_tupdesc'
   ] = (a0) =>
     (_expanded_record_fetch_tupdesc = Module['_expanded_record_fetch_tupdesc'] =
       wasmExports['expanded_record_fetch_tupdesc'])(a0))
-  var _expanded_record_fetch_field = (Module['_expanded_record_fetch_field'] = (
+  let _expanded_record_fetch_field = (Module['_expanded_record_fetch_field'] = (
     a0,
     a1,
     a2,
   ) =>
     (_expanded_record_fetch_field = Module['_expanded_record_fetch_field'] =
       wasmExports['expanded_record_fetch_field'])(a0, a1, a2))
-  var _json_validate = (Module['_json_validate'] = (a0, a1, a2) =>
+  let _json_validate = (Module['_json_validate'] = (a0, a1, a2) =>
     (_json_validate = Module['_json_validate'] = wasmExports['json_validate'])(
       a0,
       a1,
       a2,
     ))
-  var _JsonbValueToJsonb = (Module['_JsonbValueToJsonb'] = (a0) =>
+  let _JsonbValueToJsonb = (Module['_JsonbValueToJsonb'] = (a0) =>
     (_JsonbValueToJsonb = Module['_JsonbValueToJsonb'] =
       wasmExports['JsonbValueToJsonb'])(a0))
-  var _numeric_out = (Module['_numeric_out'] = (a0) =>
+  let _numeric_out = (Module['_numeric_out'] = (a0) =>
     (_numeric_out = Module['_numeric_out'] = wasmExports['numeric_out'])(a0))
-  var _boolout = (Module['_boolout'] = (a0) =>
+  let _boolout = (Module['_boolout'] = (a0) =>
     (_boolout = Module['_boolout'] = wasmExports['boolout'])(a0))
-  var _bool_int4 = (Module['_bool_int4'] = (a0) =>
+  let _bool_int4 = (Module['_bool_int4'] = (a0) =>
     (_bool_int4 = Module['_bool_int4'] = wasmExports['bool_int4'])(a0))
-  var _lookup_rowtype_tupdesc_domain = (Module[
+  let _lookup_rowtype_tupdesc_domain = (Module[
     '_lookup_rowtype_tupdesc_domain'
   ] = (a0, a1, a2) =>
     (_lookup_rowtype_tupdesc_domain = Module['_lookup_rowtype_tupdesc_domain'] =
       wasmExports['lookup_rowtype_tupdesc_domain'])(a0, a1, a2))
-  var _MemoryContextGetParent = (Module['_MemoryContextGetParent'] = (a0) =>
+  let _MemoryContextGetParent = (Module['_MemoryContextGetParent'] = (a0) =>
     (_MemoryContextGetParent = Module['_MemoryContextGetParent'] =
       wasmExports['MemoryContextGetParent'])(a0))
-  var _DeleteExpandedObject = (Module['_DeleteExpandedObject'] = (a0) =>
+  let _DeleteExpandedObject = (Module['_DeleteExpandedObject'] = (a0) =>
     (_DeleteExpandedObject = Module['_DeleteExpandedObject'] =
       wasmExports['DeleteExpandedObject'])(a0))
-  var _ExecFindJunkAttributeInTlist = (Module['_ExecFindJunkAttributeInTlist'] =
+  let _ExecFindJunkAttributeInTlist = (Module['_ExecFindJunkAttributeInTlist'] =
     (a0, a1) =>
       (_ExecFindJunkAttributeInTlist = Module['_ExecFindJunkAttributeInTlist'] =
         wasmExports['ExecFindJunkAttributeInTlist'])(a0, a1))
-  var _standard_ExecutorStart = (Module['_standard_ExecutorStart'] = (a0, a1) =>
+  let _standard_ExecutorStart = (Module['_standard_ExecutorStart'] = (a0, a1) =>
     (_standard_ExecutorStart = Module['_standard_ExecutorStart'] =
       wasmExports['standard_ExecutorStart'])(a0, a1))
-  var _ExecInitNode = (Module['_ExecInitNode'] = (a0, a1, a2) =>
+  let _ExecInitNode = (Module['_ExecInitNode'] = (a0, a1, a2) =>
     (_ExecInitNode = Module['_ExecInitNode'] = wasmExports['ExecInitNode'])(
       a0,
       a1,
       a2,
     ))
-  var _standard_ExecutorRun = (Module['_standard_ExecutorRun'] = (a0, a1, a2) =>
+  let _standard_ExecutorRun = (Module['_standard_ExecutorRun'] = (a0, a1, a2) =>
     (_standard_ExecutorRun = Module['_standard_ExecutorRun'] =
       wasmExports['standard_ExecutorRun'])(a0, a1, a2))
-  var _standard_ExecutorFinish = (Module['_standard_ExecutorFinish'] = (a0) =>
+  let _standard_ExecutorFinish = (Module['_standard_ExecutorFinish'] = (a0) =>
     (_standard_ExecutorFinish = Module['_standard_ExecutorFinish'] =
       wasmExports['standard_ExecutorFinish'])(a0))
-  var _standard_ExecutorEnd = (Module['_standard_ExecutorEnd'] = (a0) =>
+  let _standard_ExecutorEnd = (Module['_standard_ExecutorEnd'] = (a0) =>
     (_standard_ExecutorEnd = Module['_standard_ExecutorEnd'] =
       wasmExports['standard_ExecutorEnd'])(a0))
-  var _ExecEndNode = (Module['_ExecEndNode'] = (a0) =>
+  let _ExecEndNode = (Module['_ExecEndNode'] = (a0) =>
     (_ExecEndNode = Module['_ExecEndNode'] = wasmExports['ExecEndNode'])(a0))
-  var _InstrAlloc = (Module['_InstrAlloc'] = (a0, a1, a2) =>
+  let _InstrAlloc = (Module['_InstrAlloc'] = (a0, a1, a2) =>
     (_InstrAlloc = Module['_InstrAlloc'] = wasmExports['InstrAlloc'])(
       a0,
       a1,
       a2,
     ))
-  var _MakeTupleTableSlot = (Module['_MakeTupleTableSlot'] = (a0, a1) =>
+  let _MakeTupleTableSlot = (Module['_MakeTupleTableSlot'] = (a0, a1) =>
     (_MakeTupleTableSlot = Module['_MakeTupleTableSlot'] =
       wasmExports['MakeTupleTableSlot'])(a0, a1))
-  var _ExecWithCheckOptions = (Module['_ExecWithCheckOptions'] = (
+  let _ExecWithCheckOptions = (Module['_ExecWithCheckOptions'] = (
     a0,
     a1,
     a2,
@@ -13660,10 +13672,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_ExecWithCheckOptions = Module['_ExecWithCheckOptions'] =
       wasmExports['ExecWithCheckOptions'])(a0, a1, a2, a3))
-  var _get_typlenbyval = (Module['_get_typlenbyval'] = (a0, a1, a2) =>
+  let _get_typlenbyval = (Module['_get_typlenbyval'] = (a0, a1, a2) =>
     (_get_typlenbyval = Module['_get_typlenbyval'] =
       wasmExports['get_typlenbyval'])(a0, a1, a2))
-  var _ExecInitScanTupleSlot = (Module['_ExecInitScanTupleSlot'] = (
+  let _ExecInitScanTupleSlot = (Module['_ExecInitScanTupleSlot'] = (
     a0,
     a1,
     a2,
@@ -13671,55 +13683,55 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_ExecInitScanTupleSlot = Module['_ExecInitScanTupleSlot'] =
       wasmExports['ExecInitScanTupleSlot'])(a0, a1, a2, a3))
-  var _InputFunctionCall = (Module['_InputFunctionCall'] = (a0, a1, a2, a3) =>
+  let _InputFunctionCall = (Module['_InputFunctionCall'] = (a0, a1, a2, a3) =>
     (_InputFunctionCall = Module['_InputFunctionCall'] =
       wasmExports['InputFunctionCall'])(a0, a1, a2, a3))
-  var _list_delete_ptr = (Module['_list_delete_ptr'] = (a0, a1) =>
+  let _list_delete_ptr = (Module['_list_delete_ptr'] = (a0, a1) =>
     (_list_delete_ptr = Module['_list_delete_ptr'] =
       wasmExports['list_delete_ptr'])(a0, a1))
-  var _FreeExprContext = (Module['_FreeExprContext'] = (a0, a1) =>
+  let _FreeExprContext = (Module['_FreeExprContext'] = (a0, a1) =>
     (_FreeExprContext = Module['_FreeExprContext'] =
       wasmExports['FreeExprContext'])(a0, a1))
-  var _ExecAssignExprContext = (Module['_ExecAssignExprContext'] = (a0, a1) =>
+  let _ExecAssignExprContext = (Module['_ExecAssignExprContext'] = (a0, a1) =>
     (_ExecAssignExprContext = Module['_ExecAssignExprContext'] =
       wasmExports['ExecAssignExprContext'])(a0, a1))
-  var _ExecAssignProjectionInfo = (Module['_ExecAssignProjectionInfo'] = (
+  let _ExecAssignProjectionInfo = (Module['_ExecAssignProjectionInfo'] = (
     a0,
     a1,
   ) =>
     (_ExecAssignProjectionInfo = Module['_ExecAssignProjectionInfo'] =
       wasmExports['ExecAssignProjectionInfo'])(a0, a1))
-  var _ExecOpenScanRelation = (Module['_ExecOpenScanRelation'] = (a0, a1, a2) =>
+  let _ExecOpenScanRelation = (Module['_ExecOpenScanRelation'] = (a0, a1, a2) =>
     (_ExecOpenScanRelation = Module['_ExecOpenScanRelation'] =
       wasmExports['ExecOpenScanRelation'])(a0, a1, a2))
-  var _bms_intersect = (Module['_bms_intersect'] = (a0, a1) =>
+  let _bms_intersect = (Module['_bms_intersect'] = (a0, a1) =>
     (_bms_intersect = Module['_bms_intersect'] = wasmExports['bms_intersect'])(
       a0,
       a1,
     ))
-  var _GetAttributeByName = (Module['_GetAttributeByName'] = (a0, a1, a2) =>
+  let _GetAttributeByName = (Module['_GetAttributeByName'] = (a0, a1, a2) =>
     (_GetAttributeByName = Module['_GetAttributeByName'] =
       wasmExports['GetAttributeByName'])(a0, a1, a2))
-  var _GetAttributeByNum = (Module['_GetAttributeByNum'] = (a0, a1, a2) =>
+  let _GetAttributeByNum = (Module['_GetAttributeByNum'] = (a0, a1, a2) =>
     (_GetAttributeByNum = Module['_GetAttributeByNum'] =
       wasmExports['GetAttributeByNum'])(a0, a1, a2))
-  var _ExecGetReturningSlot = (Module['_ExecGetReturningSlot'] = (a0, a1) =>
+  let _ExecGetReturningSlot = (Module['_ExecGetReturningSlot'] = (a0, a1) =>
     (_ExecGetReturningSlot = Module['_ExecGetReturningSlot'] =
       wasmExports['ExecGetReturningSlot'])(a0, a1))
-  var _ExecGetResultRelCheckAsUser = (Module['_ExecGetResultRelCheckAsUser'] = (
+  let _ExecGetResultRelCheckAsUser = (Module['_ExecGetResultRelCheckAsUser'] = (
     a0,
     a1,
   ) =>
     (_ExecGetResultRelCheckAsUser = Module['_ExecGetResultRelCheckAsUser'] =
       wasmExports['ExecGetResultRelCheckAsUser'])(a0, a1))
-  var _MemoryContextRegisterResetCallback = (Module[
+  let _MemoryContextRegisterResetCallback = (Module[
     '_MemoryContextRegisterResetCallback'
   ] = (a0, a1) =>
     (_MemoryContextRegisterResetCallback = Module[
       '_MemoryContextRegisterResetCallback'
     ] =
       wasmExports['MemoryContextRegisterResetCallback'])(a0, a1))
-  var _cached_function_compile = (Module['_cached_function_compile'] = (
+  let _cached_function_compile = (Module['_cached_function_compile'] = (
     a0,
     a1,
     a2,
@@ -13730,10 +13742,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_cached_function_compile = Module['_cached_function_compile'] =
       wasmExports['cached_function_compile'])(a0, a1, a2, a3, a4, a5, a6))
-  var _InstrUpdateTupleCount = (Module['_InstrUpdateTupleCount'] = (a0, a1) =>
+  let _InstrUpdateTupleCount = (Module['_InstrUpdateTupleCount'] = (a0, a1) =>
     (_InstrUpdateTupleCount = Module['_InstrUpdateTupleCount'] =
       wasmExports['InstrUpdateTupleCount'])(a0, a1))
-  var _tuplesort_begin_heap = (Module['_tuplesort_begin_heap'] = (
+  let _tuplesort_begin_heap = (Module['_tuplesort_begin_heap'] = (
     a0,
     a1,
     a2,
@@ -13746,10 +13758,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_tuplesort_begin_heap = Module['_tuplesort_begin_heap'] =
       wasmExports['tuplesort_begin_heap'])(a0, a1, a2, a3, a4, a5, a6, a7, a8))
-  var _AggCheckCallContext = (Module['_AggCheckCallContext'] = (a0, a1) =>
+  let _AggCheckCallContext = (Module['_AggCheckCallContext'] = (a0, a1) =>
     (_AggCheckCallContext = Module['_AggCheckCallContext'] =
       wasmExports['AggCheckCallContext'])(a0, a1))
-  var _tuplesort_gettupleslot = (Module['_tuplesort_gettupleslot'] = (
+  let _tuplesort_gettupleslot = (Module['_tuplesort_gettupleslot'] = (
     a0,
     a1,
     a2,
@@ -13758,10 +13770,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_tuplesort_gettupleslot = Module['_tuplesort_gettupleslot'] =
       wasmExports['tuplesort_gettupleslot'])(a0, a1, a2, a3, a4))
-  var _bms_del_members = (Module['_bms_del_members'] = (a0, a1) =>
+  let _bms_del_members = (Module['_bms_del_members'] = (a0, a1) =>
     (_bms_del_members = Module['_bms_del_members'] =
       wasmExports['bms_del_members'])(a0, a1))
-  var _AddWaitEventToSet = (Module['_AddWaitEventToSet'] = (
+  let _AddWaitEventToSet = (Module['_AddWaitEventToSet'] = (
     a0,
     a1,
     a2,
@@ -13770,57 +13782,57 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_AddWaitEventToSet = Module['_AddWaitEventToSet'] =
       wasmExports['AddWaitEventToSet'])(a0, a1, a2, a3, a4))
-  var _GetNumRegisteredWaitEvents = (Module['_GetNumRegisteredWaitEvents'] = (
+  let _GetNumRegisteredWaitEvents = (Module['_GetNumRegisteredWaitEvents'] = (
     a0,
   ) =>
     (_GetNumRegisteredWaitEvents = Module['_GetNumRegisteredWaitEvents'] =
       wasmExports['GetNumRegisteredWaitEvents'])(a0))
-  var _tuplestore_clear = (Module['_tuplestore_clear'] = (a0) =>
+  let _tuplestore_clear = (Module['_tuplestore_clear'] = (a0) =>
     (_tuplestore_clear = Module['_tuplestore_clear'] =
       wasmExports['tuplestore_clear'])(a0))
-  var _get_attstatsslot = (Module['_get_attstatsslot'] = (a0, a1, a2, a3, a4) =>
+  let _get_attstatsslot = (Module['_get_attstatsslot'] = (a0, a1, a2, a3, a4) =>
     (_get_attstatsslot = Module['_get_attstatsslot'] =
       wasmExports['get_attstatsslot'])(a0, a1, a2, a3, a4))
-  var _free_attstatsslot = (Module['_free_attstatsslot'] = (a0) =>
+  let _free_attstatsslot = (Module['_free_attstatsslot'] = (a0) =>
     (_free_attstatsslot = Module['_free_attstatsslot'] =
       wasmExports['free_attstatsslot'])(a0))
-  var _SharedFileSetInit = (Module['_SharedFileSetInit'] = (a0, a1) =>
+  let _SharedFileSetInit = (Module['_SharedFileSetInit'] = (a0, a1) =>
     (_SharedFileSetInit = Module['_SharedFileSetInit'] =
       wasmExports['SharedFileSetInit'])(a0, a1))
-  var _SharedFileSetAttach = (Module['_SharedFileSetAttach'] = (a0, a1) =>
+  let _SharedFileSetAttach = (Module['_SharedFileSetAttach'] = (a0, a1) =>
     (_SharedFileSetAttach = Module['_SharedFileSetAttach'] =
       wasmExports['SharedFileSetAttach'])(a0, a1))
-  var _tuplesort_reset = (Module['_tuplesort_reset'] = (a0) =>
+  let _tuplesort_reset = (Module['_tuplesort_reset'] = (a0) =>
     (_tuplesort_reset = Module['_tuplesort_reset'] =
       wasmExports['tuplesort_reset'])(a0))
-  var _pairingheap_first = (Module['_pairingheap_first'] = (a0) =>
+  let _pairingheap_first = (Module['_pairingheap_first'] = (a0) =>
     (_pairingheap_first = Module['_pairingheap_first'] =
       wasmExports['pairingheap_first'])(a0))
-  var _bms_nonempty_difference = (Module['_bms_nonempty_difference'] = (
+  let _bms_nonempty_difference = (Module['_bms_nonempty_difference'] = (
     a0,
     a1,
   ) =>
     (_bms_nonempty_difference = Module['_bms_nonempty_difference'] =
       wasmExports['bms_nonempty_difference'])(a0, a1))
-  var _datum_image_hash = (Module['_datum_image_hash'] = (a0, a1, a2) =>
+  let _datum_image_hash = (Module['_datum_image_hash'] = (a0, a1, a2) =>
     (_datum_image_hash = Module['_datum_image_hash'] =
       wasmExports['datum_image_hash'])(a0, a1, a2))
-  var _tuplesort_rescan = (Module['_tuplesort_rescan'] = (a0) =>
+  let _tuplesort_rescan = (Module['_tuplesort_rescan'] = (a0) =>
     (_tuplesort_rescan = Module['_tuplesort_rescan'] =
       wasmExports['tuplesort_rescan'])(a0))
-  var _WinGetPartitionLocalMemory = (Module['_WinGetPartitionLocalMemory'] = (
+  let _WinGetPartitionLocalMemory = (Module['_WinGetPartitionLocalMemory'] = (
     a0,
     a1,
   ) =>
     (_WinGetPartitionLocalMemory = Module['_WinGetPartitionLocalMemory'] =
       wasmExports['WinGetPartitionLocalMemory'])(a0, a1))
-  var _WinGetCurrentPosition = (Module['_WinGetCurrentPosition'] = (a0) =>
+  let _WinGetCurrentPosition = (Module['_WinGetCurrentPosition'] = (a0) =>
     (_WinGetCurrentPosition = Module['_WinGetCurrentPosition'] =
       wasmExports['WinGetCurrentPosition'])(a0))
-  var _WinGetPartitionRowCount = (Module['_WinGetPartitionRowCount'] = (a0) =>
+  let _WinGetPartitionRowCount = (Module['_WinGetPartitionRowCount'] = (a0) =>
     (_WinGetPartitionRowCount = Module['_WinGetPartitionRowCount'] =
       wasmExports['WinGetPartitionRowCount'])(a0))
-  var _WinGetFuncArgInPartition = (Module['_WinGetFuncArgInPartition'] = (
+  let _WinGetFuncArgInPartition = (Module['_WinGetFuncArgInPartition'] = (
     a0,
     a1,
     a2,
@@ -13831,60 +13843,60 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_WinGetFuncArgInPartition = Module['_WinGetFuncArgInPartition'] =
       wasmExports['WinGetFuncArgInPartition'])(a0, a1, a2, a3, a4, a5, a6))
-  var _WinGetFuncArgCurrent = (Module['_WinGetFuncArgCurrent'] = (a0, a1, a2) =>
+  let _WinGetFuncArgCurrent = (Module['_WinGetFuncArgCurrent'] = (a0, a1, a2) =>
     (_WinGetFuncArgCurrent = Module['_WinGetFuncArgCurrent'] =
       wasmExports['WinGetFuncArgCurrent'])(a0, a1, a2))
-  var _SPI_connect_ext = (Module['_SPI_connect_ext'] = (a0) =>
+  let _SPI_connect_ext = (Module['_SPI_connect_ext'] = (a0) =>
     (_SPI_connect_ext = Module['_SPI_connect_ext'] =
       wasmExports['SPI_connect_ext'])(a0))
-  var _SPI_commit = (Module['_SPI_commit'] = () =>
+  let _SPI_commit = (Module['_SPI_commit'] = () =>
     (_SPI_commit = Module['_SPI_commit'] = wasmExports['SPI_commit'])())
-  var _CopyErrorData = (Module['_CopyErrorData'] = () =>
+  let _CopyErrorData = (Module['_CopyErrorData'] = () =>
     (_CopyErrorData = Module['_CopyErrorData'] =
       wasmExports['CopyErrorData'])())
-  var _FlushErrorState = (Module['_FlushErrorState'] = () =>
+  let _FlushErrorState = (Module['_FlushErrorState'] = () =>
     (_FlushErrorState = Module['_FlushErrorState'] =
       wasmExports['FlushErrorState'])())
-  var _ReThrowError = (Module['_ReThrowError'] = (a0) =>
+  let _ReThrowError = (Module['_ReThrowError'] = (a0) =>
     (_ReThrowError = Module['_ReThrowError'] = wasmExports['ReThrowError'])(a0))
-  var _SPI_commit_and_chain = (Module['_SPI_commit_and_chain'] = () =>
+  let _SPI_commit_and_chain = (Module['_SPI_commit_and_chain'] = () =>
     (_SPI_commit_and_chain = Module['_SPI_commit_and_chain'] =
       wasmExports['SPI_commit_and_chain'])())
-  var _SPI_rollback = (Module['_SPI_rollback'] = () =>
+  let _SPI_rollback = (Module['_SPI_rollback'] = () =>
     (_SPI_rollback = Module['_SPI_rollback'] = wasmExports['SPI_rollback'])())
-  var _SPI_rollback_and_chain = (Module['_SPI_rollback_and_chain'] = () =>
+  let _SPI_rollback_and_chain = (Module['_SPI_rollback_and_chain'] = () =>
     (_SPI_rollback_and_chain = Module['_SPI_rollback_and_chain'] =
       wasmExports['SPI_rollback_and_chain'])())
-  var _SPI_freetuptable = (Module['_SPI_freetuptable'] = (a0) =>
+  let _SPI_freetuptable = (Module['_SPI_freetuptable'] = (a0) =>
     (_SPI_freetuptable = Module['_SPI_freetuptable'] =
       wasmExports['SPI_freetuptable'])(a0))
-  var _SPI_execute_extended = (Module['_SPI_execute_extended'] = (a0, a1) =>
+  let _SPI_execute_extended = (Module['_SPI_execute_extended'] = (a0, a1) =>
     (_SPI_execute_extended = Module['_SPI_execute_extended'] =
       wasmExports['SPI_execute_extended'])(a0, a1))
-  var _SPI_execute_plan = (Module['_SPI_execute_plan'] = (a0, a1, a2, a3, a4) =>
+  let _SPI_execute_plan = (Module['_SPI_execute_plan'] = (a0, a1, a2, a3, a4) =>
     (_SPI_execute_plan = Module['_SPI_execute_plan'] =
       wasmExports['SPI_execute_plan'])(a0, a1, a2, a3, a4))
-  var _SPI_execp = (Module['_SPI_execp'] = (a0, a1, a2, a3) =>
+  let _SPI_execp = (Module['_SPI_execp'] = (a0, a1, a2, a3) =>
     (_SPI_execp = Module['_SPI_execp'] = wasmExports['SPI_execp'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _SPI_execute_plan_extended = (Module['_SPI_execute_plan_extended'] = (
+  let _SPI_execute_plan_extended = (Module['_SPI_execute_plan_extended'] = (
     a0,
     a1,
   ) =>
     (_SPI_execute_plan_extended = Module['_SPI_execute_plan_extended'] =
       wasmExports['SPI_execute_plan_extended'])(a0, a1))
-  var _SPI_execute_plan_with_paramlist = (Module[
+  let _SPI_execute_plan_with_paramlist = (Module[
     '_SPI_execute_plan_with_paramlist'
   ] = (a0, a1, a2, a3) =>
     (_SPI_execute_plan_with_paramlist = Module[
       '_SPI_execute_plan_with_paramlist'
     ] =
       wasmExports['SPI_execute_plan_with_paramlist'])(a0, a1, a2, a3))
-  var _SPI_execute_with_args = (Module['_SPI_execute_with_args'] = (
+  let _SPI_execute_with_args = (Module['_SPI_execute_with_args'] = (
     a0,
     a1,
     a2,
@@ -13895,27 +13907,27 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_SPI_execute_with_args = Module['_SPI_execute_with_args'] =
       wasmExports['SPI_execute_with_args'])(a0, a1, a2, a3, a4, a5, a6))
-  var _SPI_prepare = (Module['_SPI_prepare'] = (a0, a1, a2) =>
+  let _SPI_prepare = (Module['_SPI_prepare'] = (a0, a1, a2) =>
     (_SPI_prepare = Module['_SPI_prepare'] = wasmExports['SPI_prepare'])(
       a0,
       a1,
       a2,
     ))
-  var _SPI_prepare_extended = (Module['_SPI_prepare_extended'] = (a0, a1) =>
+  let _SPI_prepare_extended = (Module['_SPI_prepare_extended'] = (a0, a1) =>
     (_SPI_prepare_extended = Module['_SPI_prepare_extended'] =
       wasmExports['SPI_prepare_extended'])(a0, a1))
-  var _SPI_keepplan = (Module['_SPI_keepplan'] = (a0) =>
+  let _SPI_keepplan = (Module['_SPI_keepplan'] = (a0) =>
     (_SPI_keepplan = Module['_SPI_keepplan'] = wasmExports['SPI_keepplan'])(a0))
-  var _SPI_freeplan = (Module['_SPI_freeplan'] = (a0) =>
+  let _SPI_freeplan = (Module['_SPI_freeplan'] = (a0) =>
     (_SPI_freeplan = Module['_SPI_freeplan'] = wasmExports['SPI_freeplan'])(a0))
-  var _SPI_copytuple = (Module['_SPI_copytuple'] = (a0) =>
+  let _SPI_copytuple = (Module['_SPI_copytuple'] = (a0) =>
     (_SPI_copytuple = Module['_SPI_copytuple'] = wasmExports['SPI_copytuple'])(
       a0,
     ))
-  var _SPI_returntuple = (Module['_SPI_returntuple'] = (a0, a1) =>
+  let _SPI_returntuple = (Module['_SPI_returntuple'] = (a0, a1) =>
     (_SPI_returntuple = Module['_SPI_returntuple'] =
       wasmExports['SPI_returntuple'])(a0, a1))
-  var _SPI_modifytuple = (Module['_SPI_modifytuple'] = (
+  let _SPI_modifytuple = (Module['_SPI_modifytuple'] = (
     a0,
     a1,
     a2,
@@ -13925,52 +13937,52 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_SPI_modifytuple = Module['_SPI_modifytuple'] =
       wasmExports['SPI_modifytuple'])(a0, a1, a2, a3, a4, a5))
-  var _SPI_fnumber = (Module['_SPI_fnumber'] = (a0, a1) =>
+  let _SPI_fnumber = (Module['_SPI_fnumber'] = (a0, a1) =>
     (_SPI_fnumber = Module['_SPI_fnumber'] = wasmExports['SPI_fnumber'])(
       a0,
       a1,
     ))
-  var _SPI_fname = (Module['_SPI_fname'] = (a0, a1) =>
+  let _SPI_fname = (Module['_SPI_fname'] = (a0, a1) =>
     (_SPI_fname = Module['_SPI_fname'] = wasmExports['SPI_fname'])(a0, a1))
-  var _SPI_getbinval = (Module['_SPI_getbinval'] = (a0, a1, a2, a3) =>
+  let _SPI_getbinval = (Module['_SPI_getbinval'] = (a0, a1, a2, a3) =>
     (_SPI_getbinval = Module['_SPI_getbinval'] = wasmExports['SPI_getbinval'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _SPI_gettype = (Module['_SPI_gettype'] = (a0, a1) =>
+  let _SPI_gettype = (Module['_SPI_gettype'] = (a0, a1) =>
     (_SPI_gettype = Module['_SPI_gettype'] = wasmExports['SPI_gettype'])(
       a0,
       a1,
     ))
-  var _SPI_gettypeid = (Module['_SPI_gettypeid'] = (a0, a1) =>
+  let _SPI_gettypeid = (Module['_SPI_gettypeid'] = (a0, a1) =>
     (_SPI_gettypeid = Module['_SPI_gettypeid'] = wasmExports['SPI_gettypeid'])(
       a0,
       a1,
     ))
-  var _SPI_getrelname = (Module['_SPI_getrelname'] = (a0) =>
+  let _SPI_getrelname = (Module['_SPI_getrelname'] = (a0) =>
     (_SPI_getrelname = Module['_SPI_getrelname'] =
       wasmExports['SPI_getrelname'])(a0))
-  var _SPI_palloc = (Module['_SPI_palloc'] = (a0) =>
+  let _SPI_palloc = (Module['_SPI_palloc'] = (a0) =>
     (_SPI_palloc = Module['_SPI_palloc'] = wasmExports['SPI_palloc'])(a0))
-  var _SPI_repalloc = (Module['_SPI_repalloc'] = (a0, a1) =>
+  let _SPI_repalloc = (Module['_SPI_repalloc'] = (a0, a1) =>
     (_SPI_repalloc = Module['_SPI_repalloc'] = wasmExports['SPI_repalloc'])(
       a0,
       a1,
     ))
-  var _SPI_pfree = (Module['_SPI_pfree'] = (a0) =>
+  let _SPI_pfree = (Module['_SPI_pfree'] = (a0) =>
     (_SPI_pfree = Module['_SPI_pfree'] = wasmExports['SPI_pfree'])(a0))
-  var _SPI_datumTransfer = (Module['_SPI_datumTransfer'] = (a0, a1, a2) =>
+  let _SPI_datumTransfer = (Module['_SPI_datumTransfer'] = (a0, a1, a2) =>
     (_SPI_datumTransfer = Module['_SPI_datumTransfer'] =
       wasmExports['SPI_datumTransfer'])(a0, a1, a2))
-  var _datumTransfer = (Module['_datumTransfer'] = (a0, a1, a2) =>
+  let _datumTransfer = (Module['_datumTransfer'] = (a0, a1, a2) =>
     (_datumTransfer = Module['_datumTransfer'] = wasmExports['datumTransfer'])(
       a0,
       a1,
       a2,
     ))
-  var _SPI_cursor_open_with_args = (Module['_SPI_cursor_open_with_args'] = (
+  let _SPI_cursor_open_with_args = (Module['_SPI_cursor_open_with_args'] = (
     a0,
     a1,
     a2,
@@ -13982,218 +13994,218 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_SPI_cursor_open_with_args = Module['_SPI_cursor_open_with_args'] =
       wasmExports['SPI_cursor_open_with_args'])(a0, a1, a2, a3, a4, a5, a6, a7))
-  var _SPI_cursor_open_with_paramlist = (Module[
+  let _SPI_cursor_open_with_paramlist = (Module[
     '_SPI_cursor_open_with_paramlist'
   ] = (a0, a1, a2, a3) =>
     (_SPI_cursor_open_with_paramlist = Module[
       '_SPI_cursor_open_with_paramlist'
     ] =
       wasmExports['SPI_cursor_open_with_paramlist'])(a0, a1, a2, a3))
-  var _SPI_cursor_parse_open = (Module['_SPI_cursor_parse_open'] = (
+  let _SPI_cursor_parse_open = (Module['_SPI_cursor_parse_open'] = (
     a0,
     a1,
     a2,
   ) =>
     (_SPI_cursor_parse_open = Module['_SPI_cursor_parse_open'] =
       wasmExports['SPI_cursor_parse_open'])(a0, a1, a2))
-  var _SPI_cursor_find = (Module['_SPI_cursor_find'] = (a0) =>
+  let _SPI_cursor_find = (Module['_SPI_cursor_find'] = (a0) =>
     (_SPI_cursor_find = Module['_SPI_cursor_find'] =
       wasmExports['SPI_cursor_find'])(a0))
-  var _SPI_cursor_fetch = (Module['_SPI_cursor_fetch'] = (a0, a1, a2) =>
+  let _SPI_cursor_fetch = (Module['_SPI_cursor_fetch'] = (a0, a1, a2) =>
     (_SPI_cursor_fetch = Module['_SPI_cursor_fetch'] =
       wasmExports['SPI_cursor_fetch'])(a0, a1, a2))
-  var _SPI_scroll_cursor_fetch = (Module['_SPI_scroll_cursor_fetch'] = (
+  let _SPI_scroll_cursor_fetch = (Module['_SPI_scroll_cursor_fetch'] = (
     a0,
     a1,
     a2,
   ) =>
     (_SPI_scroll_cursor_fetch = Module['_SPI_scroll_cursor_fetch'] =
       wasmExports['SPI_scroll_cursor_fetch'])(a0, a1, a2))
-  var _SPI_scroll_cursor_move = (Module['_SPI_scroll_cursor_move'] = (
+  let _SPI_scroll_cursor_move = (Module['_SPI_scroll_cursor_move'] = (
     a0,
     a1,
     a2,
   ) =>
     (_SPI_scroll_cursor_move = Module['_SPI_scroll_cursor_move'] =
       wasmExports['SPI_scroll_cursor_move'])(a0, a1, a2))
-  var _SPI_cursor_close = (Module['_SPI_cursor_close'] = (a0) =>
+  let _SPI_cursor_close = (Module['_SPI_cursor_close'] = (a0) =>
     (_SPI_cursor_close = Module['_SPI_cursor_close'] =
       wasmExports['SPI_cursor_close'])(a0))
-  var _SPI_plan_is_valid = (Module['_SPI_plan_is_valid'] = (a0) =>
+  let _SPI_plan_is_valid = (Module['_SPI_plan_is_valid'] = (a0) =>
     (_SPI_plan_is_valid = Module['_SPI_plan_is_valid'] =
       wasmExports['SPI_plan_is_valid'])(a0))
-  var _SPI_result_code_string = (Module['_SPI_result_code_string'] = (a0) =>
+  let _SPI_result_code_string = (Module['_SPI_result_code_string'] = (a0) =>
     (_SPI_result_code_string = Module['_SPI_result_code_string'] =
       wasmExports['SPI_result_code_string'])(a0))
-  var _SPI_plan_get_plan_sources = (Module['_SPI_plan_get_plan_sources'] = (
+  let _SPI_plan_get_plan_sources = (Module['_SPI_plan_get_plan_sources'] = (
     a0,
   ) =>
     (_SPI_plan_get_plan_sources = Module['_SPI_plan_get_plan_sources'] =
       wasmExports['SPI_plan_get_plan_sources'])(a0))
-  var _SPI_plan_get_cached_plan = (Module['_SPI_plan_get_cached_plan'] = (a0) =>
+  let _SPI_plan_get_cached_plan = (Module['_SPI_plan_get_cached_plan'] = (a0) =>
     (_SPI_plan_get_cached_plan = Module['_SPI_plan_get_cached_plan'] =
       wasmExports['SPI_plan_get_cached_plan'])(a0))
-  var _SPI_register_relation = (Module['_SPI_register_relation'] = (a0) =>
+  let _SPI_register_relation = (Module['_SPI_register_relation'] = (a0) =>
     (_SPI_register_relation = Module['_SPI_register_relation'] =
       wasmExports['SPI_register_relation'])(a0))
-  var _create_queryEnv = (Module['_create_queryEnv'] = () =>
+  let _create_queryEnv = (Module['_create_queryEnv'] = () =>
     (_create_queryEnv = Module['_create_queryEnv'] =
       wasmExports['create_queryEnv'])())
-  var _register_ENR = (Module['_register_ENR'] = (a0, a1) =>
+  let _register_ENR = (Module['_register_ENR'] = (a0, a1) =>
     (_register_ENR = Module['_register_ENR'] = wasmExports['register_ENR'])(
       a0,
       a1,
     ))
-  var _SPI_register_trigger_data = (Module['_SPI_register_trigger_data'] = (
+  let _SPI_register_trigger_data = (Module['_SPI_register_trigger_data'] = (
     a0,
   ) =>
     (_SPI_register_trigger_data = Module['_SPI_register_trigger_data'] =
       wasmExports['SPI_register_trigger_data'])(a0))
-  var _tuplestore_tuple_count = (Module['_tuplestore_tuple_count'] = (a0) =>
+  let _tuplestore_tuple_count = (Module['_tuplestore_tuple_count'] = (a0) =>
     (_tuplestore_tuple_count = Module['_tuplestore_tuple_count'] =
       wasmExports['tuplestore_tuple_count'])(a0))
-  var _GetUserMapping = (Module['_GetUserMapping'] = (a0, a1) =>
+  let _GetUserMapping = (Module['_GetUserMapping'] = (a0, a1) =>
     (_GetUserMapping = Module['_GetUserMapping'] =
       wasmExports['GetUserMapping'])(a0, a1))
-  var _GetForeignTable = (Module['_GetForeignTable'] = (a0) =>
+  let _GetForeignTable = (Module['_GetForeignTable'] = (a0) =>
     (_GetForeignTable = Module['_GetForeignTable'] =
       wasmExports['GetForeignTable'])(a0))
-  var _GetForeignColumnOptions = (Module['_GetForeignColumnOptions'] = (
+  let _GetForeignColumnOptions = (Module['_GetForeignColumnOptions'] = (
     a0,
     a1,
   ) =>
     (_GetForeignColumnOptions = Module['_GetForeignColumnOptions'] =
       wasmExports['GetForeignColumnOptions'])(a0, a1))
-  var _initClosestMatch = (Module['_initClosestMatch'] = (a0, a1, a2) =>
+  let _initClosestMatch = (Module['_initClosestMatch'] = (a0, a1, a2) =>
     (_initClosestMatch = Module['_initClosestMatch'] =
       wasmExports['initClosestMatch'])(a0, a1, a2))
-  var _updateClosestMatch = (Module['_updateClosestMatch'] = (a0, a1) =>
+  let _updateClosestMatch = (Module['_updateClosestMatch'] = (a0, a1) =>
     (_updateClosestMatch = Module['_updateClosestMatch'] =
       wasmExports['updateClosestMatch'])(a0, a1))
-  var _getClosestMatch = (Module['_getClosestMatch'] = (a0) =>
+  let _getClosestMatch = (Module['_getClosestMatch'] = (a0) =>
     (_getClosestMatch = Module['_getClosestMatch'] =
       wasmExports['getClosestMatch'])(a0))
-  var _GetExistingLocalJoinPath = (Module['_GetExistingLocalJoinPath'] = (a0) =>
+  let _GetExistingLocalJoinPath = (Module['_GetExistingLocalJoinPath'] = (a0) =>
     (_GetExistingLocalJoinPath = Module['_GetExistingLocalJoinPath'] =
       wasmExports['GetExistingLocalJoinPath'])(a0))
-  var _pathkeys_contained_in = (Module['_pathkeys_contained_in'] = (a0, a1) =>
+  let _pathkeys_contained_in = (Module['_pathkeys_contained_in'] = (a0, a1) =>
     (_pathkeys_contained_in = Module['_pathkeys_contained_in'] =
       wasmExports['pathkeys_contained_in'])(a0, a1))
-  var _bloom_create = (Module['_bloom_create'] = (a0, a1, a2) =>
+  let _bloom_create = (Module['_bloom_create'] = (a0, a1, a2) =>
     (_bloom_create = Module['_bloom_create'] = wasmExports['bloom_create'])(
       a0,
       a1,
       a2,
     ))
-  var _bloom_free = (Module['_bloom_free'] = (a0) =>
+  let _bloom_free = (Module['_bloom_free'] = (a0) =>
     (_bloom_free = Module['_bloom_free'] = wasmExports['bloom_free'])(a0))
-  var _bloom_add_element = (Module['_bloom_add_element'] = (a0, a1, a2) =>
+  let _bloom_add_element = (Module['_bloom_add_element'] = (a0, a1, a2) =>
     (_bloom_add_element = Module['_bloom_add_element'] =
       wasmExports['bloom_add_element'])(a0, a1, a2))
-  var _bloom_lacks_element = (Module['_bloom_lacks_element'] = (a0, a1, a2) =>
+  let _bloom_lacks_element = (Module['_bloom_lacks_element'] = (a0, a1, a2) =>
     (_bloom_lacks_element = Module['_bloom_lacks_element'] =
       wasmExports['bloom_lacks_element'])(a0, a1, a2))
-  var _bloom_prop_bits_set = (Module['_bloom_prop_bits_set'] = (a0) =>
+  let _bloom_prop_bits_set = (Module['_bloom_prop_bits_set'] = (a0) =>
     (_bloom_prop_bits_set = Module['_bloom_prop_bits_set'] =
       wasmExports['bloom_prop_bits_set'])(a0))
-  var _dshash_create = (Module['_dshash_create'] = (a0, a1, a2) =>
+  let _dshash_create = (Module['_dshash_create'] = (a0, a1, a2) =>
     (_dshash_create = Module['_dshash_create'] = wasmExports['dshash_create'])(
       a0,
       a1,
       a2,
     ))
-  var _dshash_attach = (Module['_dshash_attach'] = (a0, a1, a2, a3) =>
+  let _dshash_attach = (Module['_dshash_attach'] = (a0, a1, a2, a3) =>
     (_dshash_attach = Module['_dshash_attach'] = wasmExports['dshash_attach'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _dshash_detach = (Module['_dshash_detach'] = (a0) =>
+  let _dshash_detach = (Module['_dshash_detach'] = (a0) =>
     (_dshash_detach = Module['_dshash_detach'] = wasmExports['dshash_detach'])(
       a0,
     ))
-  var _dshash_destroy = (Module['_dshash_destroy'] = (a0) =>
+  let _dshash_destroy = (Module['_dshash_destroy'] = (a0) =>
     (_dshash_destroy = Module['_dshash_destroy'] =
       wasmExports['dshash_destroy'])(a0))
-  var _dshash_get_hash_table_handle = (Module['_dshash_get_hash_table_handle'] =
+  let _dshash_get_hash_table_handle = (Module['_dshash_get_hash_table_handle'] =
     (a0) =>
       (_dshash_get_hash_table_handle = Module['_dshash_get_hash_table_handle'] =
         wasmExports['dshash_get_hash_table_handle'])(a0))
-  var _dshash_find = (Module['_dshash_find'] = (a0, a1, a2) =>
+  let _dshash_find = (Module['_dshash_find'] = (a0, a1, a2) =>
     (_dshash_find = Module['_dshash_find'] = wasmExports['dshash_find'])(
       a0,
       a1,
       a2,
     ))
-  var _dshash_find_or_insert = (Module['_dshash_find_or_insert'] = (
+  let _dshash_find_or_insert = (Module['_dshash_find_or_insert'] = (
     a0,
     a1,
     a2,
   ) =>
     (_dshash_find_or_insert = Module['_dshash_find_or_insert'] =
       wasmExports['dshash_find_or_insert'])(a0, a1, a2))
-  var _dshash_delete_key = (Module['_dshash_delete_key'] = (a0, a1) =>
+  let _dshash_delete_key = (Module['_dshash_delete_key'] = (a0, a1) =>
     (_dshash_delete_key = Module['_dshash_delete_key'] =
       wasmExports['dshash_delete_key'])(a0, a1))
-  var _dshash_release_lock = (Module['_dshash_release_lock'] = (a0, a1) =>
+  let _dshash_release_lock = (Module['_dshash_release_lock'] = (a0, a1) =>
     (_dshash_release_lock = Module['_dshash_release_lock'] =
       wasmExports['dshash_release_lock'])(a0, a1))
-  var _tag_hash = (Module['_tag_hash'] = (a0, a1) =>
+  let _tag_hash = (Module['_tag_hash'] = (a0, a1) =>
     (_tag_hash = Module['_tag_hash'] = wasmExports['tag_hash'])(a0, a1))
-  var _dshash_seq_init = (Module['_dshash_seq_init'] = (a0, a1, a2) =>
+  let _dshash_seq_init = (Module['_dshash_seq_init'] = (a0, a1, a2) =>
     (_dshash_seq_init = Module['_dshash_seq_init'] =
       wasmExports['dshash_seq_init'])(a0, a1, a2))
-  var _dshash_seq_next = (Module['_dshash_seq_next'] = (a0) =>
+  let _dshash_seq_next = (Module['_dshash_seq_next'] = (a0) =>
     (_dshash_seq_next = Module['_dshash_seq_next'] =
       wasmExports['dshash_seq_next'])(a0))
-  var _dshash_seq_term = (Module['_dshash_seq_term'] = (a0) =>
+  let _dshash_seq_term = (Module['_dshash_seq_term'] = (a0) =>
     (_dshash_seq_term = Module['_dshash_seq_term'] =
       wasmExports['dshash_seq_term'])(a0))
-  var _dshash_delete_current = (Module['_dshash_delete_current'] = (a0) =>
+  let _dshash_delete_current = (Module['_dshash_delete_current'] = (a0) =>
     (_dshash_delete_current = Module['_dshash_delete_current'] =
       wasmExports['dshash_delete_current'])(a0))
-  var _ldexp = (Module['_ldexp'] = (a0, a1) =>
+  let _ldexp = (Module['_ldexp'] = (a0, a1) =>
     (_ldexp = Module['_ldexp'] = wasmExports['ldexp'])(a0, a1))
-  var _pg_b64_enc_len = (Module['_pg_b64_enc_len'] = (a0) =>
+  let _pg_b64_enc_len = (Module['_pg_b64_enc_len'] = (a0) =>
     (_pg_b64_enc_len = Module['_pg_b64_enc_len'] =
       wasmExports['pg_b64_enc_len'])(a0))
-  var _pg_b64_encode = (Module['_pg_b64_encode'] = (a0, a1, a2, a3) =>
+  let _pg_b64_encode = (Module['_pg_b64_encode'] = (a0, a1, a2, a3) =>
     (_pg_b64_encode = Module['_pg_b64_encode'] = wasmExports['pg_b64_encode'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _strtol = (Module['_strtol'] = (a0, a1, a2) =>
+  let _strtol = (Module['_strtol'] = (a0, a1, a2) =>
     (_strtol = Module['_strtol'] = wasmExports['strtol'])(a0, a1, a2))
-  var _gai_strerror = (Module['_gai_strerror'] = (a0) =>
+  let _gai_strerror = (Module['_gai_strerror'] = (a0) =>
     (_gai_strerror = Module['_gai_strerror'] = wasmExports['gai_strerror'])(a0))
-  var _socket = (Module['_socket'] = (a0, a1, a2) =>
+  let _socket = (Module['_socket'] = (a0, a1, a2) =>
     (_socket = Module['_socket'] = wasmExports['socket'])(a0, a1, a2))
-  var _pgl_connect = (Module['_pgl_connect'] = (a0, a1, a2) =>
+  let _pgl_connect = (Module['_pgl_connect'] = (a0, a1, a2) =>
     (_pgl_connect = Module['_pgl_connect'] = wasmExports['pgl_connect'])(
       a0,
       a1,
       a2,
     ))
-  var _pgl_send = (Module['_pgl_send'] = (a0, a1, a2, a3) =>
+  let _pgl_send = (Module['_pgl_send'] = (a0, a1, a2, a3) =>
     (_pgl_send = Module['_pgl_send'] = wasmExports['pgl_send'])(a0, a1, a2, a3))
-  var _pgl_recv = (Module['_pgl_recv'] = (a0, a1, a2, a3) =>
+  let _pgl_recv = (Module['_pgl_recv'] = (a0, a1, a2, a3) =>
     (_pgl_recv = Module['_pgl_recv'] = wasmExports['pgl_recv'])(a0, a1, a2, a3))
-  var _be_lo_unlink = (Module['_be_lo_unlink'] = (a0) =>
+  let _be_lo_unlink = (Module['_be_lo_unlink'] = (a0) =>
     (_be_lo_unlink = Module['_be_lo_unlink'] = wasmExports['be_lo_unlink'])(a0))
-  var _text_to_cstring_buffer = (Module['_text_to_cstring_buffer'] = (
+  let _text_to_cstring_buffer = (Module['_text_to_cstring_buffer'] = (
     a0,
     a1,
     a2,
   ) =>
     (_text_to_cstring_buffer = Module['_text_to_cstring_buffer'] =
       wasmExports['text_to_cstring_buffer'])(a0, a1, a2))
-  var _pg_mb2wchar_with_len = (Module['_pg_mb2wchar_with_len'] = (a0, a1, a2) =>
+  let _pg_mb2wchar_with_len = (Module['_pg_mb2wchar_with_len'] = (a0, a1, a2) =>
     (_pg_mb2wchar_with_len = Module['_pg_mb2wchar_with_len'] =
       wasmExports['pg_mb2wchar_with_len'])(a0, a1, a2))
-  var _pg_regcomp = (Module['_pg_regcomp'] = (a0, a1, a2, a3, a4) =>
+  let _pg_regcomp = (Module['_pg_regcomp'] = (a0, a1, a2, a3, a4) =>
     (_pg_regcomp = Module['_pg_regcomp'] = wasmExports['pg_regcomp'])(
       a0,
       a1,
@@ -14201,85 +14213,85 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _pg_regerror = (Module['_pg_regerror'] = (a0, a1, a2, a3) =>
+  let _pg_regerror = (Module['_pg_regerror'] = (a0, a1, a2, a3) =>
     (_pg_regerror = Module['_pg_regerror'] = wasmExports['pg_regerror'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _strcat = (Module['_strcat'] = (a0, a1) =>
+  let _strcat = (Module['_strcat'] = (a0, a1) =>
     (_strcat = Module['_strcat'] = wasmExports['strcat'])(a0, a1))
-  var _pgl_getsockname = (Module['_pgl_getsockname'] = (a0, a1, a2) =>
+  let _pgl_getsockname = (Module['_pgl_getsockname'] = (a0, a1, a2) =>
     (_pgl_getsockname = Module['_pgl_getsockname'] =
       wasmExports['pgl_getsockname'])(a0, a1, a2))
-  var _pgl_setsockopt = (Module['_pgl_setsockopt'] = (a0, a1, a2, a3, a4) =>
+  let _pgl_setsockopt = (Module['_pgl_setsockopt'] = (a0, a1, a2, a3, a4) =>
     (_pgl_setsockopt = Module['_pgl_setsockopt'] =
       wasmExports['pgl_setsockopt'])(a0, a1, a2, a3, a4))
-  var _pgl_fcntl = (Module['_pgl_fcntl'] = (a0, a1, a2) =>
+  let _pgl_fcntl = (Module['_pgl_fcntl'] = (a0, a1, a2) =>
     (_pgl_fcntl = Module['_pgl_fcntl'] = wasmExports['pgl_fcntl'])(a0, a1, a2))
-  var _utime = (Module['_utime'] = (a0, a1) =>
+  let _utime = (Module['_utime'] = (a0, a1) =>
     (_utime = Module['_utime'] = wasmExports['utime'])(a0, a1))
-  var _pq_buffer_remaining_data = (Module['_pq_buffer_remaining_data'] = () =>
+  let _pq_buffer_remaining_data = (Module['_pq_buffer_remaining_data'] = () =>
     (_pq_buffer_remaining_data = Module['_pq_buffer_remaining_data'] =
       wasmExports['pq_buffer_remaining_data'])())
-  var _pgl_getsockopt = (Module['_pgl_getsockopt'] = (a0, a1, a2, a3, a4) =>
+  let _pgl_getsockopt = (Module['_pgl_getsockopt'] = (a0, a1, a2, a3, a4) =>
     (_pgl_getsockopt = Module['_pgl_getsockopt'] =
       wasmExports['pgl_getsockopt'])(a0, a1, a2, a3, a4))
-  var _pq_sendtext = (Module['_pq_sendtext'] = (a0, a1, a2) =>
+  let _pq_sendtext = (Module['_pq_sendtext'] = (a0, a1, a2) =>
     (_pq_sendtext = Module['_pq_sendtext'] = wasmExports['pq_sendtext'])(
       a0,
       a1,
       a2,
     ))
-  var _pq_sendfloat4 = (Module['_pq_sendfloat4'] = (a0, a1) =>
+  let _pq_sendfloat4 = (Module['_pq_sendfloat4'] = (a0, a1) =>
     (_pq_sendfloat4 = Module['_pq_sendfloat4'] = wasmExports['pq_sendfloat4'])(
       a0,
       a1,
     ))
-  var _pq_sendfloat8 = (Module['_pq_sendfloat8'] = (a0, a1) =>
+  let _pq_sendfloat8 = (Module['_pq_sendfloat8'] = (a0, a1) =>
     (_pq_sendfloat8 = Module['_pq_sendfloat8'] = wasmExports['pq_sendfloat8'])(
       a0,
       a1,
     ))
-  var _pq_begintypsend = (Module['_pq_begintypsend'] = (a0) =>
+  let _pq_begintypsend = (Module['_pq_begintypsend'] = (a0) =>
     (_pq_begintypsend = Module['_pq_begintypsend'] =
       wasmExports['pq_begintypsend'])(a0))
-  var _pq_endtypsend = (Module['_pq_endtypsend'] = (a0) =>
+  let _pq_endtypsend = (Module['_pq_endtypsend'] = (a0) =>
     (_pq_endtypsend = Module['_pq_endtypsend'] = wasmExports['pq_endtypsend'])(
       a0,
     ))
-  var _pq_getmsgfloat4 = (Module['_pq_getmsgfloat4'] = (a0) =>
+  let _pq_getmsgfloat4 = (Module['_pq_getmsgfloat4'] = (a0) =>
     (_pq_getmsgfloat4 = Module['_pq_getmsgfloat4'] =
       wasmExports['pq_getmsgfloat4'])(a0))
-  var _pq_getmsgfloat8 = (Module['_pq_getmsgfloat8'] = (a0) =>
+  let _pq_getmsgfloat8 = (Module['_pq_getmsgfloat8'] = (a0) =>
     (_pq_getmsgfloat8 = Module['_pq_getmsgfloat8'] =
       wasmExports['pq_getmsgfloat8'])(a0))
-  var _pq_getmsgtext = (Module['_pq_getmsgtext'] = (a0, a1, a2) =>
+  let _pq_getmsgtext = (Module['_pq_getmsgtext'] = (a0, a1, a2) =>
     (_pq_getmsgtext = Module['_pq_getmsgtext'] = wasmExports['pq_getmsgtext'])(
       a0,
       a1,
       a2,
     ))
-  var _pg_strtoint32 = (Module['_pg_strtoint32'] = (a0) =>
+  let _pg_strtoint32 = (Module['_pg_strtoint32'] = (a0) =>
     (_pg_strtoint32 = Module['_pg_strtoint32'] = wasmExports['pg_strtoint32'])(
       a0,
     ))
-  var _main = (Module['_main'] = (a0, a1) =>
+  let _main = (Module['_main'] = (a0, a1) =>
     (_main = Module['_main'] = wasmExports['__main_argc_argv'])(a0, a1))
-  var _pgl_getuid = (Module['_pgl_getuid'] = () =>
+  let _pgl_getuid = (Module['_pgl_getuid'] = () =>
     (_pgl_getuid = Module['_pgl_getuid'] = wasmExports['pgl_getuid'])())
-  var _getenv = (Module['_getenv'] = (a0) =>
+  let _getenv = (Module['_getenv'] = (a0) =>
     (_getenv = Module['_getenv'] = wasmExports['getenv'])(a0))
-  var _bms_membership = (Module['_bms_membership'] = (a0) =>
+  let _bms_membership = (Module['_bms_membership'] = (a0) =>
     (_bms_membership = Module['_bms_membership'] =
       wasmExports['bms_membership'])(a0))
-  var _RegisterExtensibleNodeMethods = (Module[
+  let _RegisterExtensibleNodeMethods = (Module[
     '_RegisterExtensibleNodeMethods'
   ] = (a0) =>
     (_RegisterExtensibleNodeMethods = Module['_RegisterExtensibleNodeMethods'] =
       wasmExports['RegisterExtensibleNodeMethods'])(a0))
-  var _list_make5_impl = (Module['_list_make5_impl'] = (
+  let _list_make5_impl = (Module['_list_make5_impl'] = (
     a0,
     a1,
     a2,
@@ -14289,19 +14301,19 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_list_make5_impl = Module['_list_make5_impl'] =
       wasmExports['list_make5_impl'])(a0, a1, a2, a3, a4, a5))
-  var _GetMemoryChunkContext = (Module['_GetMemoryChunkContext'] = (a0) =>
+  let _GetMemoryChunkContext = (Module['_GetMemoryChunkContext'] = (a0) =>
     (_GetMemoryChunkContext = Module['_GetMemoryChunkContext'] =
       wasmExports['GetMemoryChunkContext'])(a0))
-  var _list_insert_nth = (Module['_list_insert_nth'] = (a0, a1, a2) =>
+  let _list_insert_nth = (Module['_list_insert_nth'] = (a0, a1, a2) =>
     (_list_insert_nth = Module['_list_insert_nth'] =
       wasmExports['list_insert_nth'])(a0, a1, a2))
-  var _list_member_ptr = (Module['_list_member_ptr'] = (a0, a1) =>
+  let _list_member_ptr = (Module['_list_member_ptr'] = (a0, a1) =>
     (_list_member_ptr = Module['_list_member_ptr'] =
       wasmExports['list_member_ptr'])(a0, a1))
-  var _list_append_unique_ptr = (Module['_list_append_unique_ptr'] = (a0, a1) =>
+  let _list_append_unique_ptr = (Module['_list_append_unique_ptr'] = (a0, a1) =>
     (_list_append_unique_ptr = Module['_list_append_unique_ptr'] =
       wasmExports['list_append_unique_ptr'])(a0, a1))
-  var _make_opclause = (Module['_make_opclause'] = (
+  let _make_opclause = (Module['_make_opclause'] = (
     a0,
     a1,
     a2,
@@ -14319,55 +14331,55 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a5,
       a6,
     ))
-  var _exprIsLengthCoercion = (Module['_exprIsLengthCoercion'] = (a0, a1) =>
+  let _exprIsLengthCoercion = (Module['_exprIsLengthCoercion'] = (a0, a1) =>
     (_exprIsLengthCoercion = Module['_exprIsLengthCoercion'] =
       wasmExports['exprIsLengthCoercion'])(a0, a1))
-  var _fix_opfuncids = (Module['_fix_opfuncids'] = (a0) =>
+  let _fix_opfuncids = (Module['_fix_opfuncids'] = (a0) =>
     (_fix_opfuncids = Module['_fix_opfuncids'] = wasmExports['fix_opfuncids'])(
       a0,
     ))
-  var _outToken = (Module['_outToken'] = (a0, a1) =>
+  let _outToken = (Module['_outToken'] = (a0, a1) =>
     (_outToken = Module['_outToken'] = wasmExports['outToken'])(a0, a1))
-  var _outNode = (Module['_outNode'] = (a0, a1) =>
+  let _outNode = (Module['_outNode'] = (a0, a1) =>
     (_outNode = Module['_outNode'] = wasmExports['outNode'])(a0, a1))
-  var _appendStringInfoStringQuoted = (Module['_appendStringInfoStringQuoted'] =
+  let _appendStringInfoStringQuoted = (Module['_appendStringInfoStringQuoted'] =
     (a0, a1, a2) =>
       (_appendStringInfoStringQuoted = Module['_appendStringInfoStringQuoted'] =
         wasmExports['appendStringInfoStringQuoted'])(a0, a1, a2))
-  var _EnableQueryId = (Module['_EnableQueryId'] = () =>
+  let _EnableQueryId = (Module['_EnableQueryId'] = () =>
     (_EnableQueryId = Module['_EnableQueryId'] =
       wasmExports['EnableQueryId'])())
-  var _nodeRead = (Module['_nodeRead'] = (a0, a1) =>
+  let _nodeRead = (Module['_nodeRead'] = (a0, a1) =>
     (_nodeRead = Module['_nodeRead'] = wasmExports['nodeRead'])(a0, a1))
-  var _pg_strtok = (Module['_pg_strtok'] = (a0) =>
+  let _pg_strtok = (Module['_pg_strtok'] = (a0) =>
     (_pg_strtok = Module['_pg_strtok'] = wasmExports['pg_strtok'])(a0))
-  var _debackslash = (Module['_debackslash'] = (a0, a1) =>
+  let _debackslash = (Module['_debackslash'] = (a0, a1) =>
     (_debackslash = Module['_debackslash'] = wasmExports['debackslash'])(
       a0,
       a1,
     ))
-  var _exp2 = (Module['_exp2'] = (a0) =>
+  let _exp2 = (Module['_exp2'] = (a0) =>
     (_exp2 = Module['_exp2'] = wasmExports['exp2'])(a0))
-  var _find_base_rel = (Module['_find_base_rel'] = (a0, a1) =>
+  let _find_base_rel = (Module['_find_base_rel'] = (a0, a1) =>
     (_find_base_rel = Module['_find_base_rel'] = wasmExports['find_base_rel'])(
       a0,
       a1,
     ))
-  var _add_path = (Module['_add_path'] = (a0, a1) =>
+  let _add_path = (Module['_add_path'] = (a0, a1) =>
     (_add_path = Module['_add_path'] = wasmExports['add_path'])(a0, a1))
-  var _create_sort_path = (Module['_create_sort_path'] = (a0, a1, a2, a3, a4) =>
+  let _create_sort_path = (Module['_create_sort_path'] = (a0, a1, a2, a3, a4) =>
     (_create_sort_path = Module['_create_sort_path'] =
       wasmExports['create_sort_path'])(a0, a1, a2, a3, a4))
-  var _set_baserel_size_estimates = (Module['_set_baserel_size_estimates'] = (
+  let _set_baserel_size_estimates = (Module['_set_baserel_size_estimates'] = (
     a0,
     a1,
   ) =>
     (_set_baserel_size_estimates = Module['_set_baserel_size_estimates'] =
       wasmExports['set_baserel_size_estimates'])(a0, a1))
-  var _get_func_support = (Module['_get_func_support'] = (a0) =>
+  let _get_func_support = (Module['_get_func_support'] = (a0) =>
     (_get_func_support = Module['_get_func_support'] =
       wasmExports['get_func_support'])(a0))
-  var _clauselist_selectivity = (Module['_clauselist_selectivity'] = (
+  let _clauselist_selectivity = (Module['_clauselist_selectivity'] = (
     a0,
     a1,
     a2,
@@ -14376,22 +14388,22 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_clauselist_selectivity = Module['_clauselist_selectivity'] =
       wasmExports['clauselist_selectivity'])(a0, a1, a2, a3, a4))
-  var _get_tablespace_page_costs = (Module['_get_tablespace_page_costs'] = (
+  let _get_tablespace_page_costs = (Module['_get_tablespace_page_costs'] = (
     a0,
     a1,
     a2,
   ) =>
     (_get_tablespace_page_costs = Module['_get_tablespace_page_costs'] =
       wasmExports['get_tablespace_page_costs'])(a0, a1, a2))
-  var _cost_qual_eval = (Module['_cost_qual_eval'] = (a0, a1, a2) =>
+  let _cost_qual_eval = (Module['_cost_qual_eval'] = (a0, a1, a2) =>
     (_cost_qual_eval = Module['_cost_qual_eval'] =
       wasmExports['cost_qual_eval'])(a0, a1, a2))
-  var _pull_varnos = (Module['_pull_varnos'] = (a0, a1) =>
+  let _pull_varnos = (Module['_pull_varnos'] = (a0, a1) =>
     (_pull_varnos = Module['_pull_varnos'] = wasmExports['pull_varnos'])(
       a0,
       a1,
     ))
-  var _estimate_num_groups = (Module['_estimate_num_groups'] = (
+  let _estimate_num_groups = (Module['_estimate_num_groups'] = (
     a0,
     a1,
     a2,
@@ -14400,7 +14412,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_estimate_num_groups = Module['_estimate_num_groups'] =
       wasmExports['estimate_num_groups'])(a0, a1, a2, a3, a4))
-  var _cost_sort = (Module['_cost_sort'] = (
+  let _cost_sort = (Module['_cost_sort'] = (
     a0,
     a1,
     a2,
@@ -14424,13 +14436,13 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a8,
       a9,
     ))
-  var _get_sortgrouplist_exprs = (Module['_get_sortgrouplist_exprs'] = (
+  let _get_sortgrouplist_exprs = (Module['_get_sortgrouplist_exprs'] = (
     a0,
     a1,
   ) =>
     (_get_sortgrouplist_exprs = Module['_get_sortgrouplist_exprs'] =
       wasmExports['get_sortgrouplist_exprs'])(a0, a1))
-  var _make_restrictinfo = (Module['_make_restrictinfo'] = (
+  let _make_restrictinfo = (Module['_make_restrictinfo'] = (
     a0,
     a1,
     a2,
@@ -14444,26 +14456,26 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_make_restrictinfo = Module['_make_restrictinfo'] =
       wasmExports['make_restrictinfo'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9))
-  var _setup_eclass_member_iterator = (Module['_setup_eclass_member_iterator'] =
+  let _setup_eclass_member_iterator = (Module['_setup_eclass_member_iterator'] =
     (a0, a1, a2) =>
       (_setup_eclass_member_iterator = Module['_setup_eclass_member_iterator'] =
         wasmExports['setup_eclass_member_iterator'])(a0, a1, a2))
-  var _eclass_member_iterator_next = (Module['_eclass_member_iterator_next'] = (
+  let _eclass_member_iterator_next = (Module['_eclass_member_iterator_next'] = (
     a0,
   ) =>
     (_eclass_member_iterator_next = Module['_eclass_member_iterator_next'] =
       wasmExports['eclass_member_iterator_next'])(a0))
-  var _remove_nulling_relids = (Module['_remove_nulling_relids'] = (
+  let _remove_nulling_relids = (Module['_remove_nulling_relids'] = (
     a0,
     a1,
     a2,
   ) =>
     (_remove_nulling_relids = Module['_remove_nulling_relids'] =
       wasmExports['remove_nulling_relids'])(a0, a1, a2))
-  var _get_mergejoin_opfamilies = (Module['_get_mergejoin_opfamilies'] = (a0) =>
+  let _get_mergejoin_opfamilies = (Module['_get_mergejoin_opfamilies'] = (a0) =>
     (_get_mergejoin_opfamilies = Module['_get_mergejoin_opfamilies'] =
       wasmExports['get_mergejoin_opfamilies'])(a0))
-  var _generate_implied_equalities_for_column = (Module[
+  let _generate_implied_equalities_for_column = (Module[
     '_generate_implied_equalities_for_column'
   ] = (a0, a1, a2, a3, a4) =>
     (_generate_implied_equalities_for_column = Module[
@@ -14476,41 +14488,41 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _eclass_useful_for_merging = (Module['_eclass_useful_for_merging'] = (
+  let _eclass_useful_for_merging = (Module['_eclass_useful_for_merging'] = (
     a0,
     a1,
     a2,
   ) =>
     (_eclass_useful_for_merging = Module['_eclass_useful_for_merging'] =
       wasmExports['eclass_useful_for_merging'])(a0, a1, a2))
-  var _join_clause_is_movable_to = (Module['_join_clause_is_movable_to'] = (
+  let _join_clause_is_movable_to = (Module['_join_clause_is_movable_to'] = (
     a0,
     a1,
   ) =>
     (_join_clause_is_movable_to = Module['_join_clause_is_movable_to'] =
       wasmExports['join_clause_is_movable_to'])(a0, a1))
-  var _get_plan_rowmark = (Module['_get_plan_rowmark'] = (a0, a1) =>
+  let _get_plan_rowmark = (Module['_get_plan_rowmark'] = (a0, a1) =>
     (_get_plan_rowmark = Module['_get_plan_rowmark'] =
       wasmExports['get_plan_rowmark'])(a0, a1))
-  var _is_pseudo_constant_for_index = (Module['_is_pseudo_constant_for_index'] =
+  let _is_pseudo_constant_for_index = (Module['_is_pseudo_constant_for_index'] =
     (a0, a1, a2) =>
       (_is_pseudo_constant_for_index = Module['_is_pseudo_constant_for_index'] =
         wasmExports['is_pseudo_constant_for_index'])(a0, a1, a2))
-  var _update_mergeclause_eclasses = (Module['_update_mergeclause_eclasses'] = (
+  let _update_mergeclause_eclasses = (Module['_update_mergeclause_eclasses'] = (
     a0,
     a1,
   ) =>
     (_update_mergeclause_eclasses = Module['_update_mergeclause_eclasses'] =
       wasmExports['update_mergeclause_eclasses'])(a0, a1))
-  var _pull_vars_of_level = (Module['_pull_vars_of_level'] = (a0, a1) =>
+  let _pull_vars_of_level = (Module['_pull_vars_of_level'] = (a0, a1) =>
     (_pull_vars_of_level = Module['_pull_vars_of_level'] =
       wasmExports['pull_vars_of_level'])(a0, a1))
-  var _find_join_rel = (Module['_find_join_rel'] = (a0, a1) =>
+  let _find_join_rel = (Module['_find_join_rel'] = (a0, a1) =>
     (_find_join_rel = Module['_find_join_rel'] = wasmExports['find_join_rel'])(
       a0,
       a1,
     ))
-  var _make_canonical_pathkey = (Module['_make_canonical_pathkey'] = (
+  let _make_canonical_pathkey = (Module['_make_canonical_pathkey'] = (
     a0,
     a1,
     a2,
@@ -14519,27 +14531,27 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_make_canonical_pathkey = Module['_make_canonical_pathkey'] =
       wasmExports['make_canonical_pathkey'])(a0, a1, a2, a3, a4))
-  var _get_sortgroupref_clause_noerr = (Module[
+  let _get_sortgroupref_clause_noerr = (Module[
     '_get_sortgroupref_clause_noerr'
   ] = (a0, a1) =>
     (_get_sortgroupref_clause_noerr = Module['_get_sortgroupref_clause_noerr'] =
       wasmExports['get_sortgroupref_clause_noerr'])(a0, a1))
-  var _extract_actual_clauses = (Module['_extract_actual_clauses'] = (a0, a1) =>
+  let _extract_actual_clauses = (Module['_extract_actual_clauses'] = (a0, a1) =>
     (_extract_actual_clauses = Module['_extract_actual_clauses'] =
       wasmExports['extract_actual_clauses'])(a0, a1))
-  var _tlist_member = (Module['_tlist_member'] = (a0, a1) =>
+  let _tlist_member = (Module['_tlist_member'] = (a0, a1) =>
     (_tlist_member = Module['_tlist_member'] = wasmExports['tlist_member'])(
       a0,
       a1,
     ))
-  var _change_plan_targetlist = (Module['_change_plan_targetlist'] = (
+  let _change_plan_targetlist = (Module['_change_plan_targetlist'] = (
     a0,
     a1,
     a2,
   ) =>
     (_change_plan_targetlist = Module['_change_plan_targetlist'] =
       wasmExports['change_plan_targetlist'])(a0, a1, a2))
-  var _make_foreignscan = (Module['_make_foreignscan'] = (
+  let _make_foreignscan = (Module['_make_foreignscan'] = (
     a0,
     a1,
     a2,
@@ -14551,47 +14563,47 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_make_foreignscan = Module['_make_foreignscan'] =
       wasmExports['make_foreignscan'])(a0, a1, a2, a3, a4, a5, a6, a7))
-  var _IncrementVarSublevelsUp = (Module['_IncrementVarSublevelsUp'] = (
+  let _IncrementVarSublevelsUp = (Module['_IncrementVarSublevelsUp'] = (
     a0,
     a1,
     a2,
   ) =>
     (_IncrementVarSublevelsUp = Module['_IncrementVarSublevelsUp'] =
       wasmExports['IncrementVarSublevelsUp'])(a0, a1, a2))
-  var _op_mergejoinable = (Module['_op_mergejoinable'] = (a0, a1) =>
+  let _op_mergejoinable = (Module['_op_mergejoinable'] = (a0, a1) =>
     (_op_mergejoinable = Module['_op_mergejoinable'] =
       wasmExports['op_mergejoinable'])(a0, a1))
-  var _find_nonnullable_rels = (Module['_find_nonnullable_rels'] = (a0) =>
+  let _find_nonnullable_rels = (Module['_find_nonnullable_rels'] = (a0) =>
     (_find_nonnullable_rels = Module['_find_nonnullable_rels'] =
       wasmExports['find_nonnullable_rels'])(a0))
-  var _standard_planner = (Module['_standard_planner'] = (a0, a1, a2, a3) =>
+  let _standard_planner = (Module['_standard_planner'] = (a0, a1, a2, a3) =>
     (_standard_planner = Module['_standard_planner'] =
       wasmExports['standard_planner'])(a0, a1, a2, a3))
-  var _get_relids_in_jointree = (Module['_get_relids_in_jointree'] = (
+  let _get_relids_in_jointree = (Module['_get_relids_in_jointree'] = (
     a0,
     a1,
     a2,
   ) =>
     (_get_relids_in_jointree = Module['_get_relids_in_jointree'] =
       wasmExports['get_relids_in_jointree'])(a0, a1, a2))
-  var _SS_process_sublinks = (Module['_SS_process_sublinks'] = (a0, a1, a2) =>
+  let _SS_process_sublinks = (Module['_SS_process_sublinks'] = (a0, a1, a2) =>
     (_SS_process_sublinks = Module['_SS_process_sublinks'] =
       wasmExports['SS_process_sublinks'])(a0, a1, a2))
-  var _add_new_columns_to_pathtarget = (Module[
+  let _add_new_columns_to_pathtarget = (Module[
     '_add_new_columns_to_pathtarget'
   ] = (a0, a1) =>
     (_add_new_columns_to_pathtarget = Module['_add_new_columns_to_pathtarget'] =
       wasmExports['add_new_columns_to_pathtarget'])(a0, a1))
-  var _get_agg_clause_costs = (Module['_get_agg_clause_costs'] = (a0, a1, a2) =>
+  let _get_agg_clause_costs = (Module['_get_agg_clause_costs'] = (a0, a1, a2) =>
     (_get_agg_clause_costs = Module['_get_agg_clause_costs'] =
       wasmExports['get_agg_clause_costs'])(a0, a1, a2))
-  var _grouping_is_sortable = (Module['_grouping_is_sortable'] = (a0) =>
+  let _grouping_is_sortable = (Module['_grouping_is_sortable'] = (a0) =>
     (_grouping_is_sortable = Module['_grouping_is_sortable'] =
       wasmExports['grouping_is_sortable'])(a0))
-  var _copy_pathtarget = (Module['_copy_pathtarget'] = (a0) =>
+  let _copy_pathtarget = (Module['_copy_pathtarget'] = (a0) =>
     (_copy_pathtarget = Module['_copy_pathtarget'] =
       wasmExports['copy_pathtarget'])(a0))
-  var _create_projection_path = (Module['_create_projection_path'] = (
+  let _create_projection_path = (Module['_create_projection_path'] = (
     a0,
     a1,
     a2,
@@ -14599,19 +14611,19 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_create_projection_path = Module['_create_projection_path'] =
       wasmExports['create_projection_path'])(a0, a1, a2, a3))
-  var _contain_nonstrict_functions = (Module['_contain_nonstrict_functions'] = (
+  let _contain_nonstrict_functions = (Module['_contain_nonstrict_functions'] = (
     a0,
   ) =>
     (_contain_nonstrict_functions = Module['_contain_nonstrict_functions'] =
       wasmExports['contain_nonstrict_functions'])(a0))
-  var _get_translated_update_targetlist = (Module[
+  let _get_translated_update_targetlist = (Module[
     '_get_translated_update_targetlist'
   ] = (a0, a1, a2, a3) =>
     (_get_translated_update_targetlist = Module[
       '_get_translated_update_targetlist'
     ] =
       wasmExports['get_translated_update_targetlist'])(a0, a1, a2, a3))
-  var _add_row_identity_var = (Module['_add_row_identity_var'] = (
+  let _add_row_identity_var = (Module['_add_row_identity_var'] = (
     a0,
     a1,
     a2,
@@ -14619,20 +14631,20 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_add_row_identity_var = Module['_add_row_identity_var'] =
       wasmExports['add_row_identity_var'])(a0, a1, a2, a3))
-  var _get_rel_all_updated_cols = (Module['_get_rel_all_updated_cols'] = (
+  let _get_rel_all_updated_cols = (Module['_get_rel_all_updated_cols'] = (
     a0,
     a1,
   ) =>
     (_get_rel_all_updated_cols = Module['_get_rel_all_updated_cols'] =
       wasmExports['get_rel_all_updated_cols'])(a0, a1))
-  var _get_baserel_parampathinfo = (Module['_get_baserel_parampathinfo'] = (
+  let _get_baserel_parampathinfo = (Module['_get_baserel_parampathinfo'] = (
     a0,
     a1,
     a2,
   ) =>
     (_get_baserel_parampathinfo = Module['_get_baserel_parampathinfo'] =
       wasmExports['get_baserel_parampathinfo'])(a0, a1, a2))
-  var _create_foreignscan_path = (Module['_create_foreignscan_path'] = (
+  let _create_foreignscan_path = (Module['_create_foreignscan_path'] = (
     a0,
     a1,
     a2,
@@ -14661,7 +14673,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a10,
       a11,
     ))
-  var _create_foreign_join_path = (Module['_create_foreign_join_path'] = (
+  let _create_foreign_join_path = (Module['_create_foreign_join_path'] = (
     a0,
     a1,
     a2,
@@ -14690,7 +14702,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a10,
       a11,
     ))
-  var _create_foreign_upper_path = (Module['_create_foreign_upper_path'] = (
+  let _create_foreign_upper_path = (Module['_create_foreign_upper_path'] = (
     a0,
     a1,
     a2,
@@ -14717,7 +14729,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a9,
       a10,
     ))
-  var _adjust_limit_rows_costs = (Module['_adjust_limit_rows_costs'] = (
+  let _adjust_limit_rows_costs = (Module['_adjust_limit_rows_costs'] = (
     a0,
     a1,
     a2,
@@ -14726,144 +14738,144 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_adjust_limit_rows_costs = Module['_adjust_limit_rows_costs'] =
       wasmExports['adjust_limit_rows_costs'])(a0, a1, a2, a3, a4))
-  var _add_to_flat_tlist = (Module['_add_to_flat_tlist'] = (a0, a1) =>
+  let _add_to_flat_tlist = (Module['_add_to_flat_tlist'] = (a0, a1) =>
     (_add_to_flat_tlist = Module['_add_to_flat_tlist'] =
       wasmExports['add_to_flat_tlist'])(a0, a1))
-  var _get_fn_expr_variadic = (Module['_get_fn_expr_variadic'] = (a0) =>
+  let _get_fn_expr_variadic = (Module['_get_fn_expr_variadic'] = (a0) =>
     (_get_fn_expr_variadic = Module['_get_fn_expr_variadic'] =
       wasmExports['get_fn_expr_variadic'])(a0))
-  var _get_fn_expr_argtype = (Module['_get_fn_expr_argtype'] = (a0, a1) =>
+  let _get_fn_expr_argtype = (Module['_get_fn_expr_argtype'] = (a0, a1) =>
     (_get_fn_expr_argtype = Module['_get_fn_expr_argtype'] =
       wasmExports['get_fn_expr_argtype'])(a0, a1))
-  var _on_shmem_exit = (Module['_on_shmem_exit'] = (a0, a1) =>
+  let _on_shmem_exit = (Module['_on_shmem_exit'] = (a0, a1) =>
     (_on_shmem_exit = Module['_on_shmem_exit'] = wasmExports['on_shmem_exit'])(
       a0,
       a1,
     ))
-  var _pgl_shmdt = (Module['_pgl_shmdt'] = (a0) =>
+  let _pgl_shmdt = (Module['_pgl_shmdt'] = (a0) =>
     (_pgl_shmdt = Module['_pgl_shmdt'] = wasmExports['pgl_shmdt'])(a0))
-  var _pgl_shmctl = (Module['_pgl_shmctl'] = (a0, a1, a2) =>
+  let _pgl_shmctl = (Module['_pgl_shmctl'] = (a0, a1, a2) =>
     (_pgl_shmctl = Module['_pgl_shmctl'] = wasmExports['pgl_shmctl'])(
       a0,
       a1,
       a2,
     ))
-  var _pgl_shmat = (Module['_pgl_shmat'] = (a0, a1, a2) =>
+  let _pgl_shmat = (Module['_pgl_shmat'] = (a0, a1, a2) =>
     (_pgl_shmat = Module['_pgl_shmat'] = wasmExports['pgl_shmat'])(a0, a1, a2))
-  var _mmap = (Module['_mmap'] = (a0, a1, a2, a3, a4, a5) =>
+  let _mmap = (Module['_mmap'] = (a0, a1, a2, a3, a4, a5) =>
     (_mmap = Module['_mmap'] = wasmExports['mmap'])(a0, a1, a2, a3, a4, a5))
-  var _pgl_shmget = (Module['_pgl_shmget'] = (a0, a1, a2) =>
+  let _pgl_shmget = (Module['_pgl_shmget'] = (a0, a1, a2) =>
     (_pgl_shmget = Module['_pgl_shmget'] = wasmExports['pgl_shmget'])(
       a0,
       a1,
       a2,
     ))
-  var _pgl_munmap = (Module['_pgl_munmap'] = (a0, a1) =>
+  let _pgl_munmap = (Module['_pgl_munmap'] = (a0, a1) =>
     (_pgl_munmap = Module['_pgl_munmap'] = wasmExports['pgl_munmap'])(a0, a1))
-  var _SignalHandlerForConfigReload = (Module['_SignalHandlerForConfigReload'] =
+  let _SignalHandlerForConfigReload = (Module['_SignalHandlerForConfigReload'] =
     (a0) =>
       (_SignalHandlerForConfigReload = Module['_SignalHandlerForConfigReload'] =
         wasmExports['SignalHandlerForConfigReload'])(a0))
-  var _SignalHandlerForShutdownRequest = (Module[
+  let _SignalHandlerForShutdownRequest = (Module[
     '_SignalHandlerForShutdownRequest'
   ] = (a0) =>
     (_SignalHandlerForShutdownRequest = Module[
       '_SignalHandlerForShutdownRequest'
     ] =
       wasmExports['SignalHandlerForShutdownRequest'])(a0))
-  var _procsignal_sigusr1_handler = (Module['_procsignal_sigusr1_handler'] = (
+  let _procsignal_sigusr1_handler = (Module['_procsignal_sigusr1_handler'] = (
     a0,
   ) =>
     (_procsignal_sigusr1_handler = Module['_procsignal_sigusr1_handler'] =
       wasmExports['procsignal_sigusr1_handler'])(a0))
-  var _RegisterBackgroundWorker = (Module['_RegisterBackgroundWorker'] = (a0) =>
+  let _RegisterBackgroundWorker = (Module['_RegisterBackgroundWorker'] = (a0) =>
     (_RegisterBackgroundWorker = Module['_RegisterBackgroundWorker'] =
       wasmExports['RegisterBackgroundWorker'])(a0))
-  var _WaitForBackgroundWorkerStartup = (Module[
+  let _WaitForBackgroundWorkerStartup = (Module[
     '_WaitForBackgroundWorkerStartup'
   ] = (a0, a1) =>
     (_WaitForBackgroundWorkerStartup = Module[
       '_WaitForBackgroundWorkerStartup'
     ] =
       wasmExports['WaitForBackgroundWorkerStartup'])(a0, a1))
-  var _open = (Module['_open'] = (a0, a1, a2) =>
+  let _open = (Module['_open'] = (a0, a1, a2) =>
     (_open = Module['_open'] = wasmExports['open'])(a0, a1, a2))
-  var _rename = (Module['_rename'] = (a0, a1) =>
+  let _rename = (Module['_rename'] = (a0, a1) =>
     (_rename = Module['_rename'] = wasmExports['rename'])(a0, a1))
-  var _GetConfigOption = (Module['_GetConfigOption'] = (a0, a1, a2) =>
+  let _GetConfigOption = (Module['_GetConfigOption'] = (a0, a1, a2) =>
     (_GetConfigOption = Module['_GetConfigOption'] =
       wasmExports['GetConfigOption'])(a0, a1, a2))
-  var _puts = (Module['_puts'] = (a0) =>
+  let _puts = (Module['_puts'] = (a0) =>
     (_puts = Module['_puts'] = wasmExports['puts'])(a0))
-  var _fopen = (Module['_fopen'] = (a0, a1) =>
+  let _fopen = (Module['_fopen'] = (a0, a1) =>
     (_fopen = Module['_fopen'] = wasmExports['fopen'])(a0, a1))
-  var _fclose = (Module['_fclose'] = (a0) =>
+  let _fclose = (Module['_fclose'] = (a0) =>
     (_fclose = Module['_fclose'] = wasmExports['fclose'])(a0))
-  var _fputc = (Module['_fputc'] = (a0, a1) =>
+  let _fputc = (Module['_fputc'] = (a0, a1) =>
     (_fputc = Module['_fputc'] = wasmExports['fputc'])(a0, a1))
-  var _ftello = (Module['_ftello'] = (a0) =>
+  let _ftello = (Module['_ftello'] = (a0) =>
     (_ftello = Module['_ftello'] = wasmExports['ftello'])(a0))
-  var _malloc = (Module['_malloc'] = (a0) =>
+  let _malloc = (Module['_malloc'] = (a0) =>
     (_malloc = Module['_malloc'] = wasmExports['malloc'])(a0))
-  var _free = (Module['_free'] = (a0) =>
+  let _free = (Module['_free'] = (a0) =>
     (_free = Module['_free'] = wasmExports['free'])(a0))
-  var _realloc = (Module['_realloc'] = (a0, a1) =>
+  let _realloc = (Module['_realloc'] = (a0, a1) =>
     (_realloc = Module['_realloc'] = wasmExports['realloc'])(a0, a1))
-  var _iswprint_l = (Module['_iswprint_l'] = (a0, a1) =>
+  let _iswprint_l = (Module['_iswprint_l'] = (a0, a1) =>
     (_iswprint_l = Module['_iswprint_l'] = wasmExports['iswprint_l'])(a0, a1))
-  var _iswalpha_l = (Module['_iswalpha_l'] = (a0, a1) =>
+  let _iswalpha_l = (Module['_iswalpha_l'] = (a0, a1) =>
     (_iswalpha_l = Module['_iswalpha_l'] = wasmExports['iswalpha_l'])(a0, a1))
-  var _iswdigit_l = (Module['_iswdigit_l'] = (a0, a1) =>
+  let _iswdigit_l = (Module['_iswdigit_l'] = (a0, a1) =>
     (_iswdigit_l = Module['_iswdigit_l'] = wasmExports['iswdigit_l'])(a0, a1))
-  var _isdigit_l = (Module['_isdigit_l'] = (a0, a1) =>
+  let _isdigit_l = (Module['_isdigit_l'] = (a0, a1) =>
     (_isdigit_l = Module['_isdigit_l'] = wasmExports['isdigit_l'])(a0, a1))
-  var _iswpunct_l = (Module['_iswpunct_l'] = (a0, a1) =>
+  let _iswpunct_l = (Module['_iswpunct_l'] = (a0, a1) =>
     (_iswpunct_l = Module['_iswpunct_l'] = wasmExports['iswpunct_l'])(a0, a1))
-  var _iswspace_l = (Module['_iswspace_l'] = (a0, a1) =>
+  let _iswspace_l = (Module['_iswspace_l'] = (a0, a1) =>
     (_iswspace_l = Module['_iswspace_l'] = wasmExports['iswspace_l'])(a0, a1))
-  var _iswlower_l = (Module['_iswlower_l'] = (a0, a1) =>
+  let _iswlower_l = (Module['_iswlower_l'] = (a0, a1) =>
     (_iswlower_l = Module['_iswlower_l'] = wasmExports['iswlower_l'])(a0, a1))
-  var _iswupper_l = (Module['_iswupper_l'] = (a0, a1) =>
+  let _iswupper_l = (Module['_iswupper_l'] = (a0, a1) =>
     (_iswupper_l = Module['_iswupper_l'] = wasmExports['iswupper_l'])(a0, a1))
-  var _pg_ascii_tolower = (Module['_pg_ascii_tolower'] = (a0) =>
+  let _pg_ascii_tolower = (Module['_pg_ascii_tolower'] = (a0) =>
     (_pg_ascii_tolower = Module['_pg_ascii_tolower'] =
       wasmExports['pg_ascii_tolower'])(a0))
-  var _towlower_l = (Module['_towlower_l'] = (a0, a1) =>
+  let _towlower_l = (Module['_towlower_l'] = (a0, a1) =>
     (_towlower_l = Module['_towlower_l'] = wasmExports['towlower_l'])(a0, a1))
-  var _tolower_l = (Module['_tolower_l'] = (a0, a1) =>
+  let _tolower_l = (Module['_tolower_l'] = (a0, a1) =>
     (_tolower_l = Module['_tolower_l'] = wasmExports['tolower_l'])(a0, a1))
-  var _towupper_l = (Module['_towupper_l'] = (a0, a1) =>
+  let _towupper_l = (Module['_towupper_l'] = (a0, a1) =>
     (_towupper_l = Module['_towupper_l'] = wasmExports['towupper_l'])(a0, a1))
-  var _toupper_l = (Module['_toupper_l'] = (a0, a1) =>
+  let _toupper_l = (Module['_toupper_l'] = (a0, a1) =>
     (_toupper_l = Module['_toupper_l'] = wasmExports['toupper_l'])(a0, a1))
-  var _pg_reg_getinitialstate = (Module['_pg_reg_getinitialstate'] = (a0) =>
+  let _pg_reg_getinitialstate = (Module['_pg_reg_getinitialstate'] = (a0) =>
     (_pg_reg_getinitialstate = Module['_pg_reg_getinitialstate'] =
       wasmExports['pg_reg_getinitialstate'])(a0))
-  var _pg_reg_getfinalstate = (Module['_pg_reg_getfinalstate'] = (a0) =>
+  let _pg_reg_getfinalstate = (Module['_pg_reg_getfinalstate'] = (a0) =>
     (_pg_reg_getfinalstate = Module['_pg_reg_getfinalstate'] =
       wasmExports['pg_reg_getfinalstate'])(a0))
-  var _pg_reg_getnumoutarcs = (Module['_pg_reg_getnumoutarcs'] = (a0, a1) =>
+  let _pg_reg_getnumoutarcs = (Module['_pg_reg_getnumoutarcs'] = (a0, a1) =>
     (_pg_reg_getnumoutarcs = Module['_pg_reg_getnumoutarcs'] =
       wasmExports['pg_reg_getnumoutarcs'])(a0, a1))
-  var _pg_reg_getoutarcs = (Module['_pg_reg_getoutarcs'] = (a0, a1, a2, a3) =>
+  let _pg_reg_getoutarcs = (Module['_pg_reg_getoutarcs'] = (a0, a1, a2, a3) =>
     (_pg_reg_getoutarcs = Module['_pg_reg_getoutarcs'] =
       wasmExports['pg_reg_getoutarcs'])(a0, a1, a2, a3))
-  var _pg_reg_getnumcolors = (Module['_pg_reg_getnumcolors'] = (a0) =>
+  let _pg_reg_getnumcolors = (Module['_pg_reg_getnumcolors'] = (a0) =>
     (_pg_reg_getnumcolors = Module['_pg_reg_getnumcolors'] =
       wasmExports['pg_reg_getnumcolors'])(a0))
-  var _pg_reg_colorisbegin = (Module['_pg_reg_colorisbegin'] = (a0, a1) =>
+  let _pg_reg_colorisbegin = (Module['_pg_reg_colorisbegin'] = (a0, a1) =>
     (_pg_reg_colorisbegin = Module['_pg_reg_colorisbegin'] =
       wasmExports['pg_reg_colorisbegin'])(a0, a1))
-  var _pg_reg_colorisend = (Module['_pg_reg_colorisend'] = (a0, a1) =>
+  let _pg_reg_colorisend = (Module['_pg_reg_colorisend'] = (a0, a1) =>
     (_pg_reg_colorisend = Module['_pg_reg_colorisend'] =
       wasmExports['pg_reg_colorisend'])(a0, a1))
-  var _pg_reg_getnumcharacters = (Module['_pg_reg_getnumcharacters'] = (
+  let _pg_reg_getnumcharacters = (Module['_pg_reg_getnumcharacters'] = (
     a0,
     a1,
   ) =>
     (_pg_reg_getnumcharacters = Module['_pg_reg_getnumcharacters'] =
       wasmExports['pg_reg_getnumcharacters'])(a0, a1))
-  var _pg_reg_getcharacters = (Module['_pg_reg_getcharacters'] = (
+  let _pg_reg_getcharacters = (Module['_pg_reg_getcharacters'] = (
     a0,
     a1,
     a2,
@@ -14871,37 +14883,37 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_pg_reg_getcharacters = Module['_pg_reg_getcharacters'] =
       wasmExports['pg_reg_getcharacters'])(a0, a1, a2, a3))
-  var _dsa_pin = (Module['_dsa_pin'] = (a0) =>
+  let _dsa_pin = (Module['_dsa_pin'] = (a0) =>
     (_dsa_pin = Module['_dsa_pin'] = wasmExports['dsa_pin'])(a0))
-  var _OutputPluginPrepareWrite = (Module['_OutputPluginPrepareWrite'] = (
+  let _OutputPluginPrepareWrite = (Module['_OutputPluginPrepareWrite'] = (
     a0,
     a1,
   ) =>
     (_OutputPluginPrepareWrite = Module['_OutputPluginPrepareWrite'] =
       wasmExports['OutputPluginPrepareWrite'])(a0, a1))
-  var _OutputPluginWrite = (Module['_OutputPluginWrite'] = (a0, a1) =>
+  let _OutputPluginWrite = (Module['_OutputPluginWrite'] = (a0, a1) =>
     (_OutputPluginWrite = Module['_OutputPluginWrite'] =
       wasmExports['OutputPluginWrite'])(a0, a1))
-  var _array_contains_nulls = (Module['_array_contains_nulls'] = (a0) =>
+  let _array_contains_nulls = (Module['_array_contains_nulls'] = (a0) =>
     (_array_contains_nulls = Module['_array_contains_nulls'] =
       wasmExports['array_contains_nulls'])(a0))
-  var _CacheRegisterRelcacheCallback = (Module[
+  let _CacheRegisterRelcacheCallback = (Module[
     '_CacheRegisterRelcacheCallback'
   ] = (a0, a1) =>
     (_CacheRegisterRelcacheCallback = Module['_CacheRegisterRelcacheCallback'] =
       wasmExports['CacheRegisterRelcacheCallback'])(a0, a1))
-  var _hash_seq_term = (Module['_hash_seq_term'] = (a0) =>
+  let _hash_seq_term = (Module['_hash_seq_term'] = (a0) =>
     (_hash_seq_term = Module['_hash_seq_term'] = wasmExports['hash_seq_term'])(
       a0,
     ))
-  var _FreeErrorData = (Module['_FreeErrorData'] = (a0) =>
+  let _FreeErrorData = (Module['_FreeErrorData'] = (a0) =>
     (_FreeErrorData = Module['_FreeErrorData'] = wasmExports['FreeErrorData'])(
       a0,
     ))
-  var _RelidByRelfilenumber = (Module['_RelidByRelfilenumber'] = (a0, a1) =>
+  let _RelidByRelfilenumber = (Module['_RelidByRelfilenumber'] = (a0, a1) =>
     (_RelidByRelfilenumber = Module['_RelidByRelfilenumber'] =
       wasmExports['RelidByRelfilenumber'])(a0, a1))
-  var _SnapBuildRestoreSnapshot = (Module['_SnapBuildRestoreSnapshot'] = (
+  let _SnapBuildRestoreSnapshot = (Module['_SnapBuildRestoreSnapshot'] = (
     a0,
     a1,
     a2,
@@ -14909,7 +14921,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_SnapBuildRestoreSnapshot = Module['_SnapBuildRestoreSnapshot'] =
       wasmExports['SnapBuildRestoreSnapshot'])(a0, a1, a2, a3))
-  var _WaitLatchOrSocket = (Module['_WaitLatchOrSocket'] = (
+  let _WaitLatchOrSocket = (Module['_WaitLatchOrSocket'] = (
     a0,
     a1,
     a2,
@@ -14918,26 +14930,26 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_WaitLatchOrSocket = Module['_WaitLatchOrSocket'] =
       wasmExports['WaitLatchOrSocket'])(a0, a1, a2, a3, a4))
-  var _BufFileCreateFileSet = (Module['_BufFileCreateFileSet'] = (a0, a1) =>
+  let _BufFileCreateFileSet = (Module['_BufFileCreateFileSet'] = (a0, a1) =>
     (_BufFileCreateFileSet = Module['_BufFileCreateFileSet'] =
       wasmExports['BufFileCreateFileSet'])(a0, a1))
-  var _BufFileOpenFileSet = (Module['_BufFileOpenFileSet'] = (a0, a1, a2, a3) =>
+  let _BufFileOpenFileSet = (Module['_BufFileOpenFileSet'] = (a0, a1, a2, a3) =>
     (_BufFileOpenFileSet = Module['_BufFileOpenFileSet'] =
       wasmExports['BufFileOpenFileSet'])(a0, a1, a2, a3))
-  var _BufFileTell = (Module['_BufFileTell'] = (a0, a1, a2) =>
+  let _BufFileTell = (Module['_BufFileTell'] = (a0, a1, a2) =>
     (_BufFileTell = Module['_BufFileTell'] = wasmExports['BufFileTell'])(
       a0,
       a1,
       a2,
     ))
-  var _ConditionVariablePrepareToSleep = (Module[
+  let _ConditionVariablePrepareToSleep = (Module[
     '_ConditionVariablePrepareToSleep'
   ] = (a0) =>
     (_ConditionVariablePrepareToSleep = Module[
       '_ConditionVariablePrepareToSleep'
     ] =
       wasmExports['ConditionVariablePrepareToSleep'])(a0))
-  var _get_row_security_policies = (Module['_get_row_security_policies'] = (
+  let _get_row_security_policies = (Module['_get_row_security_policies'] = (
     a0,
     a1,
     a2,
@@ -14948,7 +14960,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_get_row_security_policies = Module['_get_row_security_policies'] =
       wasmExports['get_row_security_policies'])(a0, a1, a2, a3, a4, a5, a6))
-  var _extract_variadic_args = (Module['_extract_variadic_args'] = (
+  let _extract_variadic_args = (Module['_extract_variadic_args'] = (
     a0,
     a1,
     a2,
@@ -14958,12 +14970,12 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_extract_variadic_args = Module['_extract_variadic_args'] =
       wasmExports['extract_variadic_args'])(a0, a1, a2, a3, a4, a5))
-  var _errhidestmt = (Module['_errhidestmt'] = (a0) =>
+  let _errhidestmt = (Module['_errhidestmt'] = (a0) =>
     (_errhidestmt = Module['_errhidestmt'] = wasmExports['errhidestmt'])(a0))
-  var _hash_estimate_size = (Module['_hash_estimate_size'] = (a0, a1) =>
+  let _hash_estimate_size = (Module['_hash_estimate_size'] = (a0, a1) =>
     (_hash_estimate_size = Module['_hash_estimate_size'] =
       wasmExports['hash_estimate_size'])(a0, a1))
-  var _ShmemInitHash = (Module['_ShmemInitHash'] = (a0, a1, a2, a3, a4) =>
+  let _ShmemInitHash = (Module['_ShmemInitHash'] = (a0, a1, a2, a3, a4) =>
     (_ShmemInitHash = Module['_ShmemInitHash'] = wasmExports['ShmemInitHash'])(
       a0,
       a1,
@@ -14971,19 +14983,19 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _LockBufHdr = (Module['_LockBufHdr'] = (a0) =>
+  let _LockBufHdr = (Module['_LockBufHdr'] = (a0) =>
     (_LockBufHdr = Module['_LockBufHdr'] = wasmExports['LockBufHdr'])(a0))
-  var _EvictUnpinnedBuffer = (Module['_EvictUnpinnedBuffer'] = (a0, a1) =>
+  let _EvictUnpinnedBuffer = (Module['_EvictUnpinnedBuffer'] = (a0, a1) =>
     (_EvictUnpinnedBuffer = Module['_EvictUnpinnedBuffer'] =
       wasmExports['EvictUnpinnedBuffer'])(a0, a1))
-  var _EvictAllUnpinnedBuffers = (Module['_EvictAllUnpinnedBuffers'] = (
+  let _EvictAllUnpinnedBuffers = (Module['_EvictAllUnpinnedBuffers'] = (
     a0,
     a1,
     a2,
   ) =>
     (_EvictAllUnpinnedBuffers = Module['_EvictAllUnpinnedBuffers'] =
       wasmExports['EvictAllUnpinnedBuffers'])(a0, a1, a2))
-  var _EvictRelUnpinnedBuffers = (Module['_EvictRelUnpinnedBuffers'] = (
+  let _EvictRelUnpinnedBuffers = (Module['_EvictRelUnpinnedBuffers'] = (
     a0,
     a1,
     a2,
@@ -14991,56 +15003,56 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_EvictRelUnpinnedBuffers = Module['_EvictRelUnpinnedBuffers'] =
       wasmExports['EvictRelUnpinnedBuffers'])(a0, a1, a2, a3))
-  var _have_free_buffer = (Module['_have_free_buffer'] = () =>
+  let _have_free_buffer = (Module['_have_free_buffer'] = () =>
     (_have_free_buffer = Module['_have_free_buffer'] =
       wasmExports['have_free_buffer'])())
-  var _calloc = (Module['_calloc'] = (a0, a1) =>
+  let _calloc = (Module['_calloc'] = (a0, a1) =>
     (_calloc = Module['_calloc'] = wasmExports['calloc'])(a0, a1))
-  var _BufFileExportFileSet = (Module['_BufFileExportFileSet'] = (a0) =>
+  let _BufFileExportFileSet = (Module['_BufFileExportFileSet'] = (a0) =>
     (_BufFileExportFileSet = Module['_BufFileExportFileSet'] =
       wasmExports['BufFileExportFileSet'])(a0))
-  var _copy_file = (Module['_copy_file'] = (a0, a1) =>
+  let _copy_file = (Module['_copy_file'] = (a0, a1) =>
     (_copy_file = Module['_copy_file'] = wasmExports['copy_file'])(a0, a1))
-  var _fdatasync = (Module['_fdatasync'] = (a0) =>
+  let _fdatasync = (Module['_fdatasync'] = (a0) =>
     (_fdatasync = Module['_fdatasync'] = wasmExports['fdatasync'])(a0))
-  var _truncate = (Module['_truncate'] = (a0, a1) =>
+  let _truncate = (Module['_truncate'] = (a0, a1) =>
     (_truncate = Module['_truncate'] = wasmExports['truncate'])(a0, a1))
-  var _dup = (Module['_dup'] = (a0) =>
+  let _dup = (Module['_dup'] = (a0) =>
     (_dup = Module['_dup'] = wasmExports['dup'])(a0))
-  var _AcquireExternalFD = (Module['_AcquireExternalFD'] = () =>
+  let _AcquireExternalFD = (Module['_AcquireExternalFD'] = () =>
     (_AcquireExternalFD = Module['_AcquireExternalFD'] =
       wasmExports['AcquireExternalFD'])())
-  var _mkdir = (Module['_mkdir'] = (a0, a1) =>
+  let _mkdir = (Module['_mkdir'] = (a0, a1) =>
     (_mkdir = Module['_mkdir'] = wasmExports['mkdir'])(a0, a1))
-  var _pgl_popen = (Module['_pgl_popen'] = (a0, a1) =>
+  let _pgl_popen = (Module['_pgl_popen'] = (a0, a1) =>
     (_pgl_popen = Module['_pgl_popen'] = wasmExports['pgl_popen'])(a0, a1))
-  var _pgl_pclose = (Module['_pgl_pclose'] = (a0) =>
+  let _pgl_pclose = (Module['_pgl_pclose'] = (a0) =>
     (_pgl_pclose = Module['_pgl_pclose'] = wasmExports['pgl_pclose'])(a0))
-  var _closedir = (Module['_closedir'] = (a0) =>
+  let _closedir = (Module['_closedir'] = (a0) =>
     (_closedir = Module['_closedir'] = wasmExports['closedir'])(a0))
-  var _opendir = (Module['_opendir'] = (a0) =>
+  let _opendir = (Module['_opendir'] = (a0) =>
     (_opendir = Module['_opendir'] = wasmExports['opendir'])(a0))
-  var _readdir = (Module['_readdir'] = (a0) =>
+  let _readdir = (Module['_readdir'] = (a0) =>
     (_readdir = Module['_readdir'] = wasmExports['readdir'])(a0))
-  var _GetNamedDSMSegment = (Module['_GetNamedDSMSegment'] = (a0, a1, a2, a3) =>
+  let _GetNamedDSMSegment = (Module['_GetNamedDSMSegment'] = (a0, a1, a2, a3) =>
     (_GetNamedDSMSegment = Module['_GetNamedDSMSegment'] =
       wasmExports['GetNamedDSMSegment'])(a0, a1, a2, a3))
-  var _pgl_atexit = (Module['_pgl_atexit'] = (a0) =>
+  let _pgl_atexit = (Module['_pgl_atexit'] = (a0) =>
     (_pgl_atexit = Module['_pgl_atexit'] = wasmExports['pgl_atexit'])(a0))
-  var _RequestAddinShmemSpace = (Module['_RequestAddinShmemSpace'] = (a0) =>
+  let _RequestAddinShmemSpace = (Module['_RequestAddinShmemSpace'] = (a0) =>
     (_RequestAddinShmemSpace = Module['_RequestAddinShmemSpace'] =
       wasmExports['RequestAddinShmemSpace'])(a0))
-  var _GetRunningTransactionData = (Module['_GetRunningTransactionData'] = () =>
+  let _GetRunningTransactionData = (Module['_GetRunningTransactionData'] = () =>
     (_GetRunningTransactionData = Module['_GetRunningTransactionData'] =
       wasmExports['GetRunningTransactionData'])())
-  var _BackendXidGetPid = (Module['_BackendXidGetPid'] = (a0) =>
+  let _BackendXidGetPid = (Module['_BackendXidGetPid'] = (a0) =>
     (_BackendXidGetPid = Module['_BackendXidGetPid'] =
       wasmExports['BackendXidGetPid'])(a0))
-  var _pg_numa_init = (Module['_pg_numa_init'] = () =>
+  let _pg_numa_init = (Module['_pg_numa_init'] = () =>
     (_pg_numa_init = Module['_pg_numa_init'] = wasmExports['pg_numa_init'])())
-  var _sysconf = (Module['_sysconf'] = (a0) =>
+  let _sysconf = (Module['_sysconf'] = (a0) =>
     (_sysconf = Module['_sysconf'] = wasmExports['sysconf'])(a0))
-  var _pg_numa_query_pages = (Module['_pg_numa_query_pages'] = (
+  let _pg_numa_query_pages = (Module['_pg_numa_query_pages'] = (
     a0,
     a1,
     a2,
@@ -15048,62 +15060,62 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_pg_numa_query_pages = Module['_pg_numa_query_pages'] =
       wasmExports['pg_numa_query_pages'])(a0, a1, a2, a3))
-  var _pg_get_shmem_pagesize = (Module['_pg_get_shmem_pagesize'] = () =>
+  let _pg_get_shmem_pagesize = (Module['_pg_get_shmem_pagesize'] = () =>
     (_pg_get_shmem_pagesize = Module['_pg_get_shmem_pagesize'] =
       wasmExports['pg_get_shmem_pagesize'])())
-  var _pgl_poll = (Module['_pgl_poll'] = (a0, a1, a2) =>
+  let _pgl_poll = (Module['_pgl_poll'] = (a0, a1, a2) =>
     (_pgl_poll = Module['_pgl_poll'] = wasmExports['pgl_poll'])(a0, a1, a2))
-  var _GetLockmodeName = (Module['_GetLockmodeName'] = (a0, a1) =>
+  let _GetLockmodeName = (Module['_GetLockmodeName'] = (a0, a1) =>
     (_GetLockmodeName = Module['_GetLockmodeName'] =
       wasmExports['GetLockmodeName'])(a0, a1))
-  var _LWLockRegisterTranche = (Module['_LWLockRegisterTranche'] = (a0, a1) =>
+  let _LWLockRegisterTranche = (Module['_LWLockRegisterTranche'] = (a0, a1) =>
     (_LWLockRegisterTranche = Module['_LWLockRegisterTranche'] =
       wasmExports['LWLockRegisterTranche'])(a0, a1))
-  var _GetNamedLWLockTranche = (Module['_GetNamedLWLockTranche'] = (a0) =>
+  let _GetNamedLWLockTranche = (Module['_GetNamedLWLockTranche'] = (a0) =>
     (_GetNamedLWLockTranche = Module['_GetNamedLWLockTranche'] =
       wasmExports['GetNamedLWLockTranche'])(a0))
-  var _LWLockNewTrancheId = (Module['_LWLockNewTrancheId'] = () =>
+  let _LWLockNewTrancheId = (Module['_LWLockNewTrancheId'] = () =>
     (_LWLockNewTrancheId = Module['_LWLockNewTrancheId'] =
       wasmExports['LWLockNewTrancheId'])())
-  var _RequestNamedLWLockTranche = (Module['_RequestNamedLWLockTranche'] = (
+  let _RequestNamedLWLockTranche = (Module['_RequestNamedLWLockTranche'] = (
     a0,
     a1,
   ) =>
     (_RequestNamedLWLockTranche = Module['_RequestNamedLWLockTranche'] =
       wasmExports['RequestNamedLWLockTranche'])(a0, a1))
-  var _LWLockHeldByMe = (Module['_LWLockHeldByMe'] = (a0) =>
+  let _LWLockHeldByMe = (Module['_LWLockHeldByMe'] = (a0) =>
     (_LWLockHeldByMe = Module['_LWLockHeldByMe'] =
       wasmExports['LWLockHeldByMe'])(a0))
-  var _ProcessStartupPacket = (Module['_ProcessStartupPacket'] = (a0, a1, a2) =>
+  let _ProcessStartupPacket = (Module['_ProcessStartupPacket'] = (a0, a1, a2) =>
     (_ProcessStartupPacket = Module['_ProcessStartupPacket'] =
       wasmExports['ProcessStartupPacket'])(a0, a1, a2))
-  var _htons = (a0) => (_htons = wasmExports['htons'])(a0)
-  var _htonl = (a0) => (_htonl = wasmExports['htonl'])(a0)
-  var _pgl_startPGlite = (Module['_pgl_startPGlite'] = () =>
+  let _htons = (a0) => (_htons = wasmExports['htons'])(a0)
+  let _htonl = (a0) => (_htonl = wasmExports['htonl'])(a0)
+  let _pgl_startPGlite = (Module['_pgl_startPGlite'] = () =>
     (_pgl_startPGlite = Module['_pgl_startPGlite'] =
       wasmExports['pgl_startPGlite'])())
-  var _pgl_pq_flush = (Module['_pgl_pq_flush'] = () =>
+  let _pgl_pq_flush = (Module['_pgl_pq_flush'] = () =>
     (_pgl_pq_flush = Module['_pgl_pq_flush'] = wasmExports['pgl_pq_flush'])())
-  var _pgl_getMyProcPort = (Module['_pgl_getMyProcPort'] = () =>
+  let _pgl_getMyProcPort = (Module['_pgl_getMyProcPort'] = () =>
     (_pgl_getMyProcPort = Module['_pgl_getMyProcPort'] =
       wasmExports['pgl_getMyProcPort'])())
-  var _pgl_sendConnData = (Module['_pgl_sendConnData'] = () =>
+  let _pgl_sendConnData = (Module['_pgl_sendConnData'] = () =>
     (_pgl_sendConnData = Module['_pgl_sendConnData'] =
       wasmExports['pgl_sendConnData'])())
-  var _PostgresMainLongJmp = (Module['_PostgresMainLongJmp'] = () =>
+  let _PostgresMainLongJmp = (Module['_PostgresMainLongJmp'] = () =>
     (_PostgresMainLongJmp = Module['_PostgresMainLongJmp'] =
       wasmExports['PostgresMainLongJmp'])())
-  var _PostgresMainLoopOnce = (Module['_PostgresMainLoopOnce'] = () =>
+  let _PostgresMainLoopOnce = (Module['_PostgresMainLoopOnce'] = () =>
     (_PostgresMainLoopOnce = Module['_PostgresMainLoopOnce'] =
       wasmExports['PostgresMainLoopOnce'])())
-  var _PostgresSendReadyForQueryIfNecessary = (Module[
+  let _PostgresSendReadyForQueryIfNecessary = (Module[
     '_PostgresSendReadyForQueryIfNecessary'
   ] = () =>
     (_PostgresSendReadyForQueryIfNecessary = Module[
       '_PostgresSendReadyForQueryIfNecessary'
     ] =
       wasmExports['PostgresSendReadyForQueryIfNecessary'])())
-  var _standard_ProcessUtility = (Module['_standard_ProcessUtility'] = (
+  let _standard_ProcessUtility = (Module['_standard_ProcessUtility'] = (
     a0,
     a1,
     a2,
@@ -15115,62 +15127,62 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_standard_ProcessUtility = Module['_standard_ProcessUtility'] =
       wasmExports['standard_ProcessUtility'])(a0, a1, a2, a3, a4, a5, a6, a7))
-  var _lookup_ts_dictionary_cache = (Module['_lookup_ts_dictionary_cache'] = (
+  let _lookup_ts_dictionary_cache = (Module['_lookup_ts_dictionary_cache'] = (
     a0,
   ) =>
     (_lookup_ts_dictionary_cache = Module['_lookup_ts_dictionary_cache'] =
       wasmExports['lookup_ts_dictionary_cache'])(a0))
-  var _get_tsearch_config_filename = (Module['_get_tsearch_config_filename'] = (
+  let _get_tsearch_config_filename = (Module['_get_tsearch_config_filename'] = (
     a0,
     a1,
   ) =>
     (_get_tsearch_config_filename = Module['_get_tsearch_config_filename'] =
       wasmExports['get_tsearch_config_filename'])(a0, a1))
-  var _str_tolower = (Module['_str_tolower'] = (a0, a1, a2) =>
+  let _str_tolower = (Module['_str_tolower'] = (a0, a1, a2) =>
     (_str_tolower = Module['_str_tolower'] = wasmExports['str_tolower'])(
       a0,
       a1,
       a2,
     ))
-  var _readstoplist = (Module['_readstoplist'] = (a0, a1, a2) =>
+  let _readstoplist = (Module['_readstoplist'] = (a0, a1, a2) =>
     (_readstoplist = Module['_readstoplist'] = wasmExports['readstoplist'])(
       a0,
       a1,
       a2,
     ))
-  var _searchstoplist = (Module['_searchstoplist'] = (a0, a1) =>
+  let _searchstoplist = (Module['_searchstoplist'] = (a0, a1) =>
     (_searchstoplist = Module['_searchstoplist'] =
       wasmExports['searchstoplist'])(a0, a1))
-  var _tsearch_readline_begin = (Module['_tsearch_readline_begin'] = (a0, a1) =>
+  let _tsearch_readline_begin = (Module['_tsearch_readline_begin'] = (a0, a1) =>
     (_tsearch_readline_begin = Module['_tsearch_readline_begin'] =
       wasmExports['tsearch_readline_begin'])(a0, a1))
-  var _tsearch_readline = (Module['_tsearch_readline'] = (a0) =>
+  let _tsearch_readline = (Module['_tsearch_readline'] = (a0) =>
     (_tsearch_readline = Module['_tsearch_readline'] =
       wasmExports['tsearch_readline'])(a0))
-  var _tsearch_readline_end = (Module['_tsearch_readline_end'] = (a0) =>
+  let _tsearch_readline_end = (Module['_tsearch_readline_end'] = (a0) =>
     (_tsearch_readline_end = Module['_tsearch_readline_end'] =
       wasmExports['tsearch_readline_end'])(a0))
-  var _stringToQualifiedNameList = (Module['_stringToQualifiedNameList'] = (
+  let _stringToQualifiedNameList = (Module['_stringToQualifiedNameList'] = (
     a0,
     a1,
   ) =>
     (_stringToQualifiedNameList = Module['_stringToQualifiedNameList'] =
       wasmExports['stringToQualifiedNameList'])(a0, a1))
-  var _to_tsvector_byid = (Module['_to_tsvector_byid'] = (a0) =>
+  let _to_tsvector_byid = (Module['_to_tsvector_byid'] = (a0) =>
     (_to_tsvector_byid = Module['_to_tsvector_byid'] =
       wasmExports['to_tsvector_byid'])(a0))
-  var _t_isalnum_with_len = (Module['_t_isalnum_with_len'] = (a0, a1) =>
+  let _t_isalnum_with_len = (Module['_t_isalnum_with_len'] = (a0, a1) =>
     (_t_isalnum_with_len = Module['_t_isalnum_with_len'] =
       wasmExports['t_isalnum_with_len'])(a0, a1))
-  var _isalnum = (Module['_isalnum'] = (a0) =>
+  let _isalnum = (Module['_isalnum'] = (a0) =>
     (_isalnum = Module['_isalnum'] = wasmExports['isalnum'])(a0))
-  var _t_isalnum_cstr = (Module['_t_isalnum_cstr'] = (a0) =>
+  let _t_isalnum_cstr = (Module['_t_isalnum_cstr'] = (a0) =>
     (_t_isalnum_cstr = Module['_t_isalnum_cstr'] =
       wasmExports['t_isalnum_cstr'])(a0))
-  var _pg_mblen_unbounded = (Module['_pg_mblen_unbounded'] = (a0) =>
+  let _pg_mblen_unbounded = (Module['_pg_mblen_unbounded'] = (a0) =>
     (_pg_mblen_unbounded = Module['_pg_mblen_unbounded'] =
       wasmExports['pg_mblen_unbounded'])(a0))
-  var _get_restriction_variable = (Module['_get_restriction_variable'] = (
+  let _get_restriction_variable = (Module['_get_restriction_variable'] = (
     a0,
     a1,
     a2,
@@ -15180,59 +15192,59 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_get_restriction_variable = Module['_get_restriction_variable'] =
       wasmExports['get_restriction_variable'])(a0, a1, a2, a3, a4, a5))
-  var _pg_mblen_range = (Module['_pg_mblen_range'] = (a0, a1) =>
+  let _pg_mblen_range = (Module['_pg_mblen_range'] = (a0, a1) =>
     (_pg_mblen_range = Module['_pg_mblen_range'] =
       wasmExports['pg_mblen_range'])(a0, a1))
-  var _MemoryContextAllocHuge = (Module['_MemoryContextAllocHuge'] = (a0, a1) =>
+  let _MemoryContextAllocHuge = (Module['_MemoryContextAllocHuge'] = (a0, a1) =>
     (_MemoryContextAllocHuge = Module['_MemoryContextAllocHuge'] =
       wasmExports['MemoryContextAllocHuge'])(a0, a1))
-  var _fseek = (Module['_fseek'] = (a0, a1, a2) =>
+  let _fseek = (Module['_fseek'] = (a0, a1, a2) =>
     (_fseek = Module['_fseek'] = wasmExports['fseek'])(a0, a1, a2))
-  var _WaitEventExtensionNew = (Module['_WaitEventExtensionNew'] = (a0) =>
+  let _WaitEventExtensionNew = (Module['_WaitEventExtensionNew'] = (a0) =>
     (_WaitEventExtensionNew = Module['_WaitEventExtensionNew'] =
       wasmExports['WaitEventExtensionNew'])(a0))
-  var _pg_popcount64 = (Module['_pg_popcount64'] = (a0) =>
+  let _pg_popcount64 = (Module['_pg_popcount64'] = (a0) =>
     (_pg_popcount64 = Module['_pg_popcount64'] = wasmExports['pg_popcount64'])(
       a0,
     ))
-  var _expand_array = (Module['_expand_array'] = (a0, a1, a2) =>
+  let _expand_array = (Module['_expand_array'] = (a0, a1, a2) =>
     (_expand_array = Module['_expand_array'] = wasmExports['expand_array'])(
       a0,
       a1,
       a2,
     ))
-  var _exp = (Module['_exp'] = (a0) =>
+  let _exp = (Module['_exp'] = (a0) =>
     (_exp = Module['_exp'] = wasmExports['exp'])(a0))
-  var _arraycontsel = (Module['_arraycontsel'] = (a0) =>
+  let _arraycontsel = (Module['_arraycontsel'] = (a0) =>
     (_arraycontsel = Module['_arraycontsel'] = wasmExports['arraycontsel'])(a0))
-  var _arraycontjoinsel = (Module['_arraycontjoinsel'] = (a0) =>
+  let _arraycontjoinsel = (Module['_arraycontjoinsel'] = (a0) =>
     (_arraycontjoinsel = Module['_arraycontjoinsel'] =
       wasmExports['arraycontjoinsel'])(a0))
-  var _initArrayResult = (Module['_initArrayResult'] = (a0, a1, a2) =>
+  let _initArrayResult = (Module['_initArrayResult'] = (a0, a1, a2) =>
     (_initArrayResult = Module['_initArrayResult'] =
       wasmExports['initArrayResult'])(a0, a1, a2))
-  var _array_create_iterator = (Module['_array_create_iterator'] = (
+  let _array_create_iterator = (Module['_array_create_iterator'] = (
     a0,
     a1,
     a2,
   ) =>
     (_array_create_iterator = Module['_array_create_iterator'] =
       wasmExports['array_create_iterator'])(a0, a1, a2))
-  var _array_iterate = (Module['_array_iterate'] = (a0, a1, a2) =>
+  let _array_iterate = (Module['_array_iterate'] = (a0, a1, a2) =>
     (_array_iterate = Module['_array_iterate'] = wasmExports['array_iterate'])(
       a0,
       a1,
       a2,
     ))
-  var _array_free_iterator = (Module['_array_free_iterator'] = (a0) =>
+  let _array_free_iterator = (Module['_array_free_iterator'] = (a0) =>
     (_array_free_iterator = Module['_array_free_iterator'] =
       wasmExports['array_free_iterator'])(a0))
-  var _ArrayGetIntegerTypmods = (Module['_ArrayGetIntegerTypmods'] = (a0, a1) =>
+  let _ArrayGetIntegerTypmods = (Module['_ArrayGetIntegerTypmods'] = (a0, a1) =>
     (_ArrayGetIntegerTypmods = Module['_ArrayGetIntegerTypmods'] =
       wasmExports['ArrayGetIntegerTypmods'])(a0, a1))
-  var _boolin = (Module['_boolin'] = (a0) =>
+  let _boolin = (Module['_boolin'] = (a0) =>
     (_boolin = Module['_boolin'] = wasmExports['boolin'])(a0))
-  var ___multi3 = (Module['___multi3'] = (a0, a1, a2, a3, a4) =>
+  let ___multi3 = (Module['___multi3'] = (a0, a1, a2, a3, a4) =>
     (___multi3 = Module['___multi3'] = wasmExports['__multi3'])(
       a0,
       a1,
@@ -15240,44 +15252,44 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _cash_cmp = (Module['_cash_cmp'] = (a0) =>
+  let _cash_cmp = (Module['_cash_cmp'] = (a0) =>
     (_cash_cmp = Module['_cash_cmp'] = wasmExports['cash_cmp'])(a0))
-  var _int64_to_numeric = (Module['_int64_to_numeric'] = (a0) =>
+  let _int64_to_numeric = (Module['_int64_to_numeric'] = (a0) =>
     (_int64_to_numeric = Module['_int64_to_numeric'] =
       wasmExports['int64_to_numeric'])(a0))
-  var _numeric_div = (Module['_numeric_div'] = (a0) =>
+  let _numeric_div = (Module['_numeric_div'] = (a0) =>
     (_numeric_div = Module['_numeric_div'] = wasmExports['numeric_div'])(a0))
-  var _numeric_round = (Module['_numeric_round'] = (a0) =>
+  let _numeric_round = (Module['_numeric_round'] = (a0) =>
     (_numeric_round = Module['_numeric_round'] = wasmExports['numeric_round'])(
       a0,
     ))
-  var _numeric_int8 = (Module['_numeric_int8'] = (a0) =>
+  let _numeric_int8 = (Module['_numeric_int8'] = (a0) =>
     (_numeric_int8 = Module['_numeric_int8'] = wasmExports['numeric_int8'])(a0))
-  var _numeric_mul = (Module['_numeric_mul'] = (a0) =>
+  let _numeric_mul = (Module['_numeric_mul'] = (a0) =>
     (_numeric_mul = Module['_numeric_mul'] = wasmExports['numeric_mul'])(a0))
-  var _j2date = (Module['_j2date'] = (a0, a1, a2, a3) =>
+  let _j2date = (Module['_j2date'] = (a0, a1, a2, a3) =>
     (_j2date = Module['_j2date'] = wasmExports['j2date'])(a0, a1, a2, a3))
-  var _EncodeDateOnly = (Module['_EncodeDateOnly'] = (a0, a1, a2) =>
+  let _EncodeDateOnly = (Module['_EncodeDateOnly'] = (a0, a1, a2) =>
     (_EncodeDateOnly = Module['_EncodeDateOnly'] =
       wasmExports['EncodeDateOnly'])(a0, a1, a2))
-  var _EncodeSpecialDate = (Module['_EncodeSpecialDate'] = (a0, a1) =>
+  let _EncodeSpecialDate = (Module['_EncodeSpecialDate'] = (a0, a1) =>
     (_EncodeSpecialDate = Module['_EncodeSpecialDate'] =
       wasmExports['EncodeSpecialDate'])(a0, a1))
-  var _date_eq = (Module['_date_eq'] = (a0) =>
+  let _date_eq = (Module['_date_eq'] = (a0) =>
     (_date_eq = Module['_date_eq'] = wasmExports['date_eq'])(a0))
-  var _date_lt = (Module['_date_lt'] = (a0) =>
+  let _date_lt = (Module['_date_lt'] = (a0) =>
     (_date_lt = Module['_date_lt'] = wasmExports['date_lt'])(a0))
-  var _date_le = (Module['_date_le'] = (a0) =>
+  let _date_le = (Module['_date_le'] = (a0) =>
     (_date_le = Module['_date_le'] = wasmExports['date_le'])(a0))
-  var _date_gt = (Module['_date_gt'] = (a0) =>
+  let _date_gt = (Module['_date_gt'] = (a0) =>
     (_date_gt = Module['_date_gt'] = wasmExports['date_gt'])(a0))
-  var _date_ge = (Module['_date_ge'] = (a0) =>
+  let _date_ge = (Module['_date_ge'] = (a0) =>
     (_date_ge = Module['_date_ge'] = wasmExports['date_ge'])(a0))
-  var _date_cmp = (Module['_date_cmp'] = (a0) =>
+  let _date_cmp = (Module['_date_cmp'] = (a0) =>
     (_date_cmp = Module['_date_cmp'] = wasmExports['date_cmp'])(a0))
-  var _date_mi = (Module['_date_mi'] = (a0) =>
+  let _date_mi = (Module['_date_mi'] = (a0) =>
     (_date_mi = Module['_date_mi'] = wasmExports['date_mi'])(a0))
-  var _timestamp2tm = (Module['_timestamp2tm'] = (a0, a1, a2, a3, a4, a5) =>
+  let _timestamp2tm = (Module['_timestamp2tm'] = (a0, a1, a2, a3, a4, a5) =>
     (_timestamp2tm = Module['_timestamp2tm'] = wasmExports['timestamp2tm'])(
       a0,
       a1,
@@ -15286,37 +15298,37 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a4,
       a5,
     ))
-  var _time2tm = (Module['_time2tm'] = (a0, a1, a2) =>
+  let _time2tm = (Module['_time2tm'] = (a0, a1, a2) =>
     (_time2tm = Module['_time2tm'] = wasmExports['time2tm'])(a0, a1, a2))
-  var _EncodeTimeOnly = (Module['_EncodeTimeOnly'] = (a0, a1, a2, a3, a4, a5) =>
+  let _EncodeTimeOnly = (Module['_EncodeTimeOnly'] = (a0, a1, a2, a3, a4, a5) =>
     (_EncodeTimeOnly = Module['_EncodeTimeOnly'] =
       wasmExports['EncodeTimeOnly'])(a0, a1, a2, a3, a4, a5))
-  var _time_eq = (Module['_time_eq'] = (a0) =>
+  let _time_eq = (Module['_time_eq'] = (a0) =>
     (_time_eq = Module['_time_eq'] = wasmExports['time_eq'])(a0))
-  var _time_lt = (Module['_time_lt'] = (a0) =>
+  let _time_lt = (Module['_time_lt'] = (a0) =>
     (_time_lt = Module['_time_lt'] = wasmExports['time_lt'])(a0))
-  var _time_le = (Module['_time_le'] = (a0) =>
+  let _time_le = (Module['_time_le'] = (a0) =>
     (_time_le = Module['_time_le'] = wasmExports['time_le'])(a0))
-  var _time_gt = (Module['_time_gt'] = (a0) =>
+  let _time_gt = (Module['_time_gt'] = (a0) =>
     (_time_gt = Module['_time_gt'] = wasmExports['time_gt'])(a0))
-  var _time_ge = (Module['_time_ge'] = (a0) =>
+  let _time_ge = (Module['_time_ge'] = (a0) =>
     (_time_ge = Module['_time_ge'] = wasmExports['time_ge'])(a0))
-  var _time_cmp = (Module['_time_cmp'] = (a0) =>
+  let _time_cmp = (Module['_time_cmp'] = (a0) =>
     (_time_cmp = Module['_time_cmp'] = wasmExports['time_cmp'])(a0))
-  var _time_mi_time = (Module['_time_mi_time'] = (a0) =>
+  let _time_mi_time = (Module['_time_mi_time'] = (a0) =>
     (_time_mi_time = Module['_time_mi_time'] = wasmExports['time_mi_time'])(a0))
-  var _timetz2tm = (Module['_timetz2tm'] = (a0, a1, a2, a3) =>
+  let _timetz2tm = (Module['_timetz2tm'] = (a0, a1, a2, a3) =>
     (_timetz2tm = Module['_timetz2tm'] = wasmExports['timetz2tm'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _timetz_cmp = (Module['_timetz_cmp'] = (a0) =>
+  let _timetz_cmp = (Module['_timetz_cmp'] = (a0) =>
     (_timetz_cmp = Module['_timetz_cmp'] = wasmExports['timetz_cmp'])(a0))
-  var _pg_tolower = (Module['_pg_tolower'] = (a0) =>
+  let _pg_tolower = (Module['_pg_tolower'] = (a0) =>
     (_pg_tolower = Module['_pg_tolower'] = wasmExports['pg_tolower'])(a0))
-  var _EncodeDateTime = (Module['_EncodeDateTime'] = (
+  let _EncodeDateTime = (Module['_EncodeDateTime'] = (
     a0,
     a1,
     a2,
@@ -15327,24 +15339,24 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_EncodeDateTime = Module['_EncodeDateTime'] =
       wasmExports['EncodeDateTime'])(a0, a1, a2, a3, a4, a5, a6))
-  var _TransferExpandedObject = (Module['_TransferExpandedObject'] = (a0, a1) =>
+  let _TransferExpandedObject = (Module['_TransferExpandedObject'] = (a0, a1) =>
     (_TransferExpandedObject = Module['_TransferExpandedObject'] =
       wasmExports['TransferExpandedObject'])(a0, a1))
-  var _forkname_to_number = (Module['_forkname_to_number'] = (a0) =>
+  let _forkname_to_number = (Module['_forkname_to_number'] = (a0) =>
     (_forkname_to_number = Module['_forkname_to_number'] =
       wasmExports['forkname_to_number'])(a0))
-  var _numeric_lt = (Module['_numeric_lt'] = (a0) =>
+  let _numeric_lt = (Module['_numeric_lt'] = (a0) =>
     (_numeric_lt = Module['_numeric_lt'] = wasmExports['numeric_lt'])(a0))
-  var _numeric_abs = (Module['_numeric_abs'] = (a0) =>
+  let _numeric_abs = (Module['_numeric_abs'] = (a0) =>
     (_numeric_abs = Module['_numeric_abs'] = wasmExports['numeric_abs'])(a0))
-  var _numeric_add = (Module['_numeric_add'] = (a0) =>
+  let _numeric_add = (Module['_numeric_add'] = (a0) =>
     (_numeric_add = Module['_numeric_add'] = wasmExports['numeric_add'])(a0))
-  var _numeric_ge = (Module['_numeric_ge'] = (a0) =>
+  let _numeric_ge = (Module['_numeric_ge'] = (a0) =>
     (_numeric_ge = Module['_numeric_ge'] = wasmExports['numeric_ge'])(a0))
-  var _err_generic_string = (Module['_err_generic_string'] = (a0, a1) =>
+  let _err_generic_string = (Module['_err_generic_string'] = (a0, a1) =>
     (_err_generic_string = Module['_err_generic_string'] =
       wasmExports['err_generic_string'])(a0, a1))
-  var _domain_check = (Module['_domain_check'] = (a0, a1, a2, a3, a4) =>
+  let _domain_check = (Module['_domain_check'] = (a0, a1, a2, a3, a4) =>
     (_domain_check = Module['_domain_check'] = wasmExports['domain_check'])(
       a0,
       a1,
@@ -15352,38 +15364,38 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _enum_lt = (Module['_enum_lt'] = (a0) =>
+  let _enum_lt = (Module['_enum_lt'] = (a0) =>
     (_enum_lt = Module['_enum_lt'] = wasmExports['enum_lt'])(a0))
-  var _enum_le = (Module['_enum_le'] = (a0) =>
+  let _enum_le = (Module['_enum_le'] = (a0) =>
     (_enum_le = Module['_enum_le'] = wasmExports['enum_le'])(a0))
-  var _enum_ge = (Module['_enum_ge'] = (a0) =>
+  let _enum_ge = (Module['_enum_ge'] = (a0) =>
     (_enum_ge = Module['_enum_ge'] = wasmExports['enum_ge'])(a0))
-  var _enum_gt = (Module['_enum_gt'] = (a0) =>
+  let _enum_gt = (Module['_enum_gt'] = (a0) =>
     (_enum_gt = Module['_enum_gt'] = wasmExports['enum_gt'])(a0))
-  var _enum_cmp = (Module['_enum_cmp'] = (a0) =>
+  let _enum_cmp = (Module['_enum_cmp'] = (a0) =>
     (_enum_cmp = Module['_enum_cmp'] = wasmExports['enum_cmp'])(a0))
-  var _make_expanded_record_from_typeid = (Module[
+  let _make_expanded_record_from_typeid = (Module[
     '_make_expanded_record_from_typeid'
   ] = (a0, a1, a2) =>
     (_make_expanded_record_from_typeid = Module[
       '_make_expanded_record_from_typeid'
     ] =
       wasmExports['make_expanded_record_from_typeid'])(a0, a1, a2))
-  var _make_expanded_record_from_tupdesc = (Module[
+  let _make_expanded_record_from_tupdesc = (Module[
     '_make_expanded_record_from_tupdesc'
   ] = (a0, a1) =>
     (_make_expanded_record_from_tupdesc = Module[
       '_make_expanded_record_from_tupdesc'
     ] =
       wasmExports['make_expanded_record_from_tupdesc'])(a0, a1))
-  var _make_expanded_record_from_exprecord = (Module[
+  let _make_expanded_record_from_exprecord = (Module[
     '_make_expanded_record_from_exprecord'
   ] = (a0, a1) =>
     (_make_expanded_record_from_exprecord = Module[
       '_make_expanded_record_from_exprecord'
     ] =
       wasmExports['make_expanded_record_from_exprecord'])(a0, a1))
-  var _expanded_record_set_tuple = (Module['_expanded_record_set_tuple'] = (
+  let _expanded_record_set_tuple = (Module['_expanded_record_set_tuple'] = (
     a0,
     a1,
     a2,
@@ -15391,21 +15403,21 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_expanded_record_set_tuple = Module['_expanded_record_set_tuple'] =
       wasmExports['expanded_record_set_tuple'])(a0, a1, a2, a3))
-  var _expanded_record_get_tuple = (Module['_expanded_record_get_tuple'] = (
+  let _expanded_record_get_tuple = (Module['_expanded_record_get_tuple'] = (
     a0,
   ) =>
     (_expanded_record_get_tuple = Module['_expanded_record_get_tuple'] =
       wasmExports['expanded_record_get_tuple'])(a0))
-  var _deconstruct_expanded_record = (Module['_deconstruct_expanded_record'] = (
+  let _deconstruct_expanded_record = (Module['_deconstruct_expanded_record'] = (
     a0,
   ) =>
     (_deconstruct_expanded_record = Module['_deconstruct_expanded_record'] =
       wasmExports['deconstruct_expanded_record'])(a0))
-  var _expanded_record_lookup_field = (Module['_expanded_record_lookup_field'] =
+  let _expanded_record_lookup_field = (Module['_expanded_record_lookup_field'] =
     (a0, a1, a2) =>
       (_expanded_record_lookup_field = Module['_expanded_record_lookup_field'] =
         wasmExports['expanded_record_lookup_field'])(a0, a1, a2))
-  var _expanded_record_set_field_internal = (Module[
+  let _expanded_record_set_field_internal = (Module[
     '_expanded_record_set_field_internal'
   ] = (a0, a1, a2, a3, a4, a5) =>
     (_expanded_record_set_field_internal = Module[
@@ -15419,7 +15431,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a4,
       a5,
     ))
-  var _expanded_record_set_fields = (Module['_expanded_record_set_fields'] = (
+  let _expanded_record_set_fields = (Module['_expanded_record_set_fields'] = (
     a0,
     a1,
     a2,
@@ -15427,7 +15439,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_expanded_record_set_fields = Module['_expanded_record_set_fields'] =
       wasmExports['expanded_record_set_fields'])(a0, a1, a2, a3))
-  var _float4in_internal = (Module['_float4in_internal'] = (
+  let _float4in_internal = (Module['_float4in_internal'] = (
     a0,
     a1,
     a2,
@@ -15436,16 +15448,16 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_float4in_internal = Module['_float4in_internal'] =
       wasmExports['float4in_internal'])(a0, a1, a2, a3, a4))
-  var _strtof = (Module['_strtof'] = (a0, a1) =>
+  let _strtof = (Module['_strtof'] = (a0, a1) =>
     (_strtof = Module['_strtof'] = wasmExports['strtof'])(a0, a1))
-  var _float_to_shortest_decimal_buf = (Module[
+  let _float_to_shortest_decimal_buf = (Module[
     '_float_to_shortest_decimal_buf'
   ] = (a0, a1) =>
     (_float_to_shortest_decimal_buf = Module['_float_to_shortest_decimal_buf'] =
       wasmExports['float_to_shortest_decimal_buf'])(a0, a1))
-  var _float8in = (Module['_float8in'] = (a0) =>
+  let _float8in = (Module['_float8in'] = (a0) =>
     (_float8in = Module['_float8in'] = wasmExports['float8in'])(a0))
-  var _float8in_internal = (Module['_float8in_internal'] = (
+  let _float8in_internal = (Module['_float8in_internal'] = (
     a0,
     a1,
     a2,
@@ -15454,94 +15466,94 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_float8in_internal = Module['_float8in_internal'] =
       wasmExports['float8in_internal'])(a0, a1, a2, a3, a4))
-  var _float8out = (Module['_float8out'] = (a0) =>
+  let _float8out = (Module['_float8out'] = (a0) =>
     (_float8out = Module['_float8out'] = wasmExports['float8out'])(a0))
-  var _float8out_internal = (Module['_float8out_internal'] = (a0) =>
+  let _float8out_internal = (Module['_float8out_internal'] = (a0) =>
     (_float8out_internal = Module['_float8out_internal'] =
       wasmExports['float8out_internal'])(a0))
-  var _float8pl = (Module['_float8pl'] = (a0) =>
+  let _float8pl = (Module['_float8pl'] = (a0) =>
     (_float8pl = Module['_float8pl'] = wasmExports['float8pl'])(a0))
-  var _float4_cmp_internal = (Module['_float4_cmp_internal'] = (a0, a1) =>
+  let _float4_cmp_internal = (Module['_float4_cmp_internal'] = (a0, a1) =>
     (_float4_cmp_internal = Module['_float4_cmp_internal'] =
       wasmExports['float4_cmp_internal'])(a0, a1))
-  var _btfloat4cmp = (Module['_btfloat4cmp'] = (a0) =>
+  let _btfloat4cmp = (Module['_btfloat4cmp'] = (a0) =>
     (_btfloat4cmp = Module['_btfloat4cmp'] = wasmExports['btfloat4cmp'])(a0))
-  var _btfloat8cmp = (Module['_btfloat8cmp'] = (a0) =>
+  let _btfloat8cmp = (Module['_btfloat8cmp'] = (a0) =>
     (_btfloat8cmp = Module['_btfloat8cmp'] = wasmExports['btfloat8cmp'])(a0))
-  var _dtoi4 = (Module['_dtoi4'] = (a0) =>
+  let _dtoi4 = (Module['_dtoi4'] = (a0) =>
     (_dtoi4 = Module['_dtoi4'] = wasmExports['dtoi4'])(a0))
-  var _dtoi2 = (Module['_dtoi2'] = (a0) =>
+  let _dtoi2 = (Module['_dtoi2'] = (a0) =>
     (_dtoi2 = Module['_dtoi2'] = wasmExports['dtoi2'])(a0))
-  var _cbrt = (Module['_cbrt'] = (a0) =>
+  let _cbrt = (Module['_cbrt'] = (a0) =>
     (_cbrt = Module['_cbrt'] = wasmExports['cbrt'])(a0))
-  var _dexp = (Module['_dexp'] = (a0) =>
+  let _dexp = (Module['_dexp'] = (a0) =>
     (_dexp = Module['_dexp'] = wasmExports['dexp'])(a0))
-  var _log10 = (Module['_log10'] = (a0) =>
+  let _log10 = (Module['_log10'] = (a0) =>
     (_log10 = Module['_log10'] = wasmExports['log10'])(a0))
-  var _dacos = (Module['_dacos'] = (a0) =>
+  let _dacos = (Module['_dacos'] = (a0) =>
     (_dacos = Module['_dacos'] = wasmExports['dacos'])(a0))
-  var _acos = (Module['_acos'] = (a0) =>
+  let _acos = (Module['_acos'] = (a0) =>
     (_acos = Module['_acos'] = wasmExports['acos'])(a0))
-  var _dasin = (Module['_dasin'] = (a0) =>
+  let _dasin = (Module['_dasin'] = (a0) =>
     (_dasin = Module['_dasin'] = wasmExports['dasin'])(a0))
-  var _asin = (Module['_asin'] = (a0) =>
+  let _asin = (Module['_asin'] = (a0) =>
     (_asin = Module['_asin'] = wasmExports['asin'])(a0))
-  var _datan = (Module['_datan'] = (a0) =>
+  let _datan = (Module['_datan'] = (a0) =>
     (_datan = Module['_datan'] = wasmExports['datan'])(a0))
-  var _atan = (Module['_atan'] = (a0) =>
+  let _atan = (Module['_atan'] = (a0) =>
     (_atan = Module['_atan'] = wasmExports['atan'])(a0))
-  var _datan2 = (Module['_datan2'] = (a0) =>
+  let _datan2 = (Module['_datan2'] = (a0) =>
     (_datan2 = Module['_datan2'] = wasmExports['datan2'])(a0))
-  var _atan2 = (Module['_atan2'] = (a0, a1) =>
+  let _atan2 = (Module['_atan2'] = (a0, a1) =>
     (_atan2 = Module['_atan2'] = wasmExports['atan2'])(a0, a1))
-  var _dcos = (Module['_dcos'] = (a0) =>
+  let _dcos = (Module['_dcos'] = (a0) =>
     (_dcos = Module['_dcos'] = wasmExports['dcos'])(a0))
-  var _cos = (Module['_cos'] = (a0) =>
+  let _cos = (Module['_cos'] = (a0) =>
     (_cos = Module['_cos'] = wasmExports['cos'])(a0))
-  var _dcot = (Module['_dcot'] = (a0) =>
+  let _dcot = (Module['_dcot'] = (a0) =>
     (_dcot = Module['_dcot'] = wasmExports['dcot'])(a0))
-  var _tan = (Module['_tan'] = (a0) =>
+  let _tan = (Module['_tan'] = (a0) =>
     (_tan = Module['_tan'] = wasmExports['tan'])(a0))
-  var _dsin = (Module['_dsin'] = (a0) =>
+  let _dsin = (Module['_dsin'] = (a0) =>
     (_dsin = Module['_dsin'] = wasmExports['dsin'])(a0))
-  var _sin = (Module['_sin'] = (a0) =>
+  let _sin = (Module['_sin'] = (a0) =>
     (_sin = Module['_sin'] = wasmExports['sin'])(a0))
-  var _dtan = (Module['_dtan'] = (a0) =>
+  let _dtan = (Module['_dtan'] = (a0) =>
     (_dtan = Module['_dtan'] = wasmExports['dtan'])(a0))
-  var _fmod = (Module['_fmod'] = (a0, a1) =>
+  let _fmod = (Module['_fmod'] = (a0, a1) =>
     (_fmod = Module['_fmod'] = wasmExports['fmod'])(a0, a1))
-  var _degrees = (Module['_degrees'] = (a0) =>
+  let _degrees = (Module['_degrees'] = (a0) =>
     (_degrees = Module['_degrees'] = wasmExports['degrees'])(a0))
-  var _dpi = (Module['_dpi'] = (a0) =>
+  let _dpi = (Module['_dpi'] = (a0) =>
     (_dpi = Module['_dpi'] = wasmExports['dpi'])(a0))
-  var _radians = (Module['_radians'] = (a0) =>
+  let _radians = (Module['_radians'] = (a0) =>
     (_radians = Module['_radians'] = wasmExports['radians'])(a0))
-  var _sinh = (Module['_sinh'] = (a0) =>
+  let _sinh = (Module['_sinh'] = (a0) =>
     (_sinh = Module['_sinh'] = wasmExports['sinh'])(a0))
-  var _cosh = (Module['_cosh'] = (a0) =>
+  let _cosh = (Module['_cosh'] = (a0) =>
     (_cosh = Module['_cosh'] = wasmExports['cosh'])(a0))
-  var _tanh = (Module['_tanh'] = (a0) =>
+  let _tanh = (Module['_tanh'] = (a0) =>
     (_tanh = Module['_tanh'] = wasmExports['tanh'])(a0))
-  var _asinh = (Module['_asinh'] = (a0) =>
+  let _asinh = (Module['_asinh'] = (a0) =>
     (_asinh = Module['_asinh'] = wasmExports['asinh'])(a0))
-  var _acosh = (Module['_acosh'] = (a0) =>
+  let _acosh = (Module['_acosh'] = (a0) =>
     (_acosh = Module['_acosh'] = wasmExports['acosh'])(a0))
-  var _atanh = (Module['_atanh'] = (a0) =>
+  let _atanh = (Module['_atanh'] = (a0) =>
     (_atanh = Module['_atanh'] = wasmExports['atanh'])(a0))
-  var _float8_accum = (Module['_float8_accum'] = (a0) =>
+  let _float8_accum = (Module['_float8_accum'] = (a0) =>
     (_float8_accum = Module['_float8_accum'] = wasmExports['float8_accum'])(a0))
-  var _float8_stddev_pop = (Module['_float8_stddev_pop'] = (a0) =>
+  let _float8_stddev_pop = (Module['_float8_stddev_pop'] = (a0) =>
     (_float8_stddev_pop = Module['_float8_stddev_pop'] =
       wasmExports['float8_stddev_pop'])(a0))
-  var _float8_stddev_samp = (Module['_float8_stddev_samp'] = (a0) =>
+  let _float8_stddev_samp = (Module['_float8_stddev_samp'] = (a0) =>
     (_float8_stddev_samp = Module['_float8_stddev_samp'] =
       wasmExports['float8_stddev_samp'])(a0))
-  var _asc_tolower = (Module['_asc_tolower'] = (a0, a1) =>
+  let _asc_tolower = (Module['_asc_tolower'] = (a0, a1) =>
     (_asc_tolower = Module['_asc_tolower'] = wasmExports['asc_tolower'])(
       a0,
       a1,
     ))
-  var _pg_strfold = (Module['_pg_strfold'] = (a0, a1, a2, a3, a4) =>
+  let _pg_strfold = (Module['_pg_strfold'] = (a0, a1, a2, a3, a4) =>
     (_pg_strfold = Module['_pg_strfold'] = wasmExports['pg_strfold'])(
       a0,
       a1,
@@ -15549,142 +15561,142 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _numeric_power = (Module['_numeric_power'] = (a0) =>
+  let _numeric_power = (Module['_numeric_power'] = (a0) =>
     (_numeric_power = Module['_numeric_power'] = wasmExports['numeric_power'])(
       a0,
     ))
-  var _dtoi8 = (Module['_dtoi8'] = (a0) =>
+  let _dtoi8 = (Module['_dtoi8'] = (a0) =>
     (_dtoi8 = Module['_dtoi8'] = wasmExports['dtoi8'])(a0))
-  var _int8out = (Module['_int8out'] = (a0) =>
+  let _int8out = (Module['_int8out'] = (a0) =>
     (_int8out = Module['_int8out'] = wasmExports['int8out'])(a0))
-  var _fseeko = (Module['_fseeko'] = (a0, a1, a2) =>
+  let _fseeko = (Module['_fseeko'] = (a0, a1, a2) =>
     (_fseeko = Module['_fseeko'] = wasmExports['fseeko'])(a0, a1, a2))
-  var _int4in = (Module['_int4in'] = (a0) =>
+  let _int4in = (Module['_int4in'] = (a0) =>
     (_int4in = Module['_int4in'] = wasmExports['int4in'])(a0))
-  var _int4_bool = (Module['_int4_bool'] = (a0) =>
+  let _int4_bool = (Module['_int4_bool'] = (a0) =>
     (_int4_bool = Module['_int4_bool'] = wasmExports['int4_bool'])(a0))
-  var _int8pl = (Module['_int8pl'] = (a0) =>
+  let _int8pl = (Module['_int8pl'] = (a0) =>
     (_int8pl = Module['_int8pl'] = wasmExports['int8pl'])(a0))
-  var _int84 = (Module['_int84'] = (a0) =>
+  let _int84 = (Module['_int84'] = (a0) =>
     (_int84 = Module['_int84'] = wasmExports['int84'])(a0))
-  var _int82 = (Module['_int82'] = (a0) =>
+  let _int82 = (Module['_int82'] = (a0) =>
     (_int82 = Module['_int82'] = wasmExports['int82'])(a0))
-  var _json_in = (Module['_json_in'] = (a0) =>
+  let _json_in = (Module['_json_in'] = (a0) =>
     (_json_in = Module['_json_in'] = wasmExports['json_in'])(a0))
-  var _EncodeSpecialTimestamp = (Module['_EncodeSpecialTimestamp'] = (a0, a1) =>
+  let _EncodeSpecialTimestamp = (Module['_EncodeSpecialTimestamp'] = (a0, a1) =>
     (_EncodeSpecialTimestamp = Module['_EncodeSpecialTimestamp'] =
       wasmExports['EncodeSpecialTimestamp'])(a0, a1))
-  var _pushJsonbValue = (Module['_pushJsonbValue'] = (a0, a1, a2) =>
+  let _pushJsonbValue = (Module['_pushJsonbValue'] = (a0, a1, a2) =>
     (_pushJsonbValue = Module['_pushJsonbValue'] =
       wasmExports['pushJsonbValue'])(a0, a1, a2))
-  var _numeric_int2 = (Module['_numeric_int2'] = (a0) =>
+  let _numeric_int2 = (Module['_numeric_int2'] = (a0) =>
     (_numeric_int2 = Module['_numeric_int2'] = wasmExports['numeric_int2'])(a0))
-  var _numeric_int4 = (Module['_numeric_int4'] = (a0) =>
+  let _numeric_int4 = (Module['_numeric_int4'] = (a0) =>
     (_numeric_int4 = Module['_numeric_int4'] = wasmExports['numeric_int4'])(a0))
-  var _numeric_float4 = (Module['_numeric_float4'] = (a0) =>
+  let _numeric_float4 = (Module['_numeric_float4'] = (a0) =>
     (_numeric_float4 = Module['_numeric_float4'] =
       wasmExports['numeric_float4'])(a0))
-  var _numeric_normalize = (Module['_numeric_normalize'] = (a0) =>
+  let _numeric_normalize = (Module['_numeric_normalize'] = (a0) =>
     (_numeric_normalize = Module['_numeric_normalize'] =
       wasmExports['numeric_normalize'])(a0))
-  var _numeric_cmp = (Module['_numeric_cmp'] = (a0) =>
+  let _numeric_cmp = (Module['_numeric_cmp'] = (a0) =>
     (_numeric_cmp = Module['_numeric_cmp'] = wasmExports['numeric_cmp'])(a0))
-  var _numeric_eq = (Module['_numeric_eq'] = (a0) =>
+  let _numeric_eq = (Module['_numeric_eq'] = (a0) =>
     (_numeric_eq = Module['_numeric_eq'] = wasmExports['numeric_eq'])(a0))
-  var _hash_numeric = (Module['_hash_numeric'] = (a0) =>
+  let _hash_numeric = (Module['_hash_numeric'] = (a0) =>
     (_hash_numeric = Module['_hash_numeric'] = wasmExports['hash_numeric'])(a0))
-  var _hash_numeric_extended = (Module['_hash_numeric_extended'] = (a0) =>
+  let _hash_numeric_extended = (Module['_hash_numeric_extended'] = (a0) =>
     (_hash_numeric_extended = Module['_hash_numeric_extended'] =
       wasmExports['hash_numeric_extended'])(a0))
-  var _int2_numeric = (Module['_int2_numeric'] = (a0) =>
+  let _int2_numeric = (Module['_int2_numeric'] = (a0) =>
     (_int2_numeric = Module['_int2_numeric'] = wasmExports['int2_numeric'])(a0))
-  var _int4_numeric = (Module['_int4_numeric'] = (a0) =>
+  let _int4_numeric = (Module['_int4_numeric'] = (a0) =>
     (_int4_numeric = Module['_int4_numeric'] = wasmExports['int4_numeric'])(a0))
-  var _int8_numeric = (Module['_int8_numeric'] = (a0) =>
+  let _int8_numeric = (Module['_int8_numeric'] = (a0) =>
     (_int8_numeric = Module['_int8_numeric'] = wasmExports['int8_numeric'])(a0))
-  var _float4_numeric = (Module['_float4_numeric'] = (a0) =>
+  let _float4_numeric = (Module['_float4_numeric'] = (a0) =>
     (_float4_numeric = Module['_float4_numeric'] =
       wasmExports['float4_numeric'])(a0))
-  var _float8_numeric = (Module['_float8_numeric'] = (a0) =>
+  let _float8_numeric = (Module['_float8_numeric'] = (a0) =>
     (_float8_numeric = Module['_float8_numeric'] =
       wasmExports['float8_numeric'])(a0))
-  var _numeric_uminus = (Module['_numeric_uminus'] = (a0) =>
+  let _numeric_uminus = (Module['_numeric_uminus'] = (a0) =>
     (_numeric_uminus = Module['_numeric_uminus'] =
       wasmExports['numeric_uminus'])(a0))
-  var _numeric_is_nan = (Module['_numeric_is_nan'] = (a0) =>
+  let _numeric_is_nan = (Module['_numeric_is_nan'] = (a0) =>
     (_numeric_is_nan = Module['_numeric_is_nan'] =
       wasmExports['numeric_is_nan'])(a0))
-  var _numeric_ceil = (Module['_numeric_ceil'] = (a0) =>
+  let _numeric_ceil = (Module['_numeric_ceil'] = (a0) =>
     (_numeric_ceil = Module['_numeric_ceil'] = wasmExports['numeric_ceil'])(a0))
-  var _numeric_floor = (Module['_numeric_floor'] = (a0) =>
+  let _numeric_floor = (Module['_numeric_floor'] = (a0) =>
     (_numeric_floor = Module['_numeric_floor'] = wasmExports['numeric_floor'])(
       a0,
     ))
-  var _timestamp_cmp = (Module['_timestamp_cmp'] = (a0) =>
+  let _timestamp_cmp = (Module['_timestamp_cmp'] = (a0) =>
     (_timestamp_cmp = Module['_timestamp_cmp'] = wasmExports['timestamp_cmp'])(
       a0,
     ))
-  var _macaddr_cmp = (Module['_macaddr_cmp'] = (a0) =>
+  let _macaddr_cmp = (Module['_macaddr_cmp'] = (a0) =>
     (_macaddr_cmp = Module['_macaddr_cmp'] = wasmExports['macaddr_cmp'])(a0))
-  var _macaddr_lt = (Module['_macaddr_lt'] = (a0) =>
+  let _macaddr_lt = (Module['_macaddr_lt'] = (a0) =>
     (_macaddr_lt = Module['_macaddr_lt'] = wasmExports['macaddr_lt'])(a0))
-  var _macaddr_le = (Module['_macaddr_le'] = (a0) =>
+  let _macaddr_le = (Module['_macaddr_le'] = (a0) =>
     (_macaddr_le = Module['_macaddr_le'] = wasmExports['macaddr_le'])(a0))
-  var _macaddr_eq = (Module['_macaddr_eq'] = (a0) =>
+  let _macaddr_eq = (Module['_macaddr_eq'] = (a0) =>
     (_macaddr_eq = Module['_macaddr_eq'] = wasmExports['macaddr_eq'])(a0))
-  var _macaddr_ge = (Module['_macaddr_ge'] = (a0) =>
+  let _macaddr_ge = (Module['_macaddr_ge'] = (a0) =>
     (_macaddr_ge = Module['_macaddr_ge'] = wasmExports['macaddr_ge'])(a0))
-  var _macaddr_gt = (Module['_macaddr_gt'] = (a0) =>
+  let _macaddr_gt = (Module['_macaddr_gt'] = (a0) =>
     (_macaddr_gt = Module['_macaddr_gt'] = wasmExports['macaddr_gt'])(a0))
-  var _macaddr8_cmp = (Module['_macaddr8_cmp'] = (a0) =>
+  let _macaddr8_cmp = (Module['_macaddr8_cmp'] = (a0) =>
     (_macaddr8_cmp = Module['_macaddr8_cmp'] = wasmExports['macaddr8_cmp'])(a0))
-  var _macaddr8_lt = (Module['_macaddr8_lt'] = (a0) =>
+  let _macaddr8_lt = (Module['_macaddr8_lt'] = (a0) =>
     (_macaddr8_lt = Module['_macaddr8_lt'] = wasmExports['macaddr8_lt'])(a0))
-  var _macaddr8_le = (Module['_macaddr8_le'] = (a0) =>
+  let _macaddr8_le = (Module['_macaddr8_le'] = (a0) =>
     (_macaddr8_le = Module['_macaddr8_le'] = wasmExports['macaddr8_le'])(a0))
-  var _macaddr8_eq = (Module['_macaddr8_eq'] = (a0) =>
+  let _macaddr8_eq = (Module['_macaddr8_eq'] = (a0) =>
     (_macaddr8_eq = Module['_macaddr8_eq'] = wasmExports['macaddr8_eq'])(a0))
-  var _macaddr8_ge = (Module['_macaddr8_ge'] = (a0) =>
+  let _macaddr8_ge = (Module['_macaddr8_ge'] = (a0) =>
     (_macaddr8_ge = Module['_macaddr8_ge'] = wasmExports['macaddr8_ge'])(a0))
-  var _macaddr8_gt = (Module['_macaddr8_gt'] = (a0) =>
+  let _macaddr8_gt = (Module['_macaddr8_gt'] = (a0) =>
     (_macaddr8_gt = Module['_macaddr8_gt'] = wasmExports['macaddr8_gt'])(a0))
-  var _current_query = (Module['_current_query'] = (a0) =>
+  let _current_query = (Module['_current_query'] = (a0) =>
     (_current_query = Module['_current_query'] = wasmExports['current_query'])(
       a0,
     ))
-  var _get_fn_expr_arg_stable = (Module['_get_fn_expr_arg_stable'] = (a0, a1) =>
+  let _get_fn_expr_arg_stable = (Module['_get_fn_expr_arg_stable'] = (a0, a1) =>
     (_get_fn_expr_arg_stable = Module['_get_fn_expr_arg_stable'] =
       wasmExports['get_fn_expr_arg_stable'])(a0, a1))
-  var _unpack_sql_state = (Module['_unpack_sql_state'] = (a0) =>
+  let _unpack_sql_state = (Module['_unpack_sql_state'] = (a0) =>
     (_unpack_sql_state = Module['_unpack_sql_state'] =
       wasmExports['unpack_sql_state'])(a0))
-  var _get_fn_expr_rettype = (Module['_get_fn_expr_rettype'] = (a0) =>
+  let _get_fn_expr_rettype = (Module['_get_fn_expr_rettype'] = (a0) =>
     (_get_fn_expr_rettype = Module['_get_fn_expr_rettype'] =
       wasmExports['get_fn_expr_rettype'])(a0))
-  var _btnamecmp = (Module['_btnamecmp'] = (a0) =>
+  let _btnamecmp = (Module['_btnamecmp'] = (a0) =>
     (_btnamecmp = Module['_btnamecmp'] = wasmExports['btnamecmp'])(a0))
-  var _inet_in = (Module['_inet_in'] = (a0) =>
+  let _inet_in = (Module['_inet_in'] = (a0) =>
     (_inet_in = Module['_inet_in'] = wasmExports['inet_in'])(a0))
-  var _network_cmp = (Module['_network_cmp'] = (a0) =>
+  let _network_cmp = (Module['_network_cmp'] = (a0) =>
     (_network_cmp = Module['_network_cmp'] = wasmExports['network_cmp'])(a0))
-  var _convert_network_to_scalar = (Module['_convert_network_to_scalar'] = (
+  let _convert_network_to_scalar = (Module['_convert_network_to_scalar'] = (
     a0,
     a1,
     a2,
   ) =>
     (_convert_network_to_scalar = Module['_convert_network_to_scalar'] =
       wasmExports['convert_network_to_scalar'])(a0, a1, a2))
-  var _numeric_sign = (Module['_numeric_sign'] = (a0) =>
+  let _numeric_sign = (Module['_numeric_sign'] = (a0) =>
     (_numeric_sign = Module['_numeric_sign'] = wasmExports['numeric_sign'])(a0))
-  var _numeric_gt = (Module['_numeric_gt'] = (a0) =>
+  let _numeric_gt = (Module['_numeric_gt'] = (a0) =>
     (_numeric_gt = Module['_numeric_gt'] = wasmExports['numeric_gt'])(a0))
-  var _numeric_le = (Module['_numeric_le'] = (a0) =>
+  let _numeric_le = (Module['_numeric_le'] = (a0) =>
     (_numeric_le = Module['_numeric_le'] = wasmExports['numeric_le'])(a0))
-  var _numeric_mod = (Module['_numeric_mod'] = (a0) =>
+  let _numeric_mod = (Module['_numeric_mod'] = (a0) =>
     (_numeric_mod = Module['_numeric_mod'] = wasmExports['numeric_mod'])(a0))
-  var _numeric_sqrt = (Module['_numeric_sqrt'] = (a0) =>
+  let _numeric_sqrt = (Module['_numeric_sqrt'] = (a0) =>
     (_numeric_sqrt = Module['_numeric_sqrt'] = wasmExports['numeric_sqrt'])(a0))
-  var ___divti3 = (Module['___divti3'] = (a0, a1, a2, a3, a4) =>
+  let ___divti3 = (Module['___divti3'] = (a0, a1, a2, a3, a4) =>
     (___divti3 = Module['___divti3'] = wasmExports['__divti3'])(
       a0,
       a1,
@@ -15692,35 +15704,35 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _numeric_exp = (Module['_numeric_exp'] = (a0) =>
+  let _numeric_exp = (Module['_numeric_exp'] = (a0) =>
     (_numeric_exp = Module['_numeric_exp'] = wasmExports['numeric_exp'])(a0))
-  var _numeric_ln = (Module['_numeric_ln'] = (a0) =>
+  let _numeric_ln = (Module['_numeric_ln'] = (a0) =>
     (_numeric_ln = Module['_numeric_ln'] = wasmExports['numeric_ln'])(a0))
-  var _numeric_log = (Module['_numeric_log'] = (a0) =>
+  let _numeric_log = (Module['_numeric_log'] = (a0) =>
     (_numeric_log = Module['_numeric_log'] = wasmExports['numeric_log'])(a0))
-  var _numeric_float8_no_overflow = (Module['_numeric_float8_no_overflow'] = (
+  let _numeric_float8_no_overflow = (Module['_numeric_float8_no_overflow'] = (
     a0,
   ) =>
     (_numeric_float8_no_overflow = Module['_numeric_float8_no_overflow'] =
       wasmExports['numeric_float8_no_overflow'])(a0))
-  var _oidout = (Module['_oidout'] = (a0) =>
+  let _oidout = (Module['_oidout'] = (a0) =>
     (_oidout = Module['_oidout'] = wasmExports['oidout'])(a0))
-  var _btrim1 = (Module['_btrim1'] = (a0) =>
+  let _btrim1 = (Module['_btrim1'] = (a0) =>
     (_btrim1 = Module['_btrim1'] = wasmExports['btrim1'])(a0))
-  var _ltrim1 = (Module['_ltrim1'] = (a0) =>
+  let _ltrim1 = (Module['_ltrim1'] = (a0) =>
     (_ltrim1 = Module['_ltrim1'] = wasmExports['ltrim1'])(a0))
-  var _rtrim1 = (Module['_rtrim1'] = (a0) =>
+  let _rtrim1 = (Module['_rtrim1'] = (a0) =>
     (_rtrim1 = Module['_rtrim1'] = wasmExports['rtrim1'])(a0))
-  var _tuplesort_skiptuples = (Module['_tuplesort_skiptuples'] = (a0, a1, a2) =>
+  let _tuplesort_skiptuples = (Module['_tuplesort_skiptuples'] = (a0, a1, a2) =>
     (_tuplesort_skiptuples = Module['_tuplesort_skiptuples'] =
       wasmExports['tuplesort_skiptuples'])(a0, a1, a2))
-  var _interval_mi = (Module['_interval_mi'] = (a0) =>
+  let _interval_mi = (Module['_interval_mi'] = (a0) =>
     (_interval_mi = Module['_interval_mi'] = wasmExports['interval_mi'])(a0))
-  var _setlocale = (Module['_setlocale'] = (a0, a1) =>
+  let _setlocale = (Module['_setlocale'] = (a0, a1) =>
     (_setlocale = Module['_setlocale'] = wasmExports['setlocale'])(a0, a1))
-  var _newlocale = (Module['_newlocale'] = (a0, a1, a2) =>
+  let _newlocale = (Module['_newlocale'] = (a0, a1, a2) =>
     (_newlocale = Module['_newlocale'] = wasmExports['newlocale'])(a0, a1, a2))
-  var _strftime_l = (Module['_strftime_l'] = (a0, a1, a2, a3, a4) =>
+  let _strftime_l = (Module['_strftime_l'] = (a0, a1, a2, a3, a4) =>
     (_strftime_l = Module['_strftime_l'] = wasmExports['strftime_l'])(
       a0,
       a1,
@@ -15728,57 +15740,57 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _freelocale = (Module['_freelocale'] = (a0) =>
+  let _freelocale = (Module['_freelocale'] = (a0) =>
     (_freelocale = Module['_freelocale'] = wasmExports['freelocale'])(a0))
-  var _uselocale = (Module['_uselocale'] = (a0) =>
+  let _uselocale = (Module['_uselocale'] = (a0) =>
     (_uselocale = Module['_uselocale'] = wasmExports['uselocale'])(a0))
-  var _strcoll_l = (Module['_strcoll_l'] = (a0, a1, a2) =>
+  let _strcoll_l = (Module['_strcoll_l'] = (a0, a1, a2) =>
     (_strcoll_l = Module['_strcoll_l'] = wasmExports['strcoll_l'])(a0, a1, a2))
-  var _strxfrm_l = (Module['_strxfrm_l'] = (a0, a1, a2, a3) =>
+  let _strxfrm_l = (Module['_strxfrm_l'] = (a0, a1, a2, a3) =>
     (_strxfrm_l = Module['_strxfrm_l'] = wasmExports['strxfrm_l'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _drandom = (Module['_drandom'] = (a0) =>
+  let _drandom = (Module['_drandom'] = (a0) =>
     (_drandom = Module['_drandom'] = wasmExports['drandom'])(a0))
-  var _quote_ident = (Module['_quote_ident'] = (a0) =>
+  let _quote_ident = (Module['_quote_ident'] = (a0) =>
     (_quote_ident = Module['_quote_ident'] = wasmExports['quote_ident'])(a0))
-  var _textregexeq = (Module['_textregexeq'] = (a0) =>
+  let _textregexeq = (Module['_textregexeq'] = (a0) =>
     (_textregexeq = Module['_textregexeq'] = wasmExports['textregexeq'])(a0))
-  var _text_substr = (Module['_text_substr'] = (a0) =>
+  let _text_substr = (Module['_text_substr'] = (a0) =>
     (_text_substr = Module['_text_substr'] = wasmExports['text_substr'])(a0))
-  var _pg_wchar2mb_with_len = (Module['_pg_wchar2mb_with_len'] = (a0, a1, a2) =>
+  let _pg_wchar2mb_with_len = (Module['_pg_wchar2mb_with_len'] = (a0, a1, a2) =>
     (_pg_wchar2mb_with_len = Module['_pg_wchar2mb_with_len'] =
       wasmExports['pg_wchar2mb_with_len'])(a0, a1, a2))
-  var _regexp_split_to_array = (Module['_regexp_split_to_array'] = (a0) =>
+  let _regexp_split_to_array = (Module['_regexp_split_to_array'] = (a0) =>
     (_regexp_split_to_array = Module['_regexp_split_to_array'] =
       wasmExports['regexp_split_to_array'])(a0))
-  var _regclassin = (Module['_regclassin'] = (a0) =>
+  let _regclassin = (Module['_regclassin'] = (a0) =>
     (_regclassin = Module['_regclassin'] = wasmExports['regclassin'])(a0))
-  var _regtypeout = (Module['_regtypeout'] = (a0) =>
+  let _regtypeout = (Module['_regtypeout'] = (a0) =>
     (_regtypeout = Module['_regtypeout'] = wasmExports['regtypeout'])(a0))
-  var _pg_get_indexdef_columns_extended = (Module[
+  let _pg_get_indexdef_columns_extended = (Module[
     '_pg_get_indexdef_columns_extended'
   ] = (a0, a1) =>
     (_pg_get_indexdef_columns_extended = Module[
       '_pg_get_indexdef_columns_extended'
     ] =
       wasmExports['pg_get_indexdef_columns_extended'])(a0, a1))
-  var _pg_get_querydef = (Module['_pg_get_querydef'] = (a0, a1) =>
+  let _pg_get_querydef = (Module['_pg_get_querydef'] = (a0, a1) =>
     (_pg_get_querydef = Module['_pg_get_querydef'] =
       wasmExports['pg_get_querydef'])(a0, a1))
-  var _strcspn = (Module['_strcspn'] = (a0, a1) =>
+  let _strcspn = (Module['_strcspn'] = (a0, a1) =>
     (_strcspn = Module['_strcspn'] = wasmExports['strcspn'])(a0, a1))
-  var _generic_restriction_selectivity = (Module[
+  let _generic_restriction_selectivity = (Module[
     '_generic_restriction_selectivity'
   ] = (a0, a1, a2, a3, a4, a5) =>
     (_generic_restriction_selectivity = Module[
       '_generic_restriction_selectivity'
     ] =
       wasmExports['generic_restriction_selectivity'])(a0, a1, a2, a3, a4, a5))
-  var _genericcostestimate = (Module['_genericcostestimate'] = (
+  let _genericcostestimate = (Module['_genericcostestimate'] = (
     a0,
     a1,
     a2,
@@ -15786,119 +15798,119 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_genericcostestimate = Module['_genericcostestimate'] =
       wasmExports['genericcostestimate'])(a0, a1, a2, a3))
-  var _tidin = (Module['_tidin'] = (a0) =>
+  let _tidin = (Module['_tidin'] = (a0) =>
     (_tidin = Module['_tidin'] = wasmExports['tidin'])(a0))
-  var _tidout = (Module['_tidout'] = (a0) =>
+  let _tidout = (Module['_tidout'] = (a0) =>
     (_tidout = Module['_tidout'] = wasmExports['tidout'])(a0))
-  var _timestamp_in = (Module['_timestamp_in'] = (a0) =>
+  let _timestamp_in = (Module['_timestamp_in'] = (a0) =>
     (_timestamp_in = Module['_timestamp_in'] = wasmExports['timestamp_in'])(a0))
-  var _timestamp_eq = (Module['_timestamp_eq'] = (a0) =>
+  let _timestamp_eq = (Module['_timestamp_eq'] = (a0) =>
     (_timestamp_eq = Module['_timestamp_eq'] = wasmExports['timestamp_eq'])(a0))
-  var _timestamp_lt = (Module['_timestamp_lt'] = (a0) =>
+  let _timestamp_lt = (Module['_timestamp_lt'] = (a0) =>
     (_timestamp_lt = Module['_timestamp_lt'] = wasmExports['timestamp_lt'])(a0))
-  var _timestamp_gt = (Module['_timestamp_gt'] = (a0) =>
+  let _timestamp_gt = (Module['_timestamp_gt'] = (a0) =>
     (_timestamp_gt = Module['_timestamp_gt'] = wasmExports['timestamp_gt'])(a0))
-  var _timestamp_le = (Module['_timestamp_le'] = (a0) =>
+  let _timestamp_le = (Module['_timestamp_le'] = (a0) =>
     (_timestamp_le = Module['_timestamp_le'] = wasmExports['timestamp_le'])(a0))
-  var _timestamp_ge = (Module['_timestamp_ge'] = (a0) =>
+  let _timestamp_ge = (Module['_timestamp_ge'] = (a0) =>
     (_timestamp_ge = Module['_timestamp_ge'] = wasmExports['timestamp_ge'])(a0))
-  var _interval_eq = (Module['_interval_eq'] = (a0) =>
+  let _interval_eq = (Module['_interval_eq'] = (a0) =>
     (_interval_eq = Module['_interval_eq'] = wasmExports['interval_eq'])(a0))
-  var _interval_lt = (Module['_interval_lt'] = (a0) =>
+  let _interval_lt = (Module['_interval_lt'] = (a0) =>
     (_interval_lt = Module['_interval_lt'] = wasmExports['interval_lt'])(a0))
-  var _interval_gt = (Module['_interval_gt'] = (a0) =>
+  let _interval_gt = (Module['_interval_gt'] = (a0) =>
     (_interval_gt = Module['_interval_gt'] = wasmExports['interval_gt'])(a0))
-  var _interval_le = (Module['_interval_le'] = (a0) =>
+  let _interval_le = (Module['_interval_le'] = (a0) =>
     (_interval_le = Module['_interval_le'] = wasmExports['interval_le'])(a0))
-  var _interval_ge = (Module['_interval_ge'] = (a0) =>
+  let _interval_ge = (Module['_interval_ge'] = (a0) =>
     (_interval_ge = Module['_interval_ge'] = wasmExports['interval_ge'])(a0))
-  var _interval_cmp = (Module['_interval_cmp'] = (a0) =>
+  let _interval_cmp = (Module['_interval_cmp'] = (a0) =>
     (_interval_cmp = Module['_interval_cmp'] = wasmExports['interval_cmp'])(a0))
-  var _timestamp_mi = (Module['_timestamp_mi'] = (a0) =>
+  let _timestamp_mi = (Module['_timestamp_mi'] = (a0) =>
     (_timestamp_mi = Module['_timestamp_mi'] = wasmExports['timestamp_mi'])(a0))
-  var _interval_um = (Module['_interval_um'] = (a0) =>
+  let _interval_um = (Module['_interval_um'] = (a0) =>
     (_interval_um = Module['_interval_um'] = wasmExports['interval_um'])(a0))
-  var _has_fn_opclass_options = (Module['_has_fn_opclass_options'] = (a0) =>
+  let _has_fn_opclass_options = (Module['_has_fn_opclass_options'] = (a0) =>
     (_has_fn_opclass_options = Module['_has_fn_opclass_options'] =
       wasmExports['has_fn_opclass_options'])(a0))
-  var _uuid_in = (Module['_uuid_in'] = (a0) =>
+  let _uuid_in = (Module['_uuid_in'] = (a0) =>
     (_uuid_in = Module['_uuid_in'] = wasmExports['uuid_in'])(a0))
-  var _uuid_out = (Module['_uuid_out'] = (a0) =>
+  let _uuid_out = (Module['_uuid_out'] = (a0) =>
     (_uuid_out = Module['_uuid_out'] = wasmExports['uuid_out'])(a0))
-  var _uuid_cmp = (Module['_uuid_cmp'] = (a0) =>
+  let _uuid_cmp = (Module['_uuid_cmp'] = (a0) =>
     (_uuid_cmp = Module['_uuid_cmp'] = wasmExports['uuid_cmp'])(a0))
-  var _gen_random_uuid = (Module['_gen_random_uuid'] = (a0) =>
+  let _gen_random_uuid = (Module['_gen_random_uuid'] = (a0) =>
     (_gen_random_uuid = Module['_gen_random_uuid'] =
       wasmExports['gen_random_uuid'])(a0))
-  var _varbit_in = (Module['_varbit_in'] = (a0) =>
+  let _varbit_in = (Module['_varbit_in'] = (a0) =>
     (_varbit_in = Module['_varbit_in'] = wasmExports['varbit_in'])(a0))
-  var _biteq = (Module['_biteq'] = (a0) =>
+  let _biteq = (Module['_biteq'] = (a0) =>
     (_biteq = Module['_biteq'] = wasmExports['biteq'])(a0))
-  var _bitlt = (Module['_bitlt'] = (a0) =>
+  let _bitlt = (Module['_bitlt'] = (a0) =>
     (_bitlt = Module['_bitlt'] = wasmExports['bitlt'])(a0))
-  var _bitle = (Module['_bitle'] = (a0) =>
+  let _bitle = (Module['_bitle'] = (a0) =>
     (_bitle = Module['_bitle'] = wasmExports['bitle'])(a0))
-  var _bitgt = (Module['_bitgt'] = (a0) =>
+  let _bitgt = (Module['_bitgt'] = (a0) =>
     (_bitgt = Module['_bitgt'] = wasmExports['bitgt'])(a0))
-  var _bitge = (Module['_bitge'] = (a0) =>
+  let _bitge = (Module['_bitge'] = (a0) =>
     (_bitge = Module['_bitge'] = wasmExports['bitge'])(a0))
-  var _bitcmp = (Module['_bitcmp'] = (a0) =>
+  let _bitcmp = (Module['_bitcmp'] = (a0) =>
     (_bitcmp = Module['_bitcmp'] = wasmExports['bitcmp'])(a0))
-  var _bpchareq = (Module['_bpchareq'] = (a0) =>
+  let _bpchareq = (Module['_bpchareq'] = (a0) =>
     (_bpchareq = Module['_bpchareq'] = wasmExports['bpchareq'])(a0))
-  var _bpcharlt = (Module['_bpcharlt'] = (a0) =>
+  let _bpcharlt = (Module['_bpcharlt'] = (a0) =>
     (_bpcharlt = Module['_bpcharlt'] = wasmExports['bpcharlt'])(a0))
-  var _bpcharle = (Module['_bpcharle'] = (a0) =>
+  let _bpcharle = (Module['_bpcharle'] = (a0) =>
     (_bpcharle = Module['_bpcharle'] = wasmExports['bpcharle'])(a0))
-  var _bpchargt = (Module['_bpchargt'] = (a0) =>
+  let _bpchargt = (Module['_bpchargt'] = (a0) =>
     (_bpchargt = Module['_bpchargt'] = wasmExports['bpchargt'])(a0))
-  var _bpcharge = (Module['_bpcharge'] = (a0) =>
+  let _bpcharge = (Module['_bpcharge'] = (a0) =>
     (_bpcharge = Module['_bpcharge'] = wasmExports['bpcharge'])(a0))
-  var _bpcharcmp = (Module['_bpcharcmp'] = (a0) =>
+  let _bpcharcmp = (Module['_bpcharcmp'] = (a0) =>
     (_bpcharcmp = Module['_bpcharcmp'] = wasmExports['bpcharcmp'])(a0))
-  var _pg_detoast_datum_slice = (Module['_pg_detoast_datum_slice'] = (
+  let _pg_detoast_datum_slice = (Module['_pg_detoast_datum_slice'] = (
     a0,
     a1,
     a2,
   ) =>
     (_pg_detoast_datum_slice = Module['_pg_detoast_datum_slice'] =
       wasmExports['pg_detoast_datum_slice'])(a0, a1, a2))
-  var _text_substr_no_len = (Module['_text_substr_no_len'] = (a0) =>
+  let _text_substr_no_len = (Module['_text_substr_no_len'] = (a0) =>
     (_text_substr_no_len = Module['_text_substr_no_len'] =
       wasmExports['text_substr_no_len'])(a0))
-  var _texteq = (Module['_texteq'] = (a0) =>
+  let _texteq = (Module['_texteq'] = (a0) =>
     (_texteq = Module['_texteq'] = wasmExports['texteq'])(a0))
-  var _text_lt = (Module['_text_lt'] = (a0) =>
+  let _text_lt = (Module['_text_lt'] = (a0) =>
     (_text_lt = Module['_text_lt'] = wasmExports['text_lt'])(a0))
-  var _text_le = (Module['_text_le'] = (a0) =>
+  let _text_le = (Module['_text_le'] = (a0) =>
     (_text_le = Module['_text_le'] = wasmExports['text_le'])(a0))
-  var _text_gt = (Module['_text_gt'] = (a0) =>
+  let _text_gt = (Module['_text_gt'] = (a0) =>
     (_text_gt = Module['_text_gt'] = wasmExports['text_gt'])(a0))
-  var _text_ge = (Module['_text_ge'] = (a0) =>
+  let _text_ge = (Module['_text_ge'] = (a0) =>
     (_text_ge = Module['_text_ge'] = wasmExports['text_ge'])(a0))
-  var _bttextcmp = (Module['_bttextcmp'] = (a0) =>
+  let _bttextcmp = (Module['_bttextcmp'] = (a0) =>
     (_bttextcmp = Module['_bttextcmp'] = wasmExports['bttextcmp'])(a0))
-  var _byteaeq = (Module['_byteaeq'] = (a0) =>
+  let _byteaeq = (Module['_byteaeq'] = (a0) =>
     (_byteaeq = Module['_byteaeq'] = wasmExports['byteaeq'])(a0))
-  var _bytealt = (Module['_bytealt'] = (a0) =>
+  let _bytealt = (Module['_bytealt'] = (a0) =>
     (_bytealt = Module['_bytealt'] = wasmExports['bytealt'])(a0))
-  var _byteale = (Module['_byteale'] = (a0) =>
+  let _byteale = (Module['_byteale'] = (a0) =>
     (_byteale = Module['_byteale'] = wasmExports['byteale'])(a0))
-  var _byteagt = (Module['_byteagt'] = (a0) =>
+  let _byteagt = (Module['_byteagt'] = (a0) =>
     (_byteagt = Module['_byteagt'] = wasmExports['byteagt'])(a0))
-  var _byteage = (Module['_byteage'] = (a0) =>
+  let _byteage = (Module['_byteage'] = (a0) =>
     (_byteage = Module['_byteage'] = wasmExports['byteage'])(a0))
-  var _byteacmp = (Module['_byteacmp'] = (a0) =>
+  let _byteacmp = (Module['_byteacmp'] = (a0) =>
     (_byteacmp = Module['_byteacmp'] = wasmExports['byteacmp'])(a0))
-  var _to_hex32 = (Module['_to_hex32'] = (a0) =>
+  let _to_hex32 = (Module['_to_hex32'] = (a0) =>
     (_to_hex32 = Module['_to_hex32'] = wasmExports['to_hex32'])(a0))
-  var _text_left = (Module['_text_left'] = (a0) =>
+  let _text_left = (Module['_text_left'] = (a0) =>
     (_text_left = Module['_text_left'] = wasmExports['text_left'])(a0))
-  var _text_right = (Module['_text_right'] = (a0) =>
+  let _text_right = (Module['_text_right'] = (a0) =>
     (_text_right = Module['_text_right'] = wasmExports['text_right'])(a0))
-  var _text_reverse = (Module['_text_reverse'] = (a0) =>
+  let _text_reverse = (Module['_text_reverse'] = (a0) =>
     (_text_reverse = Module['_text_reverse'] = wasmExports['text_reverse'])(a0))
-  var _varstr_levenshtein = (Module['_varstr_levenshtein'] = (
+  let _varstr_levenshtein = (Module['_varstr_levenshtein'] = (
     a0,
     a1,
     a2,
@@ -15910,24 +15922,24 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_varstr_levenshtein = Module['_varstr_levenshtein'] =
       wasmExports['varstr_levenshtein'])(a0, a1, a2, a3, a4, a5, a6, a7))
-  var _pg_utf_mblen_private = (Module['_pg_utf_mblen_private'] = (a0) =>
+  let _pg_utf_mblen_private = (Module['_pg_utf_mblen_private'] = (a0) =>
     (_pg_utf_mblen_private = Module['_pg_utf_mblen_private'] =
       wasmExports['pg_utf_mblen_private'])(a0))
-  var _pg_xml_init = (Module['_pg_xml_init'] = (a0) =>
+  let _pg_xml_init = (Module['_pg_xml_init'] = (a0) =>
     (_pg_xml_init = Module['_pg_xml_init'] = wasmExports['pg_xml_init'])(a0))
-  var _xml_ereport = (Module['_xml_ereport'] = (a0, a1, a2, a3) =>
+  let _xml_ereport = (Module['_xml_ereport'] = (a0, a1, a2, a3) =>
     (_xml_ereport = Module['_xml_ereport'] = wasmExports['xml_ereport'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _pg_xml_done = (Module['_pg_xml_done'] = (a0, a1) =>
+  let _pg_xml_done = (Module['_pg_xml_done'] = (a0, a1) =>
     (_pg_xml_done = Module['_pg_xml_done'] = wasmExports['pg_xml_done'])(
       a0,
       a1,
     ))
-  var _pg_do_encoding_conversion = (Module['_pg_do_encoding_conversion'] = (
+  let _pg_do_encoding_conversion = (Module['_pg_do_encoding_conversion'] = (
     a0,
     a1,
     a2,
@@ -15935,10 +15947,10 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_pg_do_encoding_conversion = Module['_pg_do_encoding_conversion'] =
       wasmExports['pg_do_encoding_conversion'])(a0, a1, a2, a3))
-  var _CreateCacheMemoryContext = (Module['_CreateCacheMemoryContext'] = () =>
+  let _CreateCacheMemoryContext = (Module['_CreateCacheMemoryContext'] = () =>
     (_CreateCacheMemoryContext = Module['_CreateCacheMemoryContext'] =
       wasmExports['CreateCacheMemoryContext'])())
-  var _cfunc_resolve_polymorphic_argtypes = (Module[
+  let _cfunc_resolve_polymorphic_argtypes = (Module[
     '_cfunc_resolve_polymorphic_argtypes'
   ] = (a0, a1, a2, a3, a4, a5) =>
     (_cfunc_resolve_polymorphic_argtypes = Module[
@@ -15952,68 +15964,68 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a4,
       a5,
     ))
-  var _get_typsubscript = (Module['_get_typsubscript'] = (a0, a1) =>
+  let _get_typsubscript = (Module['_get_typsubscript'] = (a0, a1) =>
     (_get_typsubscript = Module['_get_typsubscript'] =
       wasmExports['get_typsubscript'])(a0, a1))
-  var _CachedPlanAllowsSimpleValidityCheck = (Module[
+  let _CachedPlanAllowsSimpleValidityCheck = (Module[
     '_CachedPlanAllowsSimpleValidityCheck'
   ] = (a0, a1, a2) =>
     (_CachedPlanAllowsSimpleValidityCheck = Module[
       '_CachedPlanAllowsSimpleValidityCheck'
     ] =
       wasmExports['CachedPlanAllowsSimpleValidityCheck'])(a0, a1, a2))
-  var _CachedPlanIsSimplyValid = (Module['_CachedPlanIsSimplyValid'] = (
+  let _CachedPlanIsSimplyValid = (Module['_CachedPlanIsSimplyValid'] = (
     a0,
     a1,
     a2,
   ) =>
     (_CachedPlanIsSimplyValid = Module['_CachedPlanIsSimplyValid'] =
       wasmExports['CachedPlanIsSimplyValid'])(a0, a1, a2))
-  var _GetCachedExpression = (Module['_GetCachedExpression'] = (a0) =>
+  let _GetCachedExpression = (Module['_GetCachedExpression'] = (a0) =>
     (_GetCachedExpression = Module['_GetCachedExpression'] =
       wasmExports['GetCachedExpression'])(a0))
-  var _FreeCachedExpression = (Module['_FreeCachedExpression'] = (a0) =>
+  let _FreeCachedExpression = (Module['_FreeCachedExpression'] = (a0) =>
     (_FreeCachedExpression = Module['_FreeCachedExpression'] =
       wasmExports['FreeCachedExpression'])(a0))
-  var _ReleaseAllPlanCacheRefsInOwner = (Module[
+  let _ReleaseAllPlanCacheRefsInOwner = (Module[
     '_ReleaseAllPlanCacheRefsInOwner'
   ] = (a0) =>
     (_ReleaseAllPlanCacheRefsInOwner = Module[
       '_ReleaseAllPlanCacheRefsInOwner'
     ] =
       wasmExports['ReleaseAllPlanCacheRefsInOwner'])(a0))
-  var _abort = (Module['_abort'] = () =>
+  let _abort = (Module['_abort'] = () =>
     (_abort = Module['_abort'] = wasmExports['abort'])())
-  var _in_error_recursion_trouble = (Module['_in_error_recursion_trouble'] =
+  let _in_error_recursion_trouble = (Module['_in_error_recursion_trouble'] =
     () =>
       (_in_error_recursion_trouble = Module['_in_error_recursion_trouble'] =
         wasmExports['in_error_recursion_trouble'])())
-  var _pg_vfprintf = (Module['_pg_vfprintf'] = (a0, a1, a2) =>
+  let _pg_vfprintf = (Module['_pg_vfprintf'] = (a0, a1, a2) =>
     (_pg_vfprintf = Module['_pg_vfprintf'] = wasmExports['pg_vfprintf'])(
       a0,
       a1,
       a2,
     ))
-  var _pgl_longjmp = (Module['_pgl_longjmp'] = (a0, a1) =>
+  let _pgl_longjmp = (Module['_pgl_longjmp'] = (a0, a1) =>
     (_pgl_longjmp = Module['_pgl_longjmp'] = wasmExports['pgl_longjmp'])(
       a0,
       a1,
     ))
-  var _GetErrorContextStack = (Module['_GetErrorContextStack'] = () =>
+  let _GetErrorContextStack = (Module['_GetErrorContextStack'] = () =>
     (_GetErrorContextStack = Module['_GetErrorContextStack'] =
       wasmExports['GetErrorContextStack'])())
-  var _dlsym = (Module['_dlsym'] = (a0, a1) =>
+  let _dlsym = (Module['_dlsym'] = (a0, a1) =>
     (_dlsym = Module['_dlsym'] = wasmExports['dlsym'])(a0, a1))
-  var _dlopen = (Module['_dlopen'] = (a0, a1) =>
+  let _dlopen = (Module['_dlopen'] = (a0, a1) =>
     (_dlopen = Module['_dlopen'] = wasmExports['dlopen'])(a0, a1))
-  var _dlerror = (Module['_dlerror'] = () =>
+  let _dlerror = (Module['_dlerror'] = () =>
     (_dlerror = Module['_dlerror'] = wasmExports['dlerror'])())
-  var _dlclose = (Module['_dlclose'] = (a0) =>
+  let _dlclose = (Module['_dlclose'] = (a0) =>
     (_dlclose = Module['_dlclose'] = wasmExports['dlclose'])(a0))
-  var _find_rendezvous_variable = (Module['_find_rendezvous_variable'] = (a0) =>
+  let _find_rendezvous_variable = (Module['_find_rendezvous_variable'] = (a0) =>
     (_find_rendezvous_variable = Module['_find_rendezvous_variable'] =
       wasmExports['find_rendezvous_variable'])(a0))
-  var _CallerFInfoFunctionCall1 = (Module['_CallerFInfoFunctionCall1'] = (
+  let _CallerFInfoFunctionCall1 = (Module['_CallerFInfoFunctionCall1'] = (
     a0,
     a1,
     a2,
@@ -16021,7 +16033,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_CallerFInfoFunctionCall1 = Module['_CallerFInfoFunctionCall1'] =
       wasmExports['CallerFInfoFunctionCall1'])(a0, a1, a2, a3))
-  var _CallerFInfoFunctionCall2 = (Module['_CallerFInfoFunctionCall2'] = (
+  let _CallerFInfoFunctionCall2 = (Module['_CallerFInfoFunctionCall2'] = (
     a0,
     a1,
     a2,
@@ -16030,22 +16042,22 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   ) =>
     (_CallerFInfoFunctionCall2 = Module['_CallerFInfoFunctionCall2'] =
       wasmExports['CallerFInfoFunctionCall2'])(a0, a1, a2, a3, a4))
-  var _FunctionCall0Coll = (Module['_FunctionCall0Coll'] = (a0, a1) =>
+  let _FunctionCall0Coll = (Module['_FunctionCall0Coll'] = (a0, a1) =>
     (_FunctionCall0Coll = Module['_FunctionCall0Coll'] =
       wasmExports['FunctionCall0Coll'])(a0, a1))
-  var _RelationNameGetTupleDesc = (Module['_RelationNameGetTupleDesc'] = (a0) =>
+  let _RelationNameGetTupleDesc = (Module['_RelationNameGetTupleDesc'] = (a0) =>
     (_RelationNameGetTupleDesc = Module['_RelationNameGetTupleDesc'] =
       wasmExports['RelationNameGetTupleDesc'])(a0))
-  var _hash_freeze = (Module['_hash_freeze'] = (a0) =>
+  let _hash_freeze = (Module['_hash_freeze'] = (a0) =>
     (_hash_freeze = Module['_hash_freeze'] = wasmExports['hash_freeze'])(a0))
-  var _chdir = (Module['_chdir'] = (a0) =>
+  let _chdir = (Module['_chdir'] = (a0) =>
     (_chdir = Module['_chdir'] = wasmExports['chdir'])(a0))
-  var _pg_bindtextdomain = (Module['_pg_bindtextdomain'] = (a0) =>
+  let _pg_bindtextdomain = (Module['_pg_bindtextdomain'] = (a0) =>
     (_pg_bindtextdomain = Module['_pg_bindtextdomain'] =
       wasmExports['pg_bindtextdomain'])(a0))
-  var _pg_mblen = (Module['_pg_mblen'] = (a0) =>
+  let _pg_mblen = (Module['_pg_mblen'] = (a0) =>
     (_pg_mblen = Module['_pg_mblen'] = wasmExports['pg_mblen'])(a0))
-  var _DefineCustomBoolVariable = (Module['_DefineCustomBoolVariable'] = (
+  let _DefineCustomBoolVariable = (Module['_DefineCustomBoolVariable'] = (
     a0,
     a1,
     a2,
@@ -16070,7 +16082,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a8,
       a9,
     ))
-  var _DefineCustomIntVariable = (Module['_DefineCustomIntVariable'] = (
+  let _DefineCustomIntVariable = (Module['_DefineCustomIntVariable'] = (
     a0,
     a1,
     a2,
@@ -16099,7 +16111,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a10,
       a11,
     ))
-  var _DefineCustomRealVariable = (Module['_DefineCustomRealVariable'] = (
+  let _DefineCustomRealVariable = (Module['_DefineCustomRealVariable'] = (
     a0,
     a1,
     a2,
@@ -16128,7 +16140,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a10,
       a11,
     ))
-  var _DefineCustomStringVariable = (Module['_DefineCustomStringVariable'] = (
+  let _DefineCustomStringVariable = (Module['_DefineCustomStringVariable'] = (
     a0,
     a1,
     a2,
@@ -16153,7 +16165,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a8,
       a9,
     ))
-  var _DefineCustomEnumVariable = (Module['_DefineCustomEnumVariable'] = (
+  let _DefineCustomEnumVariable = (Module['_DefineCustomEnumVariable'] = (
     a0,
     a1,
     a2,
@@ -16180,349 +16192,349 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a9,
       a10,
     ))
-  var _MarkGUCPrefixReserved = (Module['_MarkGUCPrefixReserved'] = (a0) =>
+  let _MarkGUCPrefixReserved = (Module['_MarkGUCPrefixReserved'] = (a0) =>
     (_MarkGUCPrefixReserved = Module['_MarkGUCPrefixReserved'] =
       wasmExports['MarkGUCPrefixReserved'])(a0))
-  var _sampler_random_init_state = (Module['_sampler_random_init_state'] = (
+  let _sampler_random_init_state = (Module['_sampler_random_init_state'] = (
     a0,
     a1,
   ) =>
     (_sampler_random_init_state = Module['_sampler_random_init_state'] =
       wasmExports['sampler_random_init_state'])(a0, a1))
-  var _dsa_trim = (Module['_dsa_trim'] = (a0) =>
+  let _dsa_trim = (Module['_dsa_trim'] = (a0) =>
     (_dsa_trim = Module['_dsa_trim'] = wasmExports['dsa_trim'])(a0))
-  var _pchomp = (Module['_pchomp'] = (a0) =>
+  let _pchomp = (Module['_pchomp'] = (a0) =>
     (_pchomp = Module['_pchomp'] = wasmExports['pchomp'])(a0))
-  var _PinPortal = (Module['_PinPortal'] = (a0) =>
+  let _PinPortal = (Module['_PinPortal'] = (a0) =>
     (_PinPortal = Module['_PinPortal'] = wasmExports['PinPortal'])(a0))
-  var _UnpinPortal = (Module['_UnpinPortal'] = (a0) =>
+  let _UnpinPortal = (Module['_UnpinPortal'] = (a0) =>
     (_UnpinPortal = Module['_UnpinPortal'] = wasmExports['UnpinPortal'])(a0))
-  var ___lshrti3 = (Module['___lshrti3'] = (a0, a1, a2, a3) =>
+  let ___lshrti3 = (Module['___lshrti3'] = (a0, a1, a2, a3) =>
     (___lshrti3 = Module['___lshrti3'] = wasmExports['__lshrti3'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _realpath = (Module['_realpath'] = (a0, a1) =>
+  let _realpath = (Module['_realpath'] = (a0, a1) =>
     (_realpath = Module['_realpath'] = wasmExports['realpath'])(a0, a1))
-  var _float_to_shortest_decimal_bufn = (Module[
+  let _float_to_shortest_decimal_bufn = (Module[
     '_float_to_shortest_decimal_bufn'
   ] = (a0, a1) =>
     (_float_to_shortest_decimal_bufn = Module[
       '_float_to_shortest_decimal_bufn'
     ] =
       wasmExports['float_to_shortest_decimal_bufn'])(a0, a1))
-  var _IsValidJsonNumber = (Module['_IsValidJsonNumber'] = (a0, a1) =>
+  let _IsValidJsonNumber = (Module['_IsValidJsonNumber'] = (a0, a1) =>
     (_IsValidJsonNumber = Module['_IsValidJsonNumber'] =
       wasmExports['IsValidJsonNumber'])(a0, a1))
-  var _pg_prng_uint64 = (Module['_pg_prng_uint64'] = (a0) =>
+  let _pg_prng_uint64 = (Module['_pg_prng_uint64'] = (a0) =>
     (_pg_prng_uint64 = Module['_pg_prng_uint64'] =
       wasmExports['pg_prng_uint64'])(a0))
-  var _makeStringInfoExt = (Module['_makeStringInfoExt'] = (a0) =>
+  let _makeStringInfoExt = (Module['_makeStringInfoExt'] = (a0) =>
     (_makeStringInfoExt = Module['_makeStringInfoExt'] =
       wasmExports['makeStringInfoExt'])(a0))
-  var _pgl_getpwuid = (Module['_pgl_getpwuid'] = (a0) =>
+  let _pgl_getpwuid = (Module['_pgl_getpwuid'] = (a0) =>
     (_pgl_getpwuid = Module['_pgl_getpwuid'] = wasmExports['pgl_getpwuid'])(a0))
-  var _getcwd = (Module['_getcwd'] = (a0, a1) =>
+  let _getcwd = (Module['_getcwd'] = (a0, a1) =>
     (_getcwd = Module['_getcwd'] = wasmExports['getcwd'])(a0, a1))
-  var _pthread_mutex_lock = (Module['_pthread_mutex_lock'] = (a0) =>
+  let _pthread_mutex_lock = (Module['_pthread_mutex_lock'] = (a0) =>
     (_pthread_mutex_lock = Module['_pthread_mutex_lock'] =
       wasmExports['pthread_mutex_lock'])(a0))
-  var _localeconv = (Module['_localeconv'] = () =>
+  let _localeconv = (Module['_localeconv'] = () =>
     (_localeconv = Module['_localeconv'] = wasmExports['localeconv'])())
-  var _pthread_mutex_unlock = (Module['_pthread_mutex_unlock'] = (a0) =>
+  let _pthread_mutex_unlock = (Module['_pthread_mutex_unlock'] = (a0) =>
     (_pthread_mutex_unlock = Module['_pthread_mutex_unlock'] =
       wasmExports['pthread_mutex_unlock'])(a0))
-  var _nanosleep = (Module['_nanosleep'] = (a0, a1) =>
+  let _nanosleep = (Module['_nanosleep'] = (a0, a1) =>
     (_nanosleep = Module['_nanosleep'] = wasmExports['nanosleep'])(a0, a1))
-  var _strchrnul = (Module['_strchrnul'] = (a0, a1) =>
+  let _strchrnul = (Module['_strchrnul'] = (a0, a1) =>
     (_strchrnul = Module['_strchrnul'] = wasmExports['strchrnul'])(a0, a1))
-  var _snprintf = (Module['_snprintf'] = (a0, a1, a2, a3) =>
+  let _snprintf = (Module['_snprintf'] = (a0, a1, a2, a3) =>
     (_snprintf = Module['_snprintf'] = wasmExports['snprintf'])(a0, a1, a2, a3))
-  var _strerror = (Module['_strerror'] = (a0) =>
+  let _strerror = (Module['_strerror'] = (a0) =>
     (_strerror = Module['_strerror'] = wasmExports['strerror'])(a0))
-  var _clear_setitimer = (Module['_clear_setitimer'] = () =>
+  let _clear_setitimer = (Module['_clear_setitimer'] = () =>
     (_clear_setitimer = Module['_clear_setitimer'] =
       wasmExports['clear_setitimer'])())
-  var _pgl_setPGliteActive = (Module['_pgl_setPGliteActive'] = (a0) =>
+  let _pgl_setPGliteActive = (Module['_pgl_setPGliteActive'] = (a0) =>
     (_pgl_setPGliteActive = Module['_pgl_setPGliteActive'] =
       wasmExports['pgl_setPGliteActive'])(a0))
-  var _pgl_siglongjmp = (Module['_pgl_siglongjmp'] = (a0, a1) =>
+  let _pgl_siglongjmp = (Module['_pgl_siglongjmp'] = (a0, a1) =>
     (_pgl_siglongjmp = Module['_pgl_siglongjmp'] =
       wasmExports['pgl_siglongjmp'])(a0, a1))
-  var _pgl_set_system_fn = (Module['_pgl_set_system_fn'] = (a0) =>
+  let _pgl_set_system_fn = (Module['_pgl_set_system_fn'] = (a0) =>
     (_pgl_set_system_fn = Module['_pgl_set_system_fn'] =
       wasmExports['pgl_set_system_fn'])(a0))
-  var _pgl_set_popen_fn = (Module['_pgl_set_popen_fn'] = (a0) =>
+  let _pgl_set_popen_fn = (Module['_pgl_set_popen_fn'] = (a0) =>
     (_pgl_set_popen_fn = Module['_pgl_set_popen_fn'] =
       wasmExports['pgl_set_popen_fn'])(a0))
-  var _pgl_set_pclose_fn = (Module['_pgl_set_pclose_fn'] = (a0) =>
+  let _pgl_set_pclose_fn = (Module['_pgl_set_pclose_fn'] = (a0) =>
     (_pgl_set_pclose_fn = Module['_pgl_set_pclose_fn'] =
       wasmExports['pgl_set_pclose_fn'])(a0))
-  var _pgl_run_atexit_funcs = (Module['_pgl_run_atexit_funcs'] = () =>
+  let _pgl_run_atexit_funcs = (Module['_pgl_run_atexit_funcs'] = () =>
     (_pgl_run_atexit_funcs = Module['_pgl_run_atexit_funcs'] =
       wasmExports['pgl_run_atexit_funcs'])())
-  var _pgl_freopen = (Module['_pgl_freopen'] = (a0, a1, a2) =>
+  let _pgl_freopen = (Module['_pgl_freopen'] = (a0, a1, a2) =>
     (_pgl_freopen = Module['_pgl_freopen'] = wasmExports['pgl_freopen'])(
       a0,
       a1,
       a2,
     ))
-  var _fiprintf = (Module['_fiprintf'] = (a0, a1, a2) =>
+  let _fiprintf = (Module['_fiprintf'] = (a0, a1, a2) =>
     (_fiprintf = Module['_fiprintf'] = wasmExports['fiprintf'])(a0, a1, a2))
-  var _pgl_set_rw_cbs = (Module['_pgl_set_rw_cbs'] = (a0, a1) =>
+  let _pgl_set_rw_cbs = (Module['_pgl_set_rw_cbs'] = (a0, a1) =>
     (_pgl_set_rw_cbs = Module['_pgl_set_rw_cbs'] =
       wasmExports['pgl_set_rw_cbs'])(a0, a1))
-  var _vfprintf = (Module['_vfprintf'] = (a0, a1, a2) =>
+  let _vfprintf = (Module['_vfprintf'] = (a0, a1, a2) =>
     (_vfprintf = Module['_vfprintf'] = wasmExports['vfprintf'])(a0, a1, a2))
-  var _pthread_key_create = (Module['_pthread_key_create'] = (a0, a1) =>
+  let _pthread_key_create = (Module['_pthread_key_create'] = (a0, a1) =>
     (_pthread_key_create = Module['_pthread_key_create'] =
       wasmExports['pthread_key_create'])(a0, a1))
-  var _pthread_getspecific = (Module['_pthread_getspecific'] = (a0) =>
+  let _pthread_getspecific = (Module['_pthread_getspecific'] = (a0) =>
     (_pthread_getspecific = Module['_pthread_getspecific'] =
       wasmExports['pthread_getspecific'])(a0))
-  var _pthread_key_delete = (Module['_pthread_key_delete'] = (a0) =>
+  let _pthread_key_delete = (Module['_pthread_key_delete'] = (a0) =>
     (_pthread_key_delete = Module['_pthread_key_delete'] =
       wasmExports['pthread_key_delete'])(a0))
-  var _pthread_setspecific = (Module['_pthread_setspecific'] = (a0, a1) =>
+  let _pthread_setspecific = (Module['_pthread_setspecific'] = (a0, a1) =>
     (_pthread_setspecific = Module['_pthread_setspecific'] =
       wasmExports['pthread_setspecific'])(a0, a1))
-  var _toupper = (Module['_toupper'] = (a0) =>
+  let _toupper = (Module['_toupper'] = (a0) =>
     (_toupper = Module['_toupper'] = wasmExports['toupper'])(a0))
-  var _iconv_open = (Module['_iconv_open'] = (a0, a1) =>
+  let _iconv_open = (Module['_iconv_open'] = (a0, a1) =>
     (_iconv_open = Module['_iconv_open'] = wasmExports['iconv_open'])(a0, a1))
-  var _iconv_close = (Module['_iconv_close'] = (a0) =>
+  let _iconv_close = (Module['_iconv_close'] = (a0) =>
     (_iconv_close = Module['_iconv_close'] = wasmExports['iconv_close'])(a0))
-  var _iconv = (Module['_iconv'] = (a0, a1, a2, a3, a4) =>
+  let _iconv = (Module['_iconv'] = (a0, a1, a2, a3, a4) =>
     (_iconv = Module['_iconv'] = wasmExports['iconv'])(a0, a1, a2, a3, a4))
-  var _pthread_mutex_init = (Module['_pthread_mutex_init'] = (a0, a1) =>
+  let _pthread_mutex_init = (Module['_pthread_mutex_init'] = (a0, a1) =>
     (_pthread_mutex_init = Module['_pthread_mutex_init'] =
       wasmExports['pthread_mutex_init'])(a0, a1))
-  var _pthread_mutex_destroy = (Module['_pthread_mutex_destroy'] = (a0) =>
+  let _pthread_mutex_destroy = (Module['_pthread_mutex_destroy'] = (a0) =>
     (_pthread_mutex_destroy = Module['_pthread_mutex_destroy'] =
       wasmExports['pthread_mutex_destroy'])(a0))
-  var _pthread_cond_init = (Module['_pthread_cond_init'] = (a0, a1) =>
+  let _pthread_cond_init = (Module['_pthread_cond_init'] = (a0, a1) =>
     (_pthread_cond_init = Module['_pthread_cond_init'] =
       wasmExports['pthread_cond_init'])(a0, a1))
-  var _pthread_cond_destroy = (Module['_pthread_cond_destroy'] = (a0) =>
+  let _pthread_cond_destroy = (Module['_pthread_cond_destroy'] = (a0) =>
     (_pthread_cond_destroy = Module['_pthread_cond_destroy'] =
       wasmExports['pthread_cond_destroy'])(a0))
-  var _pthread_self = (Module['_pthread_self'] = () =>
+  let _pthread_self = (Module['_pthread_self'] = () =>
     (_pthread_self = Module['_pthread_self'] = wasmExports['pthread_self'])())
-  var _pthread_cond_wait = (Module['_pthread_cond_wait'] = (a0, a1) =>
+  let _pthread_cond_wait = (Module['_pthread_cond_wait'] = (a0, a1) =>
     (_pthread_cond_wait = Module['_pthread_cond_wait'] =
       wasmExports['pthread_cond_wait'])(a0, a1))
-  var _pthread_cond_signal = (Module['_pthread_cond_signal'] = (a0) =>
+  let _pthread_cond_signal = (Module['_pthread_cond_signal'] = (a0) =>
     (_pthread_cond_signal = Module['_pthread_cond_signal'] =
       wasmExports['pthread_cond_signal'])(a0))
-  var _pthread_once = (Module['_pthread_once'] = (a0, a1) =>
+  let _pthread_once = (Module['_pthread_once'] = (a0, a1) =>
     (_pthread_once = Module['_pthread_once'] = wasmExports['pthread_once'])(
       a0,
       a1,
     ))
-  var ___cxa_atexit = (Module['___cxa_atexit'] = (a0, a1, a2) =>
+  let ___cxa_atexit = (Module['___cxa_atexit'] = (a0, a1, a2) =>
     (___cxa_atexit = Module['___cxa_atexit'] = wasmExports['__cxa_atexit'])(
       a0,
       a1,
       a2,
     ))
-  var _fputs = (Module['_fputs'] = (a0, a1) =>
+  let _fputs = (Module['_fputs'] = (a0, a1) =>
     (_fputs = Module['_fputs'] = wasmExports['fputs'])(a0, a1))
-  var _vsnprintf = (Module['_vsnprintf'] = (a0, a1, a2, a3) =>
+  let _vsnprintf = (Module['_vsnprintf'] = (a0, a1, a2, a3) =>
     (_vsnprintf = Module['_vsnprintf'] = wasmExports['vsnprintf'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var ___small_fprintf = (Module['___small_fprintf'] = (a0, a1, a2) =>
+  let ___small_fprintf = (Module['___small_fprintf'] = (a0, a1, a2) =>
     (___small_fprintf = Module['___small_fprintf'] =
       wasmExports['__small_fprintf'])(a0, a1, a2))
-  var ___dynamic_cast = (Module['___dynamic_cast'] = (a0, a1, a2, a3) =>
+  let ___dynamic_cast = (Module['___dynamic_cast'] = (a0, a1, a2, a3) =>
     (___dynamic_cast = Module['___dynamic_cast'] =
       wasmExports['__dynamic_cast'])(a0, a1, a2, a3))
-  var ___cxa_pure_virtual = (Module['___cxa_pure_virtual'] = () =>
+  let ___cxa_pure_virtual = (Module['___cxa_pure_virtual'] = () =>
     (___cxa_pure_virtual = Module['___cxa_pure_virtual'] =
       wasmExports['__cxa_pure_virtual'])())
-  var _modf = (Module['_modf'] = (a0, a1) =>
+  let _modf = (Module['_modf'] = (a0, a1) =>
     (_modf = Module['_modf'] = wasmExports['modf'])(a0, a1))
-  var _localtime_r = (Module['_localtime_r'] = (a0, a1) =>
+  let _localtime_r = (Module['_localtime_r'] = (a0, a1) =>
     (_localtime_r = Module['_localtime_r'] = wasmExports['localtime_r'])(
       a0,
       a1,
     ))
-  var _strncat = (Module['_strncat'] = (a0, a1, a2) =>
+  let _strncat = (Module['_strncat'] = (a0, a1, a2) =>
     (_strncat = Module['_strncat'] = wasmExports['strncat'])(a0, a1, a2))
-  var _munmap = (Module['_munmap'] = (a0, a1) =>
+  let _munmap = (Module['_munmap'] = (a0, a1) =>
     (_munmap = Module['_munmap'] = wasmExports['munmap'])(a0, a1))
-  var __ZdlPvm = (Module['__ZdlPvm'] = (a0, a1) =>
+  let __ZdlPvm = (Module['__ZdlPvm'] = (a0, a1) =>
     (__ZdlPvm = Module['__ZdlPvm'] = wasmExports['_ZdlPvm'])(a0, a1))
-  var ___ctype_get_mb_cur_max = (Module['___ctype_get_mb_cur_max'] = () =>
+  let ___ctype_get_mb_cur_max = (Module['___ctype_get_mb_cur_max'] = () =>
     (___ctype_get_mb_cur_max = Module['___ctype_get_mb_cur_max'] =
       wasmExports['__ctype_get_mb_cur_max'])())
-  var ___ctype_tolower_loc = (Module['___ctype_tolower_loc'] = () =>
+  let ___ctype_tolower_loc = (Module['___ctype_tolower_loc'] = () =>
     (___ctype_tolower_loc = Module['___ctype_tolower_loc'] =
       wasmExports['__ctype_tolower_loc'])())
-  var ___ctype_toupper_loc = (Module['___ctype_toupper_loc'] = () =>
+  let ___ctype_toupper_loc = (Module['___ctype_toupper_loc'] = () =>
     (___ctype_toupper_loc = Module['___ctype_toupper_loc'] =
       wasmExports['__ctype_toupper_loc'])())
-  var _fdopen = (Module['_fdopen'] = (a0, a1) =>
+  let _fdopen = (Module['_fdopen'] = (a0, a1) =>
     (_fdopen = Module['_fdopen'] = wasmExports['fdopen'])(a0, a1))
-  var _sqrt = (Module['_sqrt'] = (a0) =>
+  let _sqrt = (Module['_sqrt'] = (a0) =>
     (_sqrt = Module['_sqrt'] = wasmExports['sqrt'])(a0))
-  var _acosl = (Module['_acosl'] = (a0, a1, a2) =>
+  let _acosl = (Module['_acosl'] = (a0, a1, a2) =>
     (_acosl = Module['_acosl'] = wasmExports['acosl'])(a0, a1, a2))
-  var _aligned_alloc = (Module['_aligned_alloc'] = (a0, a1) =>
+  let _aligned_alloc = (Module['_aligned_alloc'] = (a0, a1) =>
     (_aligned_alloc = Module['_aligned_alloc'] = wasmExports['aligned_alloc'])(
       a0,
       a1,
     ))
-  var _atan2l = (Module['_atan2l'] = (a0, a1, a2, a3, a4) =>
+  let _atan2l = (Module['_atan2l'] = (a0, a1, a2, a3, a4) =>
     (_atan2l = Module['_atan2l'] = wasmExports['atan2l'])(a0, a1, a2, a3, a4))
-  var ___funcs_on_exit = () =>
+  let ___funcs_on_exit = () =>
     (___funcs_on_exit = wasmExports['__funcs_on_exit'])()
-  var _atexit = (Module['_atexit'] = (a0) =>
+  let _atexit = (Module['_atexit'] = (a0) =>
     (_atexit = Module['_atexit'] = wasmExports['atexit'])(a0))
-  var ___cxa_finalize = (Module['___cxa_finalize'] = (a0) =>
+  let ___cxa_finalize = (Module['___cxa_finalize'] = (a0) =>
     (___cxa_finalize = Module['___cxa_finalize'] =
       wasmExports['__cxa_finalize'])(a0))
-  var _btowc = (Module['_btowc'] = (a0) =>
+  let _btowc = (Module['_btowc'] = (a0) =>
     (_btowc = Module['_btowc'] = wasmExports['btowc'])(a0))
-  var _clock = (Module['_clock'] = () =>
+  let _clock = (Module['_clock'] = () =>
     (_clock = Module['_clock'] = wasmExports['clock'])())
-  var _scalbn = (Module['_scalbn'] = (a0, a1) =>
+  let _scalbn = (Module['_scalbn'] = (a0, a1) =>
     (_scalbn = Module['_scalbn'] = wasmExports['scalbn'])(a0, a1))
-  var _cosl = (Module['_cosl'] = (a0, a1, a2) =>
+  let _cosl = (Module['_cosl'] = (a0, a1, a2) =>
     (_cosl = Module['_cosl'] = wasmExports['cosl'])(a0, a1, a2))
-  var _dladdr = (Module['_dladdr'] = (a0, a1) =>
+  let _dladdr = (Module['_dladdr'] = (a0, a1) =>
     (_dladdr = Module['_dladdr'] = wasmExports['dladdr'])(a0, a1))
-  var ___dl_seterr = (a0, a1) =>
+  let ___dl_seterr = (a0, a1) =>
     (___dl_seterr = wasmExports['__dl_seterr'])(a0, a1)
-  var _duplocale = (Module['_duplocale'] = (a0) =>
+  let _duplocale = (Module['_duplocale'] = (a0) =>
     (_duplocale = Module['_duplocale'] = wasmExports['duplocale'])(a0))
-  var _fchmod = (Module['_fchmod'] = (a0, a1) =>
+  let _fchmod = (Module['_fchmod'] = (a0, a1) =>
     (_fchmod = Module['_fchmod'] = wasmExports['fchmod'])(a0, a1))
-  var _fchmodat = (Module['_fchmodat'] = (a0, a1, a2, a3) =>
+  let _fchmodat = (Module['_fchmodat'] = (a0, a1, a2, a3) =>
     (_fchmodat = Module['_fchmodat'] = wasmExports['fchmodat'])(a0, a1, a2, a3))
-  var _fchown = (Module['_fchown'] = (a0, a1, a2) =>
+  let _fchown = (Module['_fchown'] = (a0, a1, a2) =>
     (_fchown = Module['_fchown'] = wasmExports['fchown'])(a0, a1, a2))
-  var _fcntl = (Module['_fcntl'] = (a0, a1, a2) =>
+  let _fcntl = (Module['_fcntl'] = (a0, a1, a2) =>
     (_fcntl = Module['_fcntl'] = wasmExports['fcntl'])(a0, a1, a2))
-  var _fdopendir = (Module['_fdopendir'] = (a0) =>
+  let _fdopendir = (Module['_fdopendir'] = (a0) =>
     (_fdopendir = Module['_fdopendir'] = wasmExports['fdopendir'])(a0))
-  var _fmax = (Module['_fmax'] = (a0, a1) =>
+  let _fmax = (Module['_fmax'] = (a0, a1) =>
     (_fmax = Module['_fmax'] = wasmExports['fmax'])(a0, a1))
-  var _fmin = (Module['_fmin'] = (a0, a1) =>
+  let _fmin = (Module['_fmin'] = (a0, a1) =>
     (_fmin = Module['_fmin'] = wasmExports['fmin'])(a0, a1))
-  var _fputwc = (Module['_fputwc'] = (a0, a1) =>
+  let _fputwc = (Module['_fputwc'] = (a0, a1) =>
     (_fputwc = Module['_fputwc'] = wasmExports['fputwc'])(a0, a1))
-  var _frexp = (Module['_frexp'] = (a0, a1) =>
+  let _frexp = (Module['_frexp'] = (a0, a1) =>
     (_frexp = Module['_frexp'] = wasmExports['frexp'])(a0, a1))
-  var _ftell = (Module['_ftell'] = (a0) =>
+  let _ftell = (Module['_ftell'] = (a0) =>
     (_ftell = Module['_ftell'] = wasmExports['ftell'])(a0))
-  var _getentropy = (Module['_getentropy'] = (a0, a1) =>
+  let _getentropy = (Module['_getentropy'] = (a0, a1) =>
     (_getentropy = Module['_getentropy'] = wasmExports['getentropy'])(a0, a1))
-  var _geteuid = (Module['_geteuid'] = () =>
+  let _geteuid = (Module['_geteuid'] = () =>
     (_geteuid = Module['_geteuid'] = wasmExports['geteuid'])())
-  var _getgid = (Module['_getgid'] = () =>
+  let _getgid = (Module['_getgid'] = () =>
     (_getgid = Module['_getgid'] = wasmExports['getgid'])())
-  var _mbtowc = (Module['_mbtowc'] = (a0, a1, a2) =>
+  let _mbtowc = (Module['_mbtowc'] = (a0, a1, a2) =>
     (_mbtowc = Module['_mbtowc'] = wasmExports['mbtowc'])(a0, a1, a2))
-  var _getuid = (Module['_getuid'] = () =>
+  let _getuid = (Module['_getuid'] = () =>
     (_getuid = Module['_getuid'] = wasmExports['getuid'])())
-  var _getwc = (Module['_getwc'] = (a0) =>
+  let _getwc = (Module['_getwc'] = (a0) =>
     (_getwc = Module['_getwc'] = wasmExports['getwc'])(a0))
-  var _gmtime = (Module['_gmtime'] = (a0) =>
+  let _gmtime = (Module['_gmtime'] = (a0) =>
     (_gmtime = Module['_gmtime'] = wasmExports['gmtime'])(a0))
-  var _hypot = (Module['_hypot'] = (a0, a1) =>
+  let _hypot = (Module['_hypot'] = (a0, a1) =>
     (_hypot = Module['_hypot'] = wasmExports['hypot'])(a0, a1))
-  var _mbrtowc = (Module['_mbrtowc'] = (a0, a1, a2, a3) =>
+  let _mbrtowc = (Module['_mbrtowc'] = (a0, a1, a2, a3) =>
     (_mbrtowc = Module['_mbrtowc'] = wasmExports['mbrtowc'])(a0, a1, a2, a3))
-  var _ioctl = (Module['_ioctl'] = (a0, a1, a2) =>
+  let _ioctl = (Module['_ioctl'] = (a0, a1, a2) =>
     (_ioctl = Module['_ioctl'] = wasmExports['ioctl'])(a0, a1, a2))
-  var _isalpha = (Module['_isalpha'] = (a0) =>
+  let _isalpha = (Module['_isalpha'] = (a0) =>
     (_isalpha = Module['_isalpha'] = wasmExports['isalpha'])(a0))
-  var _isgraph = (Module['_isgraph'] = (a0) =>
+  let _isgraph = (Module['_isgraph'] = (a0) =>
     (_isgraph = Module['_isgraph'] = wasmExports['isgraph'])(a0))
-  var _isspace = (Module['_isspace'] = (a0) =>
+  let _isspace = (Module['_isspace'] = (a0) =>
     (_isspace = Module['_isspace'] = wasmExports['isspace'])(a0))
-  var _iswblank_l = (Module['_iswblank_l'] = (a0, a1) =>
+  let _iswblank_l = (Module['_iswblank_l'] = (a0, a1) =>
     (_iswblank_l = Module['_iswblank_l'] = wasmExports['iswblank_l'])(a0, a1))
-  var _iswcntrl_l = (Module['_iswcntrl_l'] = (a0, a1) =>
+  let _iswcntrl_l = (Module['_iswcntrl_l'] = (a0, a1) =>
     (_iswcntrl_l = Module['_iswcntrl_l'] = wasmExports['iswcntrl_l'])(a0, a1))
-  var _iswxdigit_l = (Module['_iswxdigit_l'] = (a0, a1) =>
+  let _iswxdigit_l = (Module['_iswxdigit_l'] = (a0, a1) =>
     (_iswxdigit_l = Module['_iswxdigit_l'] = wasmExports['iswxdigit_l'])(
       a0,
       a1,
     ))
-  var _isxdigit_l = (Module['_isxdigit_l'] = (a0, a1) =>
+  let _isxdigit_l = (Module['_isxdigit_l'] = (a0, a1) =>
     (_isxdigit_l = Module['_isxdigit_l'] = wasmExports['isxdigit_l'])(a0, a1))
-  var _pthread_cond_broadcast = (Module['_pthread_cond_broadcast'] = (a0) =>
+  let _pthread_cond_broadcast = (Module['_pthread_cond_broadcast'] = (a0) =>
     (_pthread_cond_broadcast = Module['_pthread_cond_broadcast'] =
       wasmExports['pthread_cond_broadcast'])(a0))
-  var _pthread_atfork = (Module['_pthread_atfork'] = (a0, a1, a2) =>
+  let _pthread_atfork = (Module['_pthread_atfork'] = (a0, a1, a2) =>
     (_pthread_atfork = Module['_pthread_atfork'] =
       wasmExports['pthread_atfork'])(a0, a1, a2))
-  var _pthread_mutexattr_init = (Module['_pthread_mutexattr_init'] = (a0) =>
+  let _pthread_mutexattr_init = (Module['_pthread_mutexattr_init'] = (a0) =>
     (_pthread_mutexattr_init = Module['_pthread_mutexattr_init'] =
       wasmExports['pthread_mutexattr_init'])(a0))
-  var _pthread_mutexattr_setprotocol = (Module[
+  let _pthread_mutexattr_setprotocol = (Module[
     '_pthread_mutexattr_setprotocol'
   ] = (a0, a1) =>
     (_pthread_mutexattr_setprotocol = Module['_pthread_mutexattr_setprotocol'] =
       wasmExports['pthread_mutexattr_setprotocol'])(a0, a1))
-  var _pthread_mutexattr_settype = (Module['_pthread_mutexattr_settype'] = (
+  let _pthread_mutexattr_settype = (Module['_pthread_mutexattr_settype'] = (
     a0,
     a1,
   ) =>
     (_pthread_mutexattr_settype = Module['_pthread_mutexattr_settype'] =
       wasmExports['pthread_mutexattr_settype'])(a0, a1))
-  var _pthread_mutexattr_destroy = (Module['_pthread_mutexattr_destroy'] = (
+  let _pthread_mutexattr_destroy = (Module['_pthread_mutexattr_destroy'] = (
     a0,
   ) =>
     (_pthread_mutexattr_destroy = Module['_pthread_mutexattr_destroy'] =
       wasmExports['pthread_mutexattr_destroy'])(a0))
-  var _pthread_mutexattr_setpshared = (Module['_pthread_mutexattr_setpshared'] =
+  let _pthread_mutexattr_setpshared = (Module['_pthread_mutexattr_setpshared'] =
     (a0, a1) =>
       (_pthread_mutexattr_setpshared = Module['_pthread_mutexattr_setpshared'] =
         wasmExports['pthread_mutexattr_setpshared'])(a0, a1))
-  var _pthread_mutex_trylock = (Module['_pthread_mutex_trylock'] = (a0) =>
+  let _pthread_mutex_trylock = (Module['_pthread_mutex_trylock'] = (a0) =>
     (_pthread_mutex_trylock = Module['_pthread_mutex_trylock'] =
       wasmExports['pthread_mutex_trylock'])(a0))
-  var _pthread_create = (Module['_pthread_create'] = (a0, a1, a2, a3) =>
+  let _pthread_create = (Module['_pthread_create'] = (a0, a1, a2, a3) =>
     (_pthread_create = Module['_pthread_create'] =
       wasmExports['pthread_create'])(a0, a1, a2, a3))
-  var _pthread_join = (Module['_pthread_join'] = (a0, a1) =>
+  let _pthread_join = (Module['_pthread_join'] = (a0, a1) =>
     (_pthread_join = Module['_pthread_join'] = wasmExports['pthread_join'])(
       a0,
       a1,
     ))
-  var _pthread_cond_timedwait = (Module['_pthread_cond_timedwait'] = (
+  let _pthread_cond_timedwait = (Module['_pthread_cond_timedwait'] = (
     a0,
     a1,
     a2,
   ) =>
     (_pthread_cond_timedwait = Module['_pthread_cond_timedwait'] =
       wasmExports['pthread_cond_timedwait'])(a0, a1, a2))
-  var _pthread_detach = (Module['_pthread_detach'] = (a0) =>
+  let _pthread_detach = (Module['_pthread_detach'] = (a0) =>
     (_pthread_detach = Module['_pthread_detach'] =
       wasmExports['pthread_detach'])(a0))
-  var _link = (Module['_link'] = (a0, a1) =>
+  let _link = (Module['_link'] = (a0, a1) =>
     (_link = Module['_link'] = wasmExports['link'])(a0, a1))
-  var _llround = (Module['_llround'] = (a0) =>
+  let _llround = (Module['_llround'] = (a0) =>
     (_llround = Module['_llround'] = wasmExports['llround'])(a0))
-  var _localtime = (Module['_localtime'] = (a0) =>
+  let _localtime = (Module['_localtime'] = (a0) =>
     (_localtime = Module['_localtime'] = wasmExports['localtime'])(a0))
-  var _log2 = (Module['_log2'] = (a0) =>
+  let _log2 = (Module['_log2'] = (a0) =>
     (_log2 = Module['_log2'] = wasmExports['log2'])(a0))
-  var _logb = (Module['_logb'] = (a0) =>
+  let _logb = (Module['_logb'] = (a0) =>
     (_logb = Module['_logb'] = wasmExports['logb'])(a0))
-  var _lround = (Module['_lround'] = (a0) =>
+  let _lround = (Module['_lround'] = (a0) =>
     (_lround = Module['_lround'] = wasmExports['lround'])(a0))
-  var _mbrlen = (Module['_mbrlen'] = (a0, a1, a2) =>
+  let _mbrlen = (Module['_mbrlen'] = (a0, a1, a2) =>
     (_mbrlen = Module['_mbrlen'] = wasmExports['mbrlen'])(a0, a1, a2))
-  var _mbsnrtowcs = (Module['_mbsnrtowcs'] = (a0, a1, a2, a3, a4) =>
+  let _mbsnrtowcs = (Module['_mbsnrtowcs'] = (a0, a1, a2, a3, a4) =>
     (_mbsnrtowcs = Module['_mbsnrtowcs'] = wasmExports['mbsnrtowcs'])(
       a0,
       a1,
@@ -16530,104 +16542,104 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _mbsrtowcs = (Module['_mbsrtowcs'] = (a0, a1, a2, a3) =>
+  let _mbsrtowcs = (Module['_mbsrtowcs'] = (a0, a1, a2, a3) =>
     (_mbsrtowcs = Module['_mbsrtowcs'] = wasmExports['mbsrtowcs'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _memrchr = (Module['_memrchr'] = (a0, a1, a2) =>
+  let _memrchr = (Module['_memrchr'] = (a0, a1, a2) =>
     (_memrchr = Module['_memrchr'] = wasmExports['memrchr'])(a0, a1, a2))
-  var _emscripten_builtin_memalign = (a0, a1) =>
+  let _emscripten_builtin_memalign = (a0, a1) =>
     (_emscripten_builtin_memalign = wasmExports['emscripten_builtin_memalign'])(
       a0,
       a1,
     )
-  var _nextafter = (Module['_nextafter'] = (a0, a1) =>
+  let _nextafter = (Module['_nextafter'] = (a0, a1) =>
     (_nextafter = Module['_nextafter'] = wasmExports['nextafter'])(a0, a1))
-  var _nextafterf = (Module['_nextafterf'] = (a0, a1) =>
+  let _nextafterf = (Module['_nextafterf'] = (a0, a1) =>
     (_nextafterf = Module['_nextafterf'] = wasmExports['nextafterf'])(a0, a1))
-  var _ntohs = (a0) => (_ntohs = wasmExports['ntohs'])(a0)
-  var _openat = (Module['_openat'] = (a0, a1, a2, a3) =>
+  let _ntohs = (a0) => (_ntohs = wasmExports['ntohs'])(a0)
+  let _openat = (Module['_openat'] = (a0, a1, a2, a3) =>
     (_openat = Module['_openat'] = wasmExports['openat'])(a0, a1, a2, a3))
-  var _pathconf = (Module['_pathconf'] = (a0, a1) =>
+  let _pathconf = (Module['_pathconf'] = (a0, a1) =>
     (_pathconf = Module['_pathconf'] = wasmExports['pathconf'])(a0, a1))
-  var _perror = (Module['_perror'] = (a0) =>
+  let _perror = (Module['_perror'] = (a0) =>
     (_perror = Module['_perror'] = wasmExports['perror'])(a0))
-  var _iprintf = (Module['_iprintf'] = (a0, a1) =>
+  let _iprintf = (Module['_iprintf'] = (a0, a1) =>
     (_iprintf = Module['_iprintf'] = wasmExports['iprintf'])(a0, a1))
-  var ___small_printf = (Module['___small_printf'] = (a0, a1) =>
+  let ___small_printf = (Module['___small_printf'] = (a0, a1) =>
     (___small_printf = Module['___small_printf'] =
       wasmExports['__small_printf'])(a0, a1))
-  var _pthread_mutexattr_getprotocol = (Module[
+  let _pthread_mutexattr_getprotocol = (Module[
     '_pthread_mutexattr_getprotocol'
   ] = (a0, a1) =>
     (_pthread_mutexattr_getprotocol = Module['_pthread_mutexattr_getprotocol'] =
       wasmExports['pthread_mutexattr_getprotocol'])(a0, a1))
-  var _pthread_mutexattr_getpshared = (Module['_pthread_mutexattr_getpshared'] =
+  let _pthread_mutexattr_getpshared = (Module['_pthread_mutexattr_getpshared'] =
     (a0, a1) =>
       (_pthread_mutexattr_getpshared = Module['_pthread_mutexattr_getpshared'] =
         wasmExports['pthread_mutexattr_getpshared'])(a0, a1))
-  var _pthread_mutexattr_getrobust = (Module['_pthread_mutexattr_getrobust'] = (
+  let _pthread_mutexattr_getrobust = (Module['_pthread_mutexattr_getrobust'] = (
     a0,
     a1,
   ) =>
     (_pthread_mutexattr_getrobust = Module['_pthread_mutexattr_getrobust'] =
       wasmExports['pthread_mutexattr_getrobust'])(a0, a1))
-  var _pthread_mutexattr_gettype = (Module['_pthread_mutexattr_gettype'] = (
+  let _pthread_mutexattr_gettype = (Module['_pthread_mutexattr_gettype'] = (
     a0,
     a1,
   ) =>
     (_pthread_mutexattr_gettype = Module['_pthread_mutexattr_gettype'] =
       wasmExports['pthread_mutexattr_gettype'])(a0, a1))
-  var _putchar = (Module['_putchar'] = (a0) =>
+  let _putchar = (Module['_putchar'] = (a0) =>
     (_putchar = Module['_putchar'] = wasmExports['putchar'])(a0))
-  var _qsort = (Module['_qsort'] = (a0, a1, a2, a3) =>
+  let _qsort = (Module['_qsort'] = (a0, a1, a2, a3) =>
     (_qsort = Module['_qsort'] = wasmExports['qsort'])(a0, a1, a2, a3))
-  var _srand = (Module['_srand'] = (a0) =>
+  let _srand = (Module['_srand'] = (a0) =>
     (_srand = Module['_srand'] = wasmExports['srand'])(a0))
-  var _rand = (Module['_rand'] = () =>
+  let _rand = (Module['_rand'] = () =>
     (_rand = Module['_rand'] = wasmExports['rand'])())
-  var _remainder = (Module['_remainder'] = (a0, a1) =>
+  let _remainder = (Module['_remainder'] = (a0, a1) =>
     (_remainder = Module['_remainder'] = wasmExports['remainder'])(a0, a1))
-  var _remove = (Module['_remove'] = (a0) =>
+  let _remove = (Module['_remove'] = (a0) =>
     (_remove = Module['_remove'] = wasmExports['remove'])(a0))
-  var _remquo = (Module['_remquo'] = (a0, a1, a2) =>
+  let _remquo = (Module['_remquo'] = (a0, a1, a2) =>
     (_remquo = Module['_remquo'] = wasmExports['remquo'])(a0, a1, a2))
-  var _round = (Module['_round'] = (a0) =>
+  let _round = (Module['_round'] = (a0) =>
     (_round = Module['_round'] = wasmExports['round'])(a0))
-  var _roundf = (Module['_roundf'] = (a0) =>
+  let _roundf = (Module['_roundf'] = (a0) =>
     (_roundf = Module['_roundf'] = wasmExports['roundf'])(a0))
-  var __emscripten_timeout = (a0, a1) =>
+  let __emscripten_timeout = (a0, a1) =>
     (__emscripten_timeout = wasmExports['_emscripten_timeout'])(a0, a1)
-  var _sinl = (Module['_sinl'] = (a0, a1, a2) =>
+  let _sinl = (Module['_sinl'] = (a0, a1, a2) =>
     (_sinl = Module['_sinl'] = wasmExports['sinl'])(a0, a1, a2))
-  var _siprintf = (Module['_siprintf'] = (a0, a1, a2) =>
+  let _siprintf = (Module['_siprintf'] = (a0, a1, a2) =>
     (_siprintf = Module['_siprintf'] = wasmExports['siprintf'])(a0, a1, a2))
-  var _sqrtl = (Module['_sqrtl'] = (a0, a1, a2) =>
+  let _sqrtl = (Module['_sqrtl'] = (a0, a1, a2) =>
     (_sqrtl = Module['_sqrtl'] = wasmExports['sqrtl'])(a0, a1, a2))
-  var _vsscanf = (Module['_vsscanf'] = (a0, a1, a2) =>
+  let _vsscanf = (Module['_vsscanf'] = (a0, a1, a2) =>
     (_vsscanf = Module['_vsscanf'] = wasmExports['vsscanf'])(a0, a1, a2))
-  var _statvfs = (Module['_statvfs'] = (a0, a1) =>
+  let _statvfs = (Module['_statvfs'] = (a0, a1) =>
     (_statvfs = Module['_statvfs'] = wasmExports['statvfs'])(a0, a1))
-  var _strcasecmp = (Module['_strcasecmp'] = (a0, a1) =>
+  let _strcasecmp = (Module['_strcasecmp'] = (a0, a1) =>
     (_strcasecmp = Module['_strcasecmp'] = wasmExports['strcasecmp'])(a0, a1))
-  var _strerror_r = (Module['_strerror_r'] = (a0, a1, a2) =>
+  let _strerror_r = (Module['_strerror_r'] = (a0, a1, a2) =>
     (_strerror_r = Module['_strerror_r'] = wasmExports['strerror_r'])(
       a0,
       a1,
       a2,
     ))
-  var _strftime = (Module['_strftime'] = (a0, a1, a2, a3) =>
+  let _strftime = (Module['_strftime'] = (a0, a1, a2, a3) =>
     (_strftime = Module['_strftime'] = wasmExports['strftime'])(a0, a1, a2, a3))
-  var _strncasecmp = (Module['_strncasecmp'] = (a0, a1, a2) =>
+  let _strncasecmp = (Module['_strncasecmp'] = (a0, a1, a2) =>
     (_strncasecmp = Module['_strncasecmp'] = wasmExports['strncasecmp'])(
       a0,
       a1,
       a2,
     ))
-  var ___multf3 = (Module['___multf3'] = (a0, a1, a2, a3, a4) =>
+  let ___multf3 = (Module['___multf3'] = (a0, a1, a2, a3, a4) =>
     (___multf3 = Module['___multf3'] = wasmExports['__multf3'])(
       a0,
       a1,
@@ -16635,7 +16647,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var ___addtf3 = (Module['___addtf3'] = (a0, a1, a2, a3, a4) =>
+  let ___addtf3 = (Module['___addtf3'] = (a0, a1, a2, a3, a4) =>
     (___addtf3 = Module['___addtf3'] = wasmExports['__addtf3'])(
       a0,
       a1,
@@ -16643,12 +16655,12 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var ___extenddftf2 = (Module['___extenddftf2'] = (a0, a1) =>
+  let ___extenddftf2 = (Module['___extenddftf2'] = (a0, a1) =>
     (___extenddftf2 = Module['___extenddftf2'] = wasmExports['__extenddftf2'])(
       a0,
       a1,
     ))
-  var ___subtf3 = (Module['___subtf3'] = (a0, a1, a2, a3, a4) =>
+  let ___subtf3 = (Module['___subtf3'] = (a0, a1, a2, a3, a4) =>
     (___subtf3 = Module['___subtf3'] = wasmExports['__subtf3'])(
       a0,
       a1,
@@ -16656,7 +16668,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var ___divtf3 = (Module['___divtf3'] = (a0, a1, a2, a3, a4) =>
+  let ___divtf3 = (Module['___divtf3'] = (a0, a1, a2, a3, a4) =>
     (___divtf3 = Module['___divtf3'] = wasmExports['__divtf3'])(
       a0,
       a1,
@@ -16664,70 +16676,70 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var ___eqtf2 = (Module['___eqtf2'] = (a0, a1, a2, a3) =>
+  let ___eqtf2 = (Module['___eqtf2'] = (a0, a1, a2, a3) =>
     (___eqtf2 = Module['___eqtf2'] = wasmExports['__eqtf2'])(a0, a1, a2, a3))
-  var ___trunctfdf2 = (Module['___trunctfdf2'] = (a0, a1) =>
+  let ___trunctfdf2 = (Module['___trunctfdf2'] = (a0, a1) =>
     (___trunctfdf2 = Module['___trunctfdf2'] = wasmExports['__trunctfdf2'])(
       a0,
       a1,
     ))
-  var _strtold = (Module['_strtold'] = (a0, a1, a2) =>
+  let _strtold = (Module['_strtold'] = (a0, a1, a2) =>
     (_strtold = Module['_strtold'] = wasmExports['strtold'])(a0, a1, a2))
-  var _strtof_l = (Module['_strtof_l'] = (a0, a1, a2) =>
+  let _strtof_l = (Module['_strtof_l'] = (a0, a1, a2) =>
     (_strtof_l = Module['_strtof_l'] = wasmExports['strtof_l'])(a0, a1, a2))
-  var _strtod_l = (Module['_strtod_l'] = (a0, a1, a2) =>
+  let _strtod_l = (Module['_strtod_l'] = (a0, a1, a2) =>
     (_strtod_l = Module['_strtod_l'] = wasmExports['strtod_l'])(a0, a1, a2))
-  var _strtold_l = (Module['_strtold_l'] = (a0, a1, a2, a3) =>
+  let _strtold_l = (Module['_strtold_l'] = (a0, a1, a2, a3) =>
     (_strtold_l = Module['_strtold_l'] = wasmExports['strtold_l'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _strtok = (Module['_strtok'] = (a0, a1) =>
+  let _strtok = (Module['_strtok'] = (a0, a1) =>
     (_strtok = Module['_strtok'] = wasmExports['strtok'])(a0, a1))
-  var _strtoull_l = (Module['_strtoull_l'] = (a0, a1, a2, a3) =>
+  let _strtoull_l = (Module['_strtoull_l'] = (a0, a1, a2, a3) =>
     (_strtoull_l = Module['_strtoull_l'] = wasmExports['strtoull_l'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _strtoll_l = (Module['_strtoll_l'] = (a0, a1, a2, a3) =>
+  let _strtoll_l = (Module['_strtoll_l'] = (a0, a1, a2, a3) =>
     (_strtoll_l = Module['_strtoll_l'] = wasmExports['strtoll_l'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _swprintf = (Module['_swprintf'] = (a0, a1, a2, a3) =>
+  let _swprintf = (Module['_swprintf'] = (a0, a1, a2, a3) =>
     (_swprintf = Module['_swprintf'] = wasmExports['swprintf'])(a0, a1, a2, a3))
-  var _trunc = (Module['_trunc'] = (a0) =>
+  let _trunc = (Module['_trunc'] = (a0) =>
     (_trunc = Module['_trunc'] = wasmExports['trunc'])(a0))
-  var _ungetc = (Module['_ungetc'] = (a0, a1) =>
+  let _ungetc = (Module['_ungetc'] = (a0, a1) =>
     (_ungetc = Module['_ungetc'] = wasmExports['ungetc'])(a0, a1))
-  var _ungetwc = (Module['_ungetwc'] = (a0, a1) =>
+  let _ungetwc = (Module['_ungetwc'] = (a0, a1) =>
     (_ungetwc = Module['_ungetwc'] = wasmExports['ungetwc'])(a0, a1))
-  var _unlinkat = (Module['_unlinkat'] = (a0, a1, a2) =>
+  let _unlinkat = (Module['_unlinkat'] = (a0, a1, a2) =>
     (_unlinkat = Module['_unlinkat'] = wasmExports['unlinkat'])(a0, a1, a2))
-  var _usleep = (Module['_usleep'] = (a0) =>
+  let _usleep = (Module['_usleep'] = (a0) =>
     (_usleep = Module['_usleep'] = wasmExports['usleep'])(a0))
-  var _utimensat = (Module['_utimensat'] = (a0, a1, a2, a3) =>
+  let _utimensat = (Module['_utimensat'] = (a0, a1, a2, a3) =>
     (_utimensat = Module['_utimensat'] = wasmExports['utimensat'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _vasprintf = (Module['_vasprintf'] = (a0, a1, a2) =>
+  let _vasprintf = (Module['_vasprintf'] = (a0, a1, a2) =>
     (_vasprintf = Module['_vasprintf'] = wasmExports['vasprintf'])(a0, a1, a2))
-  var _wcrtomb = (Module['_wcrtomb'] = (a0, a1, a2) =>
+  let _wcrtomb = (Module['_wcrtomb'] = (a0, a1, a2) =>
     (_wcrtomb = Module['_wcrtomb'] = wasmExports['wcrtomb'])(a0, a1, a2))
-  var _wcslen = (Module['_wcslen'] = (a0) =>
+  let _wcslen = (Module['_wcslen'] = (a0) =>
     (_wcslen = Module['_wcslen'] = wasmExports['wcslen'])(a0))
-  var _wcscoll_l = (Module['_wcscoll_l'] = (a0, a1, a2) =>
+  let _wcscoll_l = (Module['_wcscoll_l'] = (a0, a1, a2) =>
     (_wcscoll_l = Module['_wcscoll_l'] = wasmExports['wcscoll_l'])(a0, a1, a2))
-  var _wcsnrtombs = (Module['_wcsnrtombs'] = (a0, a1, a2, a3, a4) =>
+  let _wcsnrtombs = (Module['_wcsnrtombs'] = (a0, a1, a2, a3, a4) =>
     (_wcsnrtombs = Module['_wcsnrtombs'] = wasmExports['wcsnrtombs'])(
       a0,
       a1,
@@ -16735,50 +16747,50 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a3,
       a4,
     ))
-  var _wcstof = (Module['_wcstof'] = (a0, a1) =>
+  let _wcstof = (Module['_wcstof'] = (a0, a1) =>
     (_wcstof = Module['_wcstof'] = wasmExports['wcstof'])(a0, a1))
-  var _wcstod = (Module['_wcstod'] = (a0, a1) =>
+  let _wcstod = (Module['_wcstod'] = (a0, a1) =>
     (_wcstod = Module['_wcstod'] = wasmExports['wcstod'])(a0, a1))
-  var _wcstold = (Module['_wcstold'] = (a0, a1, a2) =>
+  let _wcstold = (Module['_wcstold'] = (a0, a1, a2) =>
     (_wcstold = Module['_wcstold'] = wasmExports['wcstold'])(a0, a1, a2))
-  var _wcstoull = (Module['_wcstoull'] = (a0, a1, a2) =>
+  let _wcstoull = (Module['_wcstoull'] = (a0, a1, a2) =>
     (_wcstoull = Module['_wcstoull'] = wasmExports['wcstoull'])(a0, a1, a2))
-  var _wcstoll = (Module['_wcstoll'] = (a0, a1, a2) =>
+  let _wcstoll = (Module['_wcstoll'] = (a0, a1, a2) =>
     (_wcstoll = Module['_wcstoll'] = wasmExports['wcstoll'])(a0, a1, a2))
-  var _wcstoul = (Module['_wcstoul'] = (a0, a1, a2) =>
+  let _wcstoul = (Module['_wcstoul'] = (a0, a1, a2) =>
     (_wcstoul = Module['_wcstoul'] = wasmExports['wcstoul'])(a0, a1, a2))
-  var _wcstol = (Module['_wcstol'] = (a0, a1, a2) =>
+  let _wcstol = (Module['_wcstol'] = (a0, a1, a2) =>
     (_wcstol = Module['_wcstol'] = wasmExports['wcstol'])(a0, a1, a2))
-  var _wcsxfrm_l = (Module['_wcsxfrm_l'] = (a0, a1, a2, a3) =>
+  let _wcsxfrm_l = (Module['_wcsxfrm_l'] = (a0, a1, a2, a3) =>
     (_wcsxfrm_l = Module['_wcsxfrm_l'] = wasmExports['wcsxfrm_l'])(
       a0,
       a1,
       a2,
       a3,
     ))
-  var _wctob = (Module['_wctob'] = (a0) =>
+  let _wctob = (Module['_wctob'] = (a0) =>
     (_wctob = Module['_wctob'] = wasmExports['wctob'])(a0))
-  var _wmemchr = (Module['_wmemchr'] = (a0, a1, a2) =>
+  let _wmemchr = (Module['_wmemchr'] = (a0, a1, a2) =>
     (_wmemchr = Module['_wmemchr'] = wasmExports['wmemchr'])(a0, a1, a2))
-  var _wmemcmp = (Module['_wmemcmp'] = (a0, a1, a2) =>
+  let _wmemcmp = (Module['_wmemcmp'] = (a0, a1, a2) =>
     (_wmemcmp = Module['_wmemcmp'] = wasmExports['wmemcmp'])(a0, a1, a2))
-  var ___lttf2 = (Module['___lttf2'] = (a0, a1, a2, a3) =>
+  let ___lttf2 = (Module['___lttf2'] = (a0, a1, a2, a3) =>
     (___lttf2 = Module['___lttf2'] = wasmExports['__lttf2'])(a0, a1, a2, a3))
-  var _setThrew = (a0, a1) => (_setThrew = wasmExports['setThrew'])(a0, a1)
-  var __emscripten_tempret_set = (a0) =>
+  let _setThrew = (a0, a1) => (_setThrew = wasmExports['setThrew'])(a0, a1)
+  let __emscripten_tempret_set = (a0) =>
     (__emscripten_tempret_set = wasmExports['_emscripten_tempret_set'])(a0)
-  var __emscripten_tempret_get = () =>
+  let __emscripten_tempret_get = () =>
     (__emscripten_tempret_get = wasmExports['_emscripten_tempret_get'])()
-  var __emscripten_stack_restore = (a0) =>
+  let __emscripten_stack_restore = (a0) =>
     (__emscripten_stack_restore = wasmExports['_emscripten_stack_restore'])(a0)
-  var __emscripten_stack_alloc = (a0) =>
+  let __emscripten_stack_alloc = (a0) =>
     (__emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'])(a0)
-  var _emscripten_stack_get_current = () =>
+  let _emscripten_stack_get_current = () =>
     (_emscripten_stack_get_current =
       wasmExports['emscripten_stack_get_current'])()
-  var __Znwm = (Module['__Znwm'] = (a0) =>
+  let __Znwm = (Module['__Znwm'] = (a0) =>
     (__Znwm = Module['__Znwm'] = wasmExports['_Znwm'])(a0))
-  var __ZNSt3__210__stdinbufIcEC2EP8_IO_FILEP11__mbstate_t = (Module[
+  let __ZNSt3__210__stdinbufIcEC2EP8_IO_FILEP11__mbstate_t = (Module[
     '__ZNSt3__210__stdinbufIcEC2EP8_IO_FILEP11__mbstate_t'
   ] = (a0, a1, a2) =>
     (__ZNSt3__210__stdinbufIcEC2EP8_IO_FILEP11__mbstate_t = Module[
@@ -16789,7 +16801,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a1,
       a2,
     ))
-  var __ZNSt3__211__stdoutbufIcEC2EP8_IO_FILEP11__mbstate_t = (Module[
+  let __ZNSt3__211__stdoutbufIcEC2EP8_IO_FILEP11__mbstate_t = (Module[
     '__ZNSt3__211__stdoutbufIcEC2EP8_IO_FILEP11__mbstate_t'
   ] = (a0, a1, a2) =>
     (__ZNSt3__211__stdoutbufIcEC2EP8_IO_FILEP11__mbstate_t = Module[
@@ -16800,7 +16812,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a1,
       a2,
     ))
-  var __ZNSt3__210__stdinbufIwEC2EP8_IO_FILEP11__mbstate_t = (Module[
+  let __ZNSt3__210__stdinbufIwEC2EP8_IO_FILEP11__mbstate_t = (Module[
     '__ZNSt3__210__stdinbufIwEC2EP8_IO_FILEP11__mbstate_t'
   ] = (a0, a1, a2) =>
     (__ZNSt3__210__stdinbufIwEC2EP8_IO_FILEP11__mbstate_t = Module[
@@ -16811,7 +16823,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a1,
       a2,
     ))
-  var __ZNSt3__211__stdoutbufIwEC2EP8_IO_FILEP11__mbstate_t = (Module[
+  let __ZNSt3__211__stdoutbufIwEC2EP8_IO_FILEP11__mbstate_t = (Module[
     '__ZNSt3__211__stdoutbufIwEC2EP8_IO_FILEP11__mbstate_t'
   ] = (a0, a1, a2) =>
     (__ZNSt3__211__stdoutbufIwEC2EP8_IO_FILEP11__mbstate_t = Module[
@@ -16822,497 +16834,504 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       a1,
       a2,
     ))
-  var __ZSt15get_new_handlerv = (Module['__ZSt15get_new_handlerv'] = () =>
+  let __ZSt15get_new_handlerv = (Module['__ZSt15get_new_handlerv'] = () =>
     (__ZSt15get_new_handlerv = Module['__ZSt15get_new_handlerv'] =
       wasmExports['_ZSt15get_new_handlerv'])())
-  var __ZdlPv = (Module['__ZdlPv'] = (a0) =>
+  let __ZdlPv = (Module['__ZdlPv'] = (a0) =>
     (__ZdlPv = Module['__ZdlPv'] = wasmExports['_ZdlPv'])(a0))
-  var __ZNSt13runtime_errorD2Ev = (Module['__ZNSt13runtime_errorD2Ev'] = (a0) =>
+  let __ZNSt13runtime_errorD2Ev = (Module['__ZNSt13runtime_errorD2Ev'] = (a0) =>
     (__ZNSt13runtime_errorD2Ev = Module['__ZNSt13runtime_errorD2Ev'] =
       wasmExports['_ZNSt13runtime_errorD2Ev'])(a0))
-  var __ZNKSt13runtime_error4whatEv = (Module['__ZNKSt13runtime_error4whatEv'] =
+  let __ZNKSt13runtime_error4whatEv = (Module['__ZNKSt13runtime_error4whatEv'] =
     (a0) =>
       (__ZNKSt13runtime_error4whatEv = Module['__ZNKSt13runtime_error4whatEv'] =
         wasmExports['_ZNKSt13runtime_error4whatEv'])(a0))
-  var __ZSt9terminatev = (Module['__ZSt9terminatev'] = () =>
+  let __ZSt9terminatev = (Module['__ZSt9terminatev'] = () =>
     (__ZSt9terminatev = Module['__ZSt9terminatev'] =
       wasmExports['_ZSt9terminatev'])())
-  var __ZNSt11logic_errorD2Ev = (Module['__ZNSt11logic_errorD2Ev'] = (a0) =>
+  let __ZNSt11logic_errorD2Ev = (Module['__ZNSt11logic_errorD2Ev'] = (a0) =>
     (__ZNSt11logic_errorD2Ev = Module['__ZNSt11logic_errorD2Ev'] =
       wasmExports['_ZNSt11logic_errorD2Ev'])(a0))
-  var ___cxa_decrement_exception_refcount = (Module[
+  let ___cxa_decrement_exception_refcount = (Module[
     '___cxa_decrement_exception_refcount'
   ] = (a0) =>
     (___cxa_decrement_exception_refcount = Module[
       '___cxa_decrement_exception_refcount'
     ] =
       wasmExports['__cxa_decrement_exception_refcount'])(a0))
-  var ___cxa_increment_exception_refcount = (Module[
+  let ___cxa_increment_exception_refcount = (Module[
     '___cxa_increment_exception_refcount'
   ] = (a0) =>
     (___cxa_increment_exception_refcount = Module[
       '___cxa_increment_exception_refcount'
     ] =
       wasmExports['__cxa_increment_exception_refcount'])(a0))
-  var __ZNSt9exceptionD2Ev = (Module['__ZNSt9exceptionD2Ev'] = (a0) =>
+  let __ZNSt9exceptionD2Ev = (Module['__ZNSt9exceptionD2Ev'] = (a0) =>
     (__ZNSt9exceptionD2Ev = Module['__ZNSt9exceptionD2Ev'] =
       wasmExports['_ZNSt9exceptionD2Ev'])(a0))
-  var __ZNKSt11logic_error4whatEv = (Module['__ZNKSt11logic_error4whatEv'] = (
+  let __ZNKSt11logic_error4whatEv = (Module['__ZNKSt11logic_error4whatEv'] = (
     a0,
   ) =>
     (__ZNKSt11logic_error4whatEv = Module['__ZNKSt11logic_error4whatEv'] =
       wasmExports['_ZNKSt11logic_error4whatEv'])(a0))
-  var ___cxa_bad_cast = (Module['___cxa_bad_cast'] = () =>
+  let ___cxa_bad_cast = (Module['___cxa_bad_cast'] = () =>
     (___cxa_bad_cast = Module['___cxa_bad_cast'] =
       wasmExports['__cxa_bad_cast'])())
-  var ___cxa_bad_typeid = (Module['___cxa_bad_typeid'] = () =>
+  let ___cxa_bad_typeid = (Module['___cxa_bad_typeid'] = () =>
     (___cxa_bad_typeid = Module['___cxa_bad_typeid'] =
       wasmExports['__cxa_bad_typeid'])())
-  var ___cxa_allocate_exception = (Module['___cxa_allocate_exception'] = (a0) =>
+  let ___cxa_allocate_exception = (Module['___cxa_allocate_exception'] = (a0) =>
     (___cxa_allocate_exception = Module['___cxa_allocate_exception'] =
       wasmExports['__cxa_allocate_exception'])(a0))
-  var ___cxa_free_exception = (Module['___cxa_free_exception'] = (a0) =>
+  let ___cxa_free_exception = (Module['___cxa_free_exception'] = (a0) =>
     (___cxa_free_exception = Module['___cxa_free_exception'] =
       wasmExports['__cxa_free_exception'])(a0))
-  var ___cxa_init_primary_exception = (Module['___cxa_init_primary_exception'] =
+  let ___cxa_init_primary_exception = (Module['___cxa_init_primary_exception'] =
     (a0, a1, a2) =>
       (___cxa_init_primary_exception = Module['___cxa_init_primary_exception'] =
         wasmExports['__cxa_init_primary_exception'])(a0, a1, a2))
-  var __ZNSt9type_infoD2Ev = (Module['__ZNSt9type_infoD2Ev'] = (a0) =>
+  let __ZNSt9type_infoD2Ev = (Module['__ZNSt9type_infoD2Ev'] = (a0) =>
     (__ZNSt9type_infoD2Ev = Module['__ZNSt9type_infoD2Ev'] =
       wasmExports['_ZNSt9type_infoD2Ev'])(a0))
-  var ___cxa_can_catch = (a0, a1, a2) =>
+  let ___cxa_can_catch = (a0, a1, a2) =>
     (___cxa_can_catch = wasmExports['__cxa_can_catch'])(a0, a1, a2)
-  var ___cxa_get_exception_ptr = (Module['___cxa_get_exception_ptr'] = (a0) =>
+  let ___cxa_get_exception_ptr = (Module['___cxa_get_exception_ptr'] = (a0) =>
     (___cxa_get_exception_ptr = Module['___cxa_get_exception_ptr'] =
       wasmExports['__cxa_get_exception_ptr'])(a0))
-  var __ZNSt9exceptionD0Ev = (Module['__ZNSt9exceptionD0Ev'] = (a0) =>
+  let __ZNSt9exceptionD0Ev = (Module['__ZNSt9exceptionD0Ev'] = (a0) =>
     (__ZNSt9exceptionD0Ev = Module['__ZNSt9exceptionD0Ev'] =
       wasmExports['_ZNSt9exceptionD0Ev'])(a0))
-  var __ZNSt9exceptionD1Ev = (Module['__ZNSt9exceptionD1Ev'] = (a0) =>
+  let __ZNSt9exceptionD1Ev = (Module['__ZNSt9exceptionD1Ev'] = (a0) =>
     (__ZNSt9exceptionD1Ev = Module['__ZNSt9exceptionD1Ev'] =
       wasmExports['_ZNSt9exceptionD1Ev'])(a0))
-  var __ZNKSt9exception4whatEv = (Module['__ZNKSt9exception4whatEv'] = (a0) =>
+  let __ZNKSt9exception4whatEv = (Module['__ZNKSt9exception4whatEv'] = (a0) =>
     (__ZNKSt9exception4whatEv = Module['__ZNKSt9exception4whatEv'] =
       wasmExports['_ZNKSt9exception4whatEv'])(a0))
-  var __ZNSt13bad_exceptionD0Ev = (Module['__ZNSt13bad_exceptionD0Ev'] = (a0) =>
+  let __ZNSt13bad_exceptionD0Ev = (Module['__ZNSt13bad_exceptionD0Ev'] = (a0) =>
     (__ZNSt13bad_exceptionD0Ev = Module['__ZNSt13bad_exceptionD0Ev'] =
       wasmExports['_ZNSt13bad_exceptionD0Ev'])(a0))
-  var __ZNSt13bad_exceptionD1Ev = (Module['__ZNSt13bad_exceptionD1Ev'] = (a0) =>
+  let __ZNSt13bad_exceptionD1Ev = (Module['__ZNSt13bad_exceptionD1Ev'] = (a0) =>
     (__ZNSt13bad_exceptionD1Ev = Module['__ZNSt13bad_exceptionD1Ev'] =
       wasmExports['_ZNSt13bad_exceptionD1Ev'])(a0))
-  var __ZNKSt13bad_exception4whatEv = (Module['__ZNKSt13bad_exception4whatEv'] =
+  let __ZNKSt13bad_exception4whatEv = (Module['__ZNKSt13bad_exception4whatEv'] =
     (a0) =>
       (__ZNKSt13bad_exception4whatEv = Module['__ZNKSt13bad_exception4whatEv'] =
         wasmExports['_ZNKSt13bad_exception4whatEv'])(a0))
-  var __ZNSt9bad_allocC2Ev = (Module['__ZNSt9bad_allocC2Ev'] = (a0) =>
+  let __ZNSt9bad_allocC2Ev = (Module['__ZNSt9bad_allocC2Ev'] = (a0) =>
     (__ZNSt9bad_allocC2Ev = Module['__ZNSt9bad_allocC2Ev'] =
       wasmExports['_ZNSt9bad_allocC2Ev'])(a0))
-  var __ZNSt9bad_allocD0Ev = (Module['__ZNSt9bad_allocD0Ev'] = (a0) =>
+  let __ZNSt9bad_allocD0Ev = (Module['__ZNSt9bad_allocD0Ev'] = (a0) =>
     (__ZNSt9bad_allocD0Ev = Module['__ZNSt9bad_allocD0Ev'] =
       wasmExports['_ZNSt9bad_allocD0Ev'])(a0))
-  var __ZNSt9bad_allocD1Ev = (Module['__ZNSt9bad_allocD1Ev'] = (a0) =>
+  let __ZNSt9bad_allocD1Ev = (Module['__ZNSt9bad_allocD1Ev'] = (a0) =>
     (__ZNSt9bad_allocD1Ev = Module['__ZNSt9bad_allocD1Ev'] =
       wasmExports['_ZNSt9bad_allocD1Ev'])(a0))
-  var __ZNKSt9bad_alloc4whatEv = (Module['__ZNKSt9bad_alloc4whatEv'] = (a0) =>
+  let __ZNKSt9bad_alloc4whatEv = (Module['__ZNKSt9bad_alloc4whatEv'] = (a0) =>
     (__ZNKSt9bad_alloc4whatEv = Module['__ZNKSt9bad_alloc4whatEv'] =
       wasmExports['_ZNKSt9bad_alloc4whatEv'])(a0))
-  var __ZNSt20bad_array_new_lengthC2Ev = (Module[
+  let __ZNSt20bad_array_new_lengthC2Ev = (Module[
     '__ZNSt20bad_array_new_lengthC2Ev'
   ] = (a0) =>
     (__ZNSt20bad_array_new_lengthC2Ev = Module[
       '__ZNSt20bad_array_new_lengthC2Ev'
     ] =
       wasmExports['_ZNSt20bad_array_new_lengthC2Ev'])(a0))
-  var __ZNSt20bad_array_new_lengthD0Ev = (Module[
+  let __ZNSt20bad_array_new_lengthD0Ev = (Module[
     '__ZNSt20bad_array_new_lengthD0Ev'
   ] = (a0) =>
     (__ZNSt20bad_array_new_lengthD0Ev = Module[
       '__ZNSt20bad_array_new_lengthD0Ev'
     ] =
       wasmExports['_ZNSt20bad_array_new_lengthD0Ev'])(a0))
-  var __ZNSt20bad_array_new_lengthD1Ev = (Module[
+  let __ZNSt20bad_array_new_lengthD1Ev = (Module[
     '__ZNSt20bad_array_new_lengthD1Ev'
   ] = (a0) =>
     (__ZNSt20bad_array_new_lengthD1Ev = Module[
       '__ZNSt20bad_array_new_lengthD1Ev'
     ] =
       wasmExports['_ZNSt20bad_array_new_lengthD1Ev'])(a0))
-  var __ZNKSt20bad_array_new_length4whatEv = (Module[
+  let __ZNKSt20bad_array_new_length4whatEv = (Module[
     '__ZNKSt20bad_array_new_length4whatEv'
   ] = (a0) =>
     (__ZNKSt20bad_array_new_length4whatEv = Module[
       '__ZNKSt20bad_array_new_length4whatEv'
     ] =
       wasmExports['_ZNKSt20bad_array_new_length4whatEv'])(a0))
-  var __ZNSt13bad_exceptionD2Ev = (Module['__ZNSt13bad_exceptionD2Ev'] = (a0) =>
+  let __ZNSt13bad_exceptionD2Ev = (Module['__ZNSt13bad_exceptionD2Ev'] = (a0) =>
     (__ZNSt13bad_exceptionD2Ev = Module['__ZNSt13bad_exceptionD2Ev'] =
       wasmExports['_ZNSt13bad_exceptionD2Ev'])(a0))
-  var __ZNSt9bad_allocC1Ev = (Module['__ZNSt9bad_allocC1Ev'] = (a0) =>
+  let __ZNSt9bad_allocC1Ev = (Module['__ZNSt9bad_allocC1Ev'] = (a0) =>
     (__ZNSt9bad_allocC1Ev = Module['__ZNSt9bad_allocC1Ev'] =
       wasmExports['_ZNSt9bad_allocC1Ev'])(a0))
-  var __ZNSt9bad_allocD2Ev = (Module['__ZNSt9bad_allocD2Ev'] = (a0) =>
+  let __ZNSt9bad_allocD2Ev = (Module['__ZNSt9bad_allocD2Ev'] = (a0) =>
     (__ZNSt9bad_allocD2Ev = Module['__ZNSt9bad_allocD2Ev'] =
       wasmExports['_ZNSt9bad_allocD2Ev'])(a0))
-  var __ZNSt20bad_array_new_lengthC1Ev = (Module[
+  let __ZNSt20bad_array_new_lengthC1Ev = (Module[
     '__ZNSt20bad_array_new_lengthC1Ev'
   ] = (a0) =>
     (__ZNSt20bad_array_new_lengthC1Ev = Module[
       '__ZNSt20bad_array_new_lengthC1Ev'
     ] =
       wasmExports['_ZNSt20bad_array_new_lengthC1Ev'])(a0))
-  var __ZNSt20bad_array_new_lengthD2Ev = (Module[
+  let __ZNSt20bad_array_new_lengthD2Ev = (Module[
     '__ZNSt20bad_array_new_lengthD2Ev'
   ] = (a0) =>
     (__ZNSt20bad_array_new_lengthD2Ev = Module[
       '__ZNSt20bad_array_new_lengthD2Ev'
     ] =
       wasmExports['_ZNSt20bad_array_new_lengthD2Ev'])(a0))
-  var __ZNSt11logic_errorD0Ev = (Module['__ZNSt11logic_errorD0Ev'] = (a0) =>
+  let __ZNSt11logic_errorD0Ev = (Module['__ZNSt11logic_errorD0Ev'] = (a0) =>
     (__ZNSt11logic_errorD0Ev = Module['__ZNSt11logic_errorD0Ev'] =
       wasmExports['_ZNSt11logic_errorD0Ev'])(a0))
-  var __ZNSt11logic_errorD1Ev = (Module['__ZNSt11logic_errorD1Ev'] = (a0) =>
+  let __ZNSt11logic_errorD1Ev = (Module['__ZNSt11logic_errorD1Ev'] = (a0) =>
     (__ZNSt11logic_errorD1Ev = Module['__ZNSt11logic_errorD1Ev'] =
       wasmExports['_ZNSt11logic_errorD1Ev'])(a0))
-  var __ZNSt13runtime_errorD0Ev = (Module['__ZNSt13runtime_errorD0Ev'] = (a0) =>
+  let __ZNSt13runtime_errorD0Ev = (Module['__ZNSt13runtime_errorD0Ev'] = (a0) =>
     (__ZNSt13runtime_errorD0Ev = Module['__ZNSt13runtime_errorD0Ev'] =
       wasmExports['_ZNSt13runtime_errorD0Ev'])(a0))
-  var __ZNSt13runtime_errorD1Ev = (Module['__ZNSt13runtime_errorD1Ev'] = (a0) =>
+  let __ZNSt13runtime_errorD1Ev = (Module['__ZNSt13runtime_errorD1Ev'] = (a0) =>
     (__ZNSt13runtime_errorD1Ev = Module['__ZNSt13runtime_errorD1Ev'] =
       wasmExports['_ZNSt13runtime_errorD1Ev'])(a0))
-  var __ZNSt12domain_errorD0Ev = (Module['__ZNSt12domain_errorD0Ev'] = (a0) =>
+  let __ZNSt12domain_errorD0Ev = (Module['__ZNSt12domain_errorD0Ev'] = (a0) =>
     (__ZNSt12domain_errorD0Ev = Module['__ZNSt12domain_errorD0Ev'] =
       wasmExports['_ZNSt12domain_errorD0Ev'])(a0))
-  var __ZNSt12domain_errorD1Ev = (Module['__ZNSt12domain_errorD1Ev'] = (a0) =>
+  let __ZNSt12domain_errorD1Ev = (Module['__ZNSt12domain_errorD1Ev'] = (a0) =>
     (__ZNSt12domain_errorD1Ev = Module['__ZNSt12domain_errorD1Ev'] =
       wasmExports['_ZNSt12domain_errorD1Ev'])(a0))
-  var __ZNSt16invalid_argumentD0Ev = (Module['__ZNSt16invalid_argumentD0Ev'] = (
+  let __ZNSt16invalid_argumentD0Ev = (Module['__ZNSt16invalid_argumentD0Ev'] = (
     a0,
   ) =>
     (__ZNSt16invalid_argumentD0Ev = Module['__ZNSt16invalid_argumentD0Ev'] =
       wasmExports['_ZNSt16invalid_argumentD0Ev'])(a0))
-  var __ZNSt16invalid_argumentD1Ev = (Module['__ZNSt16invalid_argumentD1Ev'] = (
+  let __ZNSt16invalid_argumentD1Ev = (Module['__ZNSt16invalid_argumentD1Ev'] = (
     a0,
   ) =>
     (__ZNSt16invalid_argumentD1Ev = Module['__ZNSt16invalid_argumentD1Ev'] =
       wasmExports['_ZNSt16invalid_argumentD1Ev'])(a0))
-  var __ZNSt12length_errorD0Ev = (Module['__ZNSt12length_errorD0Ev'] = (a0) =>
+  let __ZNSt12length_errorD0Ev = (Module['__ZNSt12length_errorD0Ev'] = (a0) =>
     (__ZNSt12length_errorD0Ev = Module['__ZNSt12length_errorD0Ev'] =
       wasmExports['_ZNSt12length_errorD0Ev'])(a0))
-  var __ZNSt12length_errorD1Ev = (Module['__ZNSt12length_errorD1Ev'] = (a0) =>
+  let __ZNSt12length_errorD1Ev = (Module['__ZNSt12length_errorD1Ev'] = (a0) =>
     (__ZNSt12length_errorD1Ev = Module['__ZNSt12length_errorD1Ev'] =
       wasmExports['_ZNSt12length_errorD1Ev'])(a0))
-  var __ZNSt12out_of_rangeD0Ev = (Module['__ZNSt12out_of_rangeD0Ev'] = (a0) =>
+  let __ZNSt12out_of_rangeD0Ev = (Module['__ZNSt12out_of_rangeD0Ev'] = (a0) =>
     (__ZNSt12out_of_rangeD0Ev = Module['__ZNSt12out_of_rangeD0Ev'] =
       wasmExports['_ZNSt12out_of_rangeD0Ev'])(a0))
-  var __ZNSt12out_of_rangeD1Ev = (Module['__ZNSt12out_of_rangeD1Ev'] = (a0) =>
+  let __ZNSt12out_of_rangeD1Ev = (Module['__ZNSt12out_of_rangeD1Ev'] = (a0) =>
     (__ZNSt12out_of_rangeD1Ev = Module['__ZNSt12out_of_rangeD1Ev'] =
       wasmExports['_ZNSt12out_of_rangeD1Ev'])(a0))
-  var __ZNSt11range_errorD0Ev = (Module['__ZNSt11range_errorD0Ev'] = (a0) =>
+  let __ZNSt11range_errorD0Ev = (Module['__ZNSt11range_errorD0Ev'] = (a0) =>
     (__ZNSt11range_errorD0Ev = Module['__ZNSt11range_errorD0Ev'] =
       wasmExports['_ZNSt11range_errorD0Ev'])(a0))
-  var __ZNSt11range_errorD1Ev = (Module['__ZNSt11range_errorD1Ev'] = (a0) =>
+  let __ZNSt11range_errorD1Ev = (Module['__ZNSt11range_errorD1Ev'] = (a0) =>
     (__ZNSt11range_errorD1Ev = Module['__ZNSt11range_errorD1Ev'] =
       wasmExports['_ZNSt11range_errorD1Ev'])(a0))
-  var __ZNSt14overflow_errorD0Ev = (Module['__ZNSt14overflow_errorD0Ev'] = (
+  let __ZNSt14overflow_errorD0Ev = (Module['__ZNSt14overflow_errorD0Ev'] = (
     a0,
   ) =>
     (__ZNSt14overflow_errorD0Ev = Module['__ZNSt14overflow_errorD0Ev'] =
       wasmExports['_ZNSt14overflow_errorD0Ev'])(a0))
-  var __ZNSt14overflow_errorD1Ev = (Module['__ZNSt14overflow_errorD1Ev'] = (
+  let __ZNSt14overflow_errorD1Ev = (Module['__ZNSt14overflow_errorD1Ev'] = (
     a0,
   ) =>
     (__ZNSt14overflow_errorD1Ev = Module['__ZNSt14overflow_errorD1Ev'] =
       wasmExports['_ZNSt14overflow_errorD1Ev'])(a0))
-  var __ZNSt15underflow_errorD0Ev = (Module['__ZNSt15underflow_errorD0Ev'] = (
+  let __ZNSt15underflow_errorD0Ev = (Module['__ZNSt15underflow_errorD0Ev'] = (
     a0,
   ) =>
     (__ZNSt15underflow_errorD0Ev = Module['__ZNSt15underflow_errorD0Ev'] =
       wasmExports['_ZNSt15underflow_errorD0Ev'])(a0))
-  var __ZNSt15underflow_errorD1Ev = (Module['__ZNSt15underflow_errorD1Ev'] = (
+  let __ZNSt15underflow_errorD1Ev = (Module['__ZNSt15underflow_errorD1Ev'] = (
     a0,
   ) =>
     (__ZNSt15underflow_errorD1Ev = Module['__ZNSt15underflow_errorD1Ev'] =
       wasmExports['_ZNSt15underflow_errorD1Ev'])(a0))
-  var __ZNSt12domain_errorD2Ev = (Module['__ZNSt12domain_errorD2Ev'] = (a0) =>
+  let __ZNSt12domain_errorD2Ev = (Module['__ZNSt12domain_errorD2Ev'] = (a0) =>
     (__ZNSt12domain_errorD2Ev = Module['__ZNSt12domain_errorD2Ev'] =
       wasmExports['_ZNSt12domain_errorD2Ev'])(a0))
-  var __ZNSt16invalid_argumentD2Ev = (Module['__ZNSt16invalid_argumentD2Ev'] = (
+  let __ZNSt16invalid_argumentD2Ev = (Module['__ZNSt16invalid_argumentD2Ev'] = (
     a0,
   ) =>
     (__ZNSt16invalid_argumentD2Ev = Module['__ZNSt16invalid_argumentD2Ev'] =
       wasmExports['_ZNSt16invalid_argumentD2Ev'])(a0))
-  var __ZNSt12length_errorD2Ev = (Module['__ZNSt12length_errorD2Ev'] = (a0) =>
+  let __ZNSt12length_errorD2Ev = (Module['__ZNSt12length_errorD2Ev'] = (a0) =>
     (__ZNSt12length_errorD2Ev = Module['__ZNSt12length_errorD2Ev'] =
       wasmExports['_ZNSt12length_errorD2Ev'])(a0))
-  var __ZNSt12out_of_rangeD2Ev = (Module['__ZNSt12out_of_rangeD2Ev'] = (a0) =>
+  let __ZNSt12out_of_rangeD2Ev = (Module['__ZNSt12out_of_rangeD2Ev'] = (a0) =>
     (__ZNSt12out_of_rangeD2Ev = Module['__ZNSt12out_of_rangeD2Ev'] =
       wasmExports['_ZNSt12out_of_rangeD2Ev'])(a0))
-  var __ZNSt11range_errorD2Ev = (Module['__ZNSt11range_errorD2Ev'] = (a0) =>
+  let __ZNSt11range_errorD2Ev = (Module['__ZNSt11range_errorD2Ev'] = (a0) =>
     (__ZNSt11range_errorD2Ev = Module['__ZNSt11range_errorD2Ev'] =
       wasmExports['_ZNSt11range_errorD2Ev'])(a0))
-  var __ZNSt14overflow_errorD2Ev = (Module['__ZNSt14overflow_errorD2Ev'] = (
+  let __ZNSt14overflow_errorD2Ev = (Module['__ZNSt14overflow_errorD2Ev'] = (
     a0,
   ) =>
     (__ZNSt14overflow_errorD2Ev = Module['__ZNSt14overflow_errorD2Ev'] =
       wasmExports['_ZNSt14overflow_errorD2Ev'])(a0))
-  var __ZNSt15underflow_errorD2Ev = (Module['__ZNSt15underflow_errorD2Ev'] = (
+  let __ZNSt15underflow_errorD2Ev = (Module['__ZNSt15underflow_errorD2Ev'] = (
     a0,
   ) =>
     (__ZNSt15underflow_errorD2Ev = Module['__ZNSt15underflow_errorD2Ev'] =
       wasmExports['_ZNSt15underflow_errorD2Ev'])(a0))
-  var __ZNSt9type_infoD0Ev = (Module['__ZNSt9type_infoD0Ev'] = (a0) =>
+  let __ZNSt9type_infoD0Ev = (Module['__ZNSt9type_infoD0Ev'] = (a0) =>
     (__ZNSt9type_infoD0Ev = Module['__ZNSt9type_infoD0Ev'] =
       wasmExports['_ZNSt9type_infoD0Ev'])(a0))
-  var __ZNSt9type_infoD1Ev = (Module['__ZNSt9type_infoD1Ev'] = (a0) =>
+  let __ZNSt9type_infoD1Ev = (Module['__ZNSt9type_infoD1Ev'] = (a0) =>
     (__ZNSt9type_infoD1Ev = Module['__ZNSt9type_infoD1Ev'] =
       wasmExports['_ZNSt9type_infoD1Ev'])(a0))
-  var __ZNSt8bad_castC2Ev = (Module['__ZNSt8bad_castC2Ev'] = (a0) =>
+  let __ZNSt8bad_castC2Ev = (Module['__ZNSt8bad_castC2Ev'] = (a0) =>
     (__ZNSt8bad_castC2Ev = Module['__ZNSt8bad_castC2Ev'] =
       wasmExports['_ZNSt8bad_castC2Ev'])(a0))
-  var __ZNSt8bad_castD2Ev = (Module['__ZNSt8bad_castD2Ev'] = (a0) =>
+  let __ZNSt8bad_castD2Ev = (Module['__ZNSt8bad_castD2Ev'] = (a0) =>
     (__ZNSt8bad_castD2Ev = Module['__ZNSt8bad_castD2Ev'] =
       wasmExports['_ZNSt8bad_castD2Ev'])(a0))
-  var __ZNSt8bad_castD0Ev = (Module['__ZNSt8bad_castD0Ev'] = (a0) =>
+  let __ZNSt8bad_castD0Ev = (Module['__ZNSt8bad_castD0Ev'] = (a0) =>
     (__ZNSt8bad_castD0Ev = Module['__ZNSt8bad_castD0Ev'] =
       wasmExports['_ZNSt8bad_castD0Ev'])(a0))
-  var __ZNSt8bad_castD1Ev = (Module['__ZNSt8bad_castD1Ev'] = (a0) =>
+  let __ZNSt8bad_castD1Ev = (Module['__ZNSt8bad_castD1Ev'] = (a0) =>
     (__ZNSt8bad_castD1Ev = Module['__ZNSt8bad_castD1Ev'] =
       wasmExports['_ZNSt8bad_castD1Ev'])(a0))
-  var __ZNKSt8bad_cast4whatEv = (Module['__ZNKSt8bad_cast4whatEv'] = (a0) =>
+  let __ZNKSt8bad_cast4whatEv = (Module['__ZNKSt8bad_cast4whatEv'] = (a0) =>
     (__ZNKSt8bad_cast4whatEv = Module['__ZNKSt8bad_cast4whatEv'] =
       wasmExports['_ZNKSt8bad_cast4whatEv'])(a0))
-  var __ZNSt10bad_typeidC2Ev = (Module['__ZNSt10bad_typeidC2Ev'] = (a0) =>
+  let __ZNSt10bad_typeidC2Ev = (Module['__ZNSt10bad_typeidC2Ev'] = (a0) =>
     (__ZNSt10bad_typeidC2Ev = Module['__ZNSt10bad_typeidC2Ev'] =
       wasmExports['_ZNSt10bad_typeidC2Ev'])(a0))
-  var __ZNSt10bad_typeidD2Ev = (Module['__ZNSt10bad_typeidD2Ev'] = (a0) =>
+  let __ZNSt10bad_typeidD2Ev = (Module['__ZNSt10bad_typeidD2Ev'] = (a0) =>
     (__ZNSt10bad_typeidD2Ev = Module['__ZNSt10bad_typeidD2Ev'] =
       wasmExports['_ZNSt10bad_typeidD2Ev'])(a0))
-  var __ZNSt10bad_typeidD0Ev = (Module['__ZNSt10bad_typeidD0Ev'] = (a0) =>
+  let __ZNSt10bad_typeidD0Ev = (Module['__ZNSt10bad_typeidD0Ev'] = (a0) =>
     (__ZNSt10bad_typeidD0Ev = Module['__ZNSt10bad_typeidD0Ev'] =
       wasmExports['_ZNSt10bad_typeidD0Ev'])(a0))
-  var __ZNSt10bad_typeidD1Ev = (Module['__ZNSt10bad_typeidD1Ev'] = (a0) =>
+  let __ZNSt10bad_typeidD1Ev = (Module['__ZNSt10bad_typeidD1Ev'] = (a0) =>
     (__ZNSt10bad_typeidD1Ev = Module['__ZNSt10bad_typeidD1Ev'] =
       wasmExports['_ZNSt10bad_typeidD1Ev'])(a0))
-  var __ZNKSt10bad_typeid4whatEv = (Module['__ZNKSt10bad_typeid4whatEv'] = (
+  let __ZNKSt10bad_typeid4whatEv = (Module['__ZNKSt10bad_typeid4whatEv'] = (
     a0,
   ) =>
     (__ZNKSt10bad_typeid4whatEv = Module['__ZNKSt10bad_typeid4whatEv'] =
       wasmExports['_ZNKSt10bad_typeid4whatEv'])(a0))
-  var __ZNSt8bad_castC1Ev = (Module['__ZNSt8bad_castC1Ev'] = (a0) =>
+  let __ZNSt8bad_castC1Ev = (Module['__ZNSt8bad_castC1Ev'] = (a0) =>
     (__ZNSt8bad_castC1Ev = Module['__ZNSt8bad_castC1Ev'] =
       wasmExports['_ZNSt8bad_castC1Ev'])(a0))
-  var __ZNSt10bad_typeidC1Ev = (Module['__ZNSt10bad_typeidC1Ev'] = (a0) =>
+  let __ZNSt10bad_typeidC1Ev = (Module['__ZNSt10bad_typeidC1Ev'] = (a0) =>
     (__ZNSt10bad_typeidC1Ev = Module['__ZNSt10bad_typeidC1Ev'] =
       wasmExports['_ZNSt10bad_typeidC1Ev'])(a0))
-  var ___wasm_apply_data_relocs = () =>
+  let ___wasm_apply_data_relocs = () =>
     (___wasm_apply_data_relocs = wasmExports['__wasm_apply_data_relocs'])()
-  var _LocalBufferBlockPointers = (Module['_LocalBufferBlockPointers'] =
+  const _LocalBufferBlockPointers = (Module['_LocalBufferBlockPointers'] =
     2796604)
-  var _BufferBlocks = (Module['_BufferBlocks'] = 2791308)
-  var _wal_level = (Module['_wal_level'] = 2582944)
-  var _CurrentMemoryContext = (Module['_CurrentMemoryContext'] = 2880704)
-  var _SnapshotAnyData = (Module['_SnapshotAnyData'] = 2674208)
-  var _debug_query_string = (Module['_debug_query_string'] = 2804316)
-  var _maintenance_work_mem = (Module['_maintenance_work_mem'] = 2618976)
-  var _CritSectionCount = (Module['_CritSectionCount'] = 2875364)
-  var _InterruptPending = (Module['_InterruptPending'] = 2875312)
-  var _ParallelWorkerNumber = (Module['_ParallelWorkerNumber'] = 2574456)
-  var _pg_number_of_ones = (Module['_pg_number_of_ones'] = 2034800)
-  var _TopMemoryContext = (Module['_TopMemoryContext'] = 2880708)
-  var _IsUnderPostmaster = (Module['_IsUnderPostmaster'] = 2875397)
-  var _MainLWLockArray = (Module['_MainLWLockArray'] = 2802324)
-  var _CurrentResourceOwner = (Module['_CurrentResourceOwner'] = 2880756)
-  var _work_mem = (Module['_work_mem'] = 2618964)
-  var _pg_global_prng_state = (Module['_pg_global_prng_state'] = 2964208)
-  var _NBuffers = (Module['_NBuffers'] = 2618984)
-  var _XactIsoLevel = (Module['_XactIsoLevel'] = 2582808)
-  var _bsysscan = (Module['_bsysscan'] = 2775716)
-  var _CheckXidAlive = (Module['_CheckXidAlive'] = 2775712)
-  var _MyProc = (Module['_MyProc'] = 2804140)
-  var _MyDatabaseId = (Module['_MyDatabaseId'] = 2875376)
-  var _TTSOpsBufferHeapTuple = (Module['_TTSOpsBufferHeapTuple'] = 2586992)
-  var _RecentXmin = (Module['_RecentXmin'] = 2674356)
-  var _TTSOpsHeapTuple = (Module['_TTSOpsHeapTuple'] = 2586888)
-  var _pgWalUsage = (Module['_pgWalUsage'] = 2779064)
-  var _pgBufferUsage = (Module['_pgBufferUsage'] = 2778936)
-  var _error_context_stack = (Module['_error_context_stack'] = 2873608)
-  var _MyLatch = (Module['_MyLatch'] = 2875524)
-  var ___THREW__ = (Module['___THREW__'] = 2981972)
-  var ___threwValue = (Module['___threwValue'] = 2981976)
-  var _PG_exception_stack = (Module['_PG_exception_stack'] = 2873612)
-  var _TTSOpsVirtual = (Module['_TTSOpsVirtual'] = 2586836)
-  var _GUC_check_errdetail_string = (Module['_GUC_check_errdetail_string'] =
+  const _BufferBlocks = (Module['_BufferBlocks'] = 2791308)
+  const _wal_level = (Module['_wal_level'] = 2582944)
+  const _CurrentMemoryContext = (Module['_CurrentMemoryContext'] = 2880704)
+  const _SnapshotAnyData = (Module['_SnapshotAnyData'] = 2674208)
+  const _debug_query_string = (Module['_debug_query_string'] = 2804316)
+  const _maintenance_work_mem = (Module['_maintenance_work_mem'] = 2618976)
+  const _CritSectionCount = (Module['_CritSectionCount'] = 2875364)
+  const _InterruptPending = (Module['_InterruptPending'] = 2875312)
+  const _ParallelWorkerNumber = (Module['_ParallelWorkerNumber'] = 2574456)
+  const _pg_number_of_ones = (Module['_pg_number_of_ones'] = 2034800)
+  const _TopMemoryContext = (Module['_TopMemoryContext'] = 2880708)
+  const _IsUnderPostmaster = (Module['_IsUnderPostmaster'] = 2875397)
+  const _MainLWLockArray = (Module['_MainLWLockArray'] = 2802324)
+  const _CurrentResourceOwner = (Module['_CurrentResourceOwner'] = 2880756)
+  const _work_mem = (Module['_work_mem'] = 2618964)
+  const _pg_global_prng_state = (Module['_pg_global_prng_state'] = 2964208)
+  const _NBuffers = (Module['_NBuffers'] = 2618984)
+  const _XactIsoLevel = (Module['_XactIsoLevel'] = 2582808)
+  const _bsysscan = (Module['_bsysscan'] = 2775716)
+  const _CheckXidAlive = (Module['_CheckXidAlive'] = 2775712)
+  const _MyProc = (Module['_MyProc'] = 2804140)
+  const _MyDatabaseId = (Module['_MyDatabaseId'] = 2875376)
+  const _TTSOpsBufferHeapTuple = (Module['_TTSOpsBufferHeapTuple'] = 2586992)
+  const _RecentXmin = (Module['_RecentXmin'] = 2674356)
+  const _TTSOpsHeapTuple = (Module['_TTSOpsHeapTuple'] = 2586888)
+  const _pgWalUsage = (Module['_pgWalUsage'] = 2779064)
+  const _pgBufferUsage = (Module['_pgBufferUsage'] = 2778936)
+  const _error_context_stack = (Module['_error_context_stack'] = 2873608)
+  const _MyLatch = (Module['_MyLatch'] = 2875524)
+  const ___THREW__ = (Module['___THREW__'] = 2981972)
+  const ___threwValue = (Module['___threwValue'] = 2981976)
+  const _PG_exception_stack = (Module['_PG_exception_stack'] = 2873612)
+  const _TTSOpsVirtual = (Module['_TTSOpsVirtual'] = 2586836)
+  const _GUC_check_errdetail_string = (Module['_GUC_check_errdetail_string'] =
     2879292)
-  var _TransamVariables = (Module['_TransamVariables'] = 2775704)
-  var _TopTransactionContext = (Module['_TopTransactionContext'] = 2880728)
-  var _MyProcPid = (Module['_MyProcPid'] = 2875448)
-  var _RmgrTable = (Module['_RmgrTable'] = 2574528)
-  var _process_shared_preload_libraries_in_progress = (Module[
+  const _TransamVariables = (Module['_TransamVariables'] = 2775704)
+  const _TopTransactionContext = (Module['_TopTransactionContext'] = 2880728)
+  const _MyProcPid = (Module['_MyProcPid'] = 2875448)
+  const _RmgrTable = (Module['_RmgrTable'] = 2574528)
+  const _process_shared_preload_libraries_in_progress = (Module[
     '_process_shared_preload_libraries_in_progress'
   ] = 2878688)
-  var _wal_segment_size = (Module['_wal_segment_size'] = 2582964)
-  var _TopTransactionResourceOwner = (Module['_TopTransactionResourceOwner'] =
+  const _wal_segment_size = (Module['_wal_segment_size'] = 2582964)
+  const _TopTransactionResourceOwner = (Module['_TopTransactionResourceOwner'] =
     2880764)
-  var _arch_module_check_errdetail_string = (Module[
+  const _arch_module_check_errdetail_string = (Module[
     '_arch_module_check_errdetail_string'
   ] = 2788776)
-  var _stdout = (Module['_stdout'] = 2770224)
-  var _stdin = (Module['_stdin'] = 2770072)
-  var _object_access_hook = (Module['_object_access_hook'] = 2777456)
-  var _InvalidObjectAddress = (Module['_InvalidObjectAddress'] = 736344)
-  var _check_function_bodies = (Module['_check_function_bodies'] = 2619166)
-  var _post_parse_analyze_hook = (Module['_post_parse_analyze_hook'] = 2777496)
-  var _ScanKeywordTokens = (Module['_ScanKeywordTokens'] = 1285648)
-  var _ScanKeywords = (Module['_ScanKeywords'] = 2726024)
-  var _None_Receiver = (Module['_None_Receiver'] = 2592780)
-  var _explain_per_plan_hook = (Module['_explain_per_plan_hook'] = 2777640)
-  var _explain_per_node_hook = (Module['_explain_per_node_hook'] = 2777644)
-  var _CacheMemoryContext = (Module['_CacheMemoryContext'] = 2880720)
-  var _SPI_processed = (Module['_SPI_processed'] = 2779256)
-  var _SPI_tuptable = (Module['_SPI_tuptable'] = 2779264)
-  var _TTSOpsMinimalTuple = (Module['_TTSOpsMinimalTuple'] = 2586940)
-  var _check_password_hook = (Module['_check_password_hook'] = 2777804)
-  var _ConfigReloadPending = (Module['_ConfigReloadPending'] = 2788748)
-  var _max_parallel_maintenance_workers = (Module[
+  const _stdout = (Module['_stdout'] = 2770224)
+  const _stdin = (Module['_stdin'] = 2770072)
+  const _object_access_hook = (Module['_object_access_hook'] = 2777456)
+  const _InvalidObjectAddress = (Module['_InvalidObjectAddress'] = 736344)
+  const _check_function_bodies = (Module['_check_function_bodies'] = 2619166)
+  const _post_parse_analyze_hook = (Module['_post_parse_analyze_hook'] =
+    2777496)
+  const _ScanKeywordTokens = (Module['_ScanKeywordTokens'] = 1285648)
+  const _ScanKeywords = (Module['_ScanKeywords'] = 2726024)
+  const _None_Receiver = (Module['_None_Receiver'] = 2592780)
+  const _explain_per_plan_hook = (Module['_explain_per_plan_hook'] = 2777640)
+  const _explain_per_node_hook = (Module['_explain_per_node_hook'] = 2777644)
+  const _CacheMemoryContext = (Module['_CacheMemoryContext'] = 2880720)
+  const _SPI_processed = (Module['_SPI_processed'] = 2779256)
+  const _SPI_tuptable = (Module['_SPI_tuptable'] = 2779264)
+  const _TTSOpsMinimalTuple = (Module['_TTSOpsMinimalTuple'] = 2586940)
+  const _check_password_hook = (Module['_check_password_hook'] = 2777804)
+  const _ConfigReloadPending = (Module['_ConfigReloadPending'] = 2788748)
+  const _max_parallel_maintenance_workers = (Module[
     '_max_parallel_maintenance_workers'
   ] = 2618980)
-  var _DateStyle = (Module['_DateStyle'] = 2618952)
-  var _ExecutorStart_hook = (Module['_ExecutorStart_hook'] = 2778912)
-  var _ExecutorRun_hook = (Module['_ExecutorRun_hook'] = 2778916)
-  var _ExecutorFinish_hook = (Module['_ExecutorFinish_hook'] = 2778920)
-  var _ExecutorEnd_hook = (Module['_ExecutorEnd_hook'] = 2778924)
-  var _SPI_result = (Module['_SPI_result'] = 2779268)
-  var _stderr = (Module['_stderr'] = 2769920)
-  var _MyProcPort = (Module['_MyProcPort'] = 2875476)
-  var _ClientAuthentication_hook = (Module['_ClientAuthentication_hook'] =
+  const _DateStyle = (Module['_DateStyle'] = 2618952)
+  const _ExecutorStart_hook = (Module['_ExecutorStart_hook'] = 2778912)
+  const _ExecutorRun_hook = (Module['_ExecutorRun_hook'] = 2778916)
+  const _ExecutorFinish_hook = (Module['_ExecutorFinish_hook'] = 2778920)
+  const _ExecutorEnd_hook = (Module['_ExecutorEnd_hook'] = 2778924)
+  const _SPI_result = (Module['_SPI_result'] = 2779268)
+  const _stderr = (Module['_stderr'] = 2769920)
+  const _MyProcPort = (Module['_MyProcPort'] = 2875476)
+  const _ClientAuthentication_hook = (Module['_ClientAuthentication_hook'] =
     2779472)
-  var _set_rel_pathlist_hook = (Module['_set_rel_pathlist_hook'] = 2788336)
-  var _cpu_tuple_cost = (Module['_cpu_tuple_cost'] = 2587464)
-  var _cpu_operator_cost = (Module['_cpu_operator_cost'] = 2587480)
-  var _seq_page_cost = (Module['_seq_page_cost'] = 2587448)
-  var _planner_hook = (Module['_planner_hook'] = 2788380)
-  var _QueryCancelPending = (Module['_QueryCancelPending'] = 2875316)
-  var _ShutdownRequestPending = (Module['_ShutdownRequestPending'] = 2788752)
-  var _MyStartTime = (Module['_MyStartTime'] = 2875456)
-  var _cluster_name = (Module['_cluster_name'] = 2619216)
-  var _ProcDiePending = (Module['_ProcDiePending'] = 2875320)
-  var _application_name = (Module['_application_name'] = 2879500)
-  var _row_security_policy_hook_restrictive = (Module[
+  const _set_rel_pathlist_hook = (Module['_set_rel_pathlist_hook'] = 2788336)
+  const _cpu_tuple_cost = (Module['_cpu_tuple_cost'] = 2587464)
+  const _cpu_operator_cost = (Module['_cpu_operator_cost'] = 2587480)
+  const _seq_page_cost = (Module['_seq_page_cost'] = 2587448)
+  const _planner_hook = (Module['_planner_hook'] = 2788380)
+  const _QueryCancelPending = (Module['_QueryCancelPending'] = 2875316)
+  const _ShutdownRequestPending = (Module['_ShutdownRequestPending'] = 2788752)
+  const _MyStartTime = (Module['_MyStartTime'] = 2875456)
+  const _cluster_name = (Module['_cluster_name'] = 2619216)
+  const _ProcDiePending = (Module['_ProcDiePending'] = 2875320)
+  const _application_name = (Module['_application_name'] = 2879500)
+  const _row_security_policy_hook_restrictive = (Module[
     '_row_security_policy_hook_restrictive'
   ] = 2791276)
-  var _row_security_policy_hook_permissive = (Module[
+  const _row_security_policy_hook_permissive = (Module[
     '_row_security_policy_hook_permissive'
   ] = 2791272)
-  var _BufferDescriptors = (Module['_BufferDescriptors'] = 2791304)
-  var _shmem_startup_hook = (Module['_shmem_startup_hook'] = 2797300)
-  var _ProcessUtility_hook = (Module['_ProcessUtility_hook'] = 2804520)
-  var _IntervalStyle = (Module['_IntervalStyle'] = 2875400)
-  var _extra_float_digits = (Module['_extra_float_digits'] = 2609272)
-  var _pg_crc32_table = (Module['_pg_crc32_table'] = 1698672)
-  var _shmem_request_hook = (Module['_shmem_request_hook'] = 2878692)
-  var __ZTVN10__cxxabiv120__si_class_type_infoE = (Module[
+  const _BufferDescriptors = (Module['_BufferDescriptors'] = 2791304)
+  const _shmem_startup_hook = (Module['_shmem_startup_hook'] = 2797300)
+  const _ProcessUtility_hook = (Module['_ProcessUtility_hook'] = 2804520)
+  const _IntervalStyle = (Module['_IntervalStyle'] = 2875400)
+  const _extra_float_digits = (Module['_extra_float_digits'] = 2609272)
+  const _pg_crc32_table = (Module['_pg_crc32_table'] = 1698672)
+  const _shmem_request_hook = (Module['_shmem_request_hook'] = 2878692)
+  const __ZTVN10__cxxabiv120__si_class_type_infoE = (Module[
     '__ZTVN10__cxxabiv120__si_class_type_infoE'
   ] = 2770852)
-  var __ZTVN10__cxxabiv117__class_type_infoE = (Module[
+  const __ZTVN10__cxxabiv117__class_type_infoE = (Module[
     '__ZTVN10__cxxabiv117__class_type_infoE'
   ] = 2770812)
-  var __ZTVN10__cxxabiv121__vmi_class_type_infoE = (Module[
+  const __ZTVN10__cxxabiv121__vmi_class_type_infoE = (Module[
     '__ZTVN10__cxxabiv121__vmi_class_type_infoE'
   ] = 2770904)
-  var __ZTVSt11logic_error = (Module['__ZTVSt11logic_error'] = 2771164)
-  var __ZTVSt9exception = (Module['__ZTVSt9exception'] = 2771080)
-  var __ZTVSt13runtime_error = (Module['__ZTVSt13runtime_error'] = 2771184)
-  var __ZTISt13runtime_error = (Module['__ZTISt13runtime_error'] = 2771376)
-  var __ZTISt9exception = (Module['__ZTISt9exception'] = 2771100)
-  var __ZTISt11logic_error = (Module['__ZTISt11logic_error'] = 2771236)
-  var __ZTISt9type_info = (Module['__ZTISt9type_info'] = 2771508)
-  var __ZTVN10__cxxabiv116__shim_type_infoE = (Module[
+  const __ZTVSt11logic_error = (Module['__ZTVSt11logic_error'] = 2771164)
+  const __ZTVSt9exception = (Module['__ZTVSt9exception'] = 2771080)
+  const __ZTVSt13runtime_error = (Module['__ZTVSt13runtime_error'] = 2771184)
+  const __ZTISt13runtime_error = (Module['__ZTISt13runtime_error'] = 2771376)
+  const __ZTISt9exception = (Module['__ZTISt9exception'] = 2771100)
+  const __ZTISt11logic_error = (Module['__ZTISt11logic_error'] = 2771236)
+  const __ZTISt9type_info = (Module['__ZTISt9type_info'] = 2771508)
+  const __ZTVN10__cxxabiv116__shim_type_infoE = (Module[
     '__ZTVN10__cxxabiv116__shim_type_infoE'
   ] = 2770500)
-  var __ZTVN10__cxxabiv123__fundamental_type_infoE = (Module[
+  const __ZTVN10__cxxabiv123__fundamental_type_infoE = (Module[
     '__ZTVN10__cxxabiv123__fundamental_type_infoE'
   ] = 2770528)
-  var __ZTVN10__cxxabiv119__pointer_type_infoE = (Module[
+  const __ZTVN10__cxxabiv119__pointer_type_infoE = (Module[
     '__ZTVN10__cxxabiv119__pointer_type_infoE'
   ] = 2770984)
-  var __ZTIb = (Module['__ZTIb'] = 2770584)
-  var __ZTIPKc = (Module['__ZTIPKc'] = 2770600)
-  var __ZTIh = (Module['__ZTIh'] = 2770616)
-  var __ZTIa = (Module['__ZTIa'] = 2770624)
-  var __ZTIs = (Module['__ZTIs'] = 2770632)
-  var __ZTIt = (Module['__ZTIt'] = 2770640)
-  var __ZTIi = (Module['__ZTIi'] = 2770648)
-  var __ZTIj = (Module['__ZTIj'] = 2770656)
-  var __ZTIl = (Module['__ZTIl'] = 2770664)
-  var __ZTIm = (Module['__ZTIm'] = 2770672)
-  var __ZTIx = (Module['__ZTIx'] = 2770680)
-  var __ZTIf = (Module['__ZTIf'] = 2770688)
-  var __ZTId = (Module['__ZTId'] = 2770696)
-  var __ZTVN10__cxxabiv117__array_type_infoE = (Module[
+  const __ZTIb = (Module['__ZTIb'] = 2770584)
+  const __ZTIPKc = (Module['__ZTIPKc'] = 2770600)
+  const __ZTIh = (Module['__ZTIh'] = 2770616)
+  const __ZTIa = (Module['__ZTIa'] = 2770624)
+  const __ZTIs = (Module['__ZTIs'] = 2770632)
+  const __ZTIt = (Module['__ZTIt'] = 2770640)
+  const __ZTIi = (Module['__ZTIi'] = 2770648)
+  const __ZTIj = (Module['__ZTIj'] = 2770656)
+  const __ZTIl = (Module['__ZTIl'] = 2770664)
+  const __ZTIm = (Module['__ZTIm'] = 2770672)
+  const __ZTIx = (Module['__ZTIx'] = 2770680)
+  const __ZTIf = (Module['__ZTIf'] = 2770688)
+  const __ZTId = (Module['__ZTId'] = 2770696)
+  const __ZTVN10__cxxabiv117__array_type_infoE = (Module[
     '__ZTVN10__cxxabiv117__array_type_infoE'
   ] = 2770704)
-  var __ZTVN10__cxxabiv120__function_type_infoE = (Module[
+  const __ZTVN10__cxxabiv120__function_type_infoE = (Module[
     '__ZTVN10__cxxabiv120__function_type_infoE'
   ] = 2770744)
-  var __ZTVN10__cxxabiv116__enum_type_infoE = (Module[
+  const __ZTVN10__cxxabiv116__enum_type_infoE = (Module[
     '__ZTVN10__cxxabiv116__enum_type_infoE'
   ] = 2770772)
-  var __ZTVN10__cxxabiv117__pbase_type_infoE = (Module[
+  const __ZTVN10__cxxabiv117__pbase_type_infoE = (Module[
     '__ZTVN10__cxxabiv117__pbase_type_infoE'
   ] = 2770956)
-  var __ZTVN10__cxxabiv129__pointer_to_member_type_infoE = (Module[
+  const __ZTVN10__cxxabiv129__pointer_to_member_type_infoE = (Module[
     '__ZTVN10__cxxabiv129__pointer_to_member_type_infoE'
   ] = 2771012)
-  var __ZTVSt9bad_alloc = (Module['__ZTVSt9bad_alloc'] = 2771040)
-  var __ZTVSt20bad_array_new_length = (Module['__ZTVSt20bad_array_new_length'] =
-    2771060)
-  var __ZTISt9bad_alloc = (Module['__ZTISt9bad_alloc'] = 2771140)
-  var __ZTISt20bad_array_new_length = (Module['__ZTISt20bad_array_new_length'] =
-    2771152)
-  var __ZTSSt9exception = (Module['__ZTSSt9exception'] = 2559709)
-  var __ZTVSt13bad_exception = (Module['__ZTVSt13bad_exception'] = 2771108)
-  var __ZTISt13bad_exception = (Module['__ZTISt13bad_exception'] = 2771128)
-  var __ZTSSt13bad_exception = (Module['__ZTSSt13bad_exception'] = 2559722)
-  var __ZTSSt9bad_alloc = (Module['__ZTSSt9bad_alloc'] = 2559740)
-  var __ZTSSt20bad_array_new_length = (Module['__ZTSSt20bad_array_new_length'] =
-    2559753)
-  var __ZTVSt12domain_error = (Module['__ZTVSt12domain_error'] = 2771204)
-  var __ZTISt12domain_error = (Module['__ZTISt12domain_error'] = 2771224)
-  var __ZTSSt12domain_error = (Module['__ZTSSt12domain_error'] = 2559778)
-  var __ZTSSt11logic_error = (Module['__ZTSSt11logic_error'] = 2559795)
-  var __ZTVSt16invalid_argument = (Module['__ZTVSt16invalid_argument'] =
+  const __ZTVSt9bad_alloc = (Module['__ZTVSt9bad_alloc'] = 2771040)
+  const __ZTVSt20bad_array_new_length = (Module[
+    '__ZTVSt20bad_array_new_length'
+  ] = 2771060)
+  const __ZTISt9bad_alloc = (Module['__ZTISt9bad_alloc'] = 2771140)
+  const __ZTISt20bad_array_new_length = (Module[
+    '__ZTISt20bad_array_new_length'
+  ] = 2771152)
+  const __ZTSSt9exception = (Module['__ZTSSt9exception'] = 2559709)
+  const __ZTVSt13bad_exception = (Module['__ZTVSt13bad_exception'] = 2771108)
+  const __ZTISt13bad_exception = (Module['__ZTISt13bad_exception'] = 2771128)
+  const __ZTSSt13bad_exception = (Module['__ZTSSt13bad_exception'] = 2559722)
+  const __ZTSSt9bad_alloc = (Module['__ZTSSt9bad_alloc'] = 2559740)
+  const __ZTSSt20bad_array_new_length = (Module[
+    '__ZTSSt20bad_array_new_length'
+  ] = 2559753)
+  const __ZTVSt12domain_error = (Module['__ZTVSt12domain_error'] = 2771204)
+  const __ZTISt12domain_error = (Module['__ZTISt12domain_error'] = 2771224)
+  const __ZTSSt12domain_error = (Module['__ZTSSt12domain_error'] = 2559778)
+  const __ZTSSt11logic_error = (Module['__ZTSSt11logic_error'] = 2559795)
+  const __ZTVSt16invalid_argument = (Module['__ZTVSt16invalid_argument'] =
     2771248)
-  var __ZTISt16invalid_argument = (Module['__ZTISt16invalid_argument'] =
+  const __ZTISt16invalid_argument = (Module['__ZTISt16invalid_argument'] =
     2771268)
-  var __ZTSSt16invalid_argument = (Module['__ZTSSt16invalid_argument'] =
+  const __ZTSSt16invalid_argument = (Module['__ZTSSt16invalid_argument'] =
     2559811)
-  var __ZTVSt12length_error = (Module['__ZTVSt12length_error'] = 2771280)
-  var __ZTISt12length_error = (Module['__ZTISt12length_error'] = 2771300)
-  var __ZTSSt12length_error = (Module['__ZTSSt12length_error'] = 2559832)
-  var __ZTVSt12out_of_range = (Module['__ZTVSt12out_of_range'] = 2771312)
-  var __ZTISt12out_of_range = (Module['__ZTISt12out_of_range'] = 2771332)
-  var __ZTSSt12out_of_range = (Module['__ZTSSt12out_of_range'] = 2559849)
-  var __ZTVSt11range_error = (Module['__ZTVSt11range_error'] = 2771344)
-  var __ZTISt11range_error = (Module['__ZTISt11range_error'] = 2771364)
-  var __ZTSSt11range_error = (Module['__ZTSSt11range_error'] = 2559866)
-  var __ZTSSt13runtime_error = (Module['__ZTSSt13runtime_error'] = 2559882)
-  var __ZTVSt14overflow_error = (Module['__ZTVSt14overflow_error'] = 2771388)
-  var __ZTISt14overflow_error = (Module['__ZTISt14overflow_error'] = 2771408)
-  var __ZTSSt14overflow_error = (Module['__ZTSSt14overflow_error'] = 2559900)
-  var __ZTVSt15underflow_error = (Module['__ZTVSt15underflow_error'] = 2771420)
-  var __ZTISt15underflow_error = (Module['__ZTISt15underflow_error'] = 2771440)
-  var __ZTSSt15underflow_error = (Module['__ZTSSt15underflow_error'] = 2559919)
-  var __ZTVSt8bad_cast = (Module['__ZTVSt8bad_cast'] = 2771452)
-  var __ZTVSt10bad_typeid = (Module['__ZTVSt10bad_typeid'] = 2771472)
-  var __ZTISt8bad_cast = (Module['__ZTISt8bad_cast'] = 2771516)
-  var __ZTISt10bad_typeid = (Module['__ZTISt10bad_typeid'] = 2771528)
-  var __ZTVSt9type_info = (Module['__ZTVSt9type_info'] = 2771492)
-  var __ZTSSt9type_info = (Module['__ZTSSt9type_info'] = 2559939)
-  var __ZTSSt8bad_cast = (Module['__ZTSSt8bad_cast'] = 2559952)
-  var __ZTSSt10bad_typeid = (Module['__ZTSSt10bad_typeid'] = 2559964)
+  const __ZTVSt12length_error = (Module['__ZTVSt12length_error'] = 2771280)
+  const __ZTISt12length_error = (Module['__ZTISt12length_error'] = 2771300)
+  const __ZTSSt12length_error = (Module['__ZTSSt12length_error'] = 2559832)
+  const __ZTVSt12out_of_range = (Module['__ZTVSt12out_of_range'] = 2771312)
+  const __ZTISt12out_of_range = (Module['__ZTISt12out_of_range'] = 2771332)
+  const __ZTSSt12out_of_range = (Module['__ZTSSt12out_of_range'] = 2559849)
+  const __ZTVSt11range_error = (Module['__ZTVSt11range_error'] = 2771344)
+  const __ZTISt11range_error = (Module['__ZTISt11range_error'] = 2771364)
+  const __ZTSSt11range_error = (Module['__ZTSSt11range_error'] = 2559866)
+  const __ZTSSt13runtime_error = (Module['__ZTSSt13runtime_error'] = 2559882)
+  const __ZTVSt14overflow_error = (Module['__ZTVSt14overflow_error'] = 2771388)
+  const __ZTISt14overflow_error = (Module['__ZTISt14overflow_error'] = 2771408)
+  const __ZTSSt14overflow_error = (Module['__ZTSSt14overflow_error'] = 2559900)
+  const __ZTVSt15underflow_error = (Module['__ZTVSt15underflow_error'] =
+    2771420)
+  const __ZTISt15underflow_error = (Module['__ZTISt15underflow_error'] =
+    2771440)
+  const __ZTSSt15underflow_error = (Module['__ZTSSt15underflow_error'] =
+    2559919)
+  const __ZTVSt8bad_cast = (Module['__ZTVSt8bad_cast'] = 2771452)
+  const __ZTVSt10bad_typeid = (Module['__ZTVSt10bad_typeid'] = 2771472)
+  const __ZTISt8bad_cast = (Module['__ZTISt8bad_cast'] = 2771516)
+  const __ZTISt10bad_typeid = (Module['__ZTISt10bad_typeid'] = 2771528)
+  const __ZTVSt9type_info = (Module['__ZTVSt9type_info'] = 2771492)
+  const __ZTSSt9type_info = (Module['__ZTSSt9type_info'] = 2559939)
+  const __ZTSSt8bad_cast = (Module['__ZTSSt8bad_cast'] = 2559952)
+  const __ZTSSt10bad_typeid = (Module['__ZTSSt10bad_typeid'] = 2559964)
   function invoke_ii(index, a1) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1)
     } catch (e) {
@@ -17322,7 +17341,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_vii(index, a1, a2) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2)
     } catch (e) {
@@ -17332,7 +17351,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_viiiii(index, a1, a2, a3, a4, a5) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2, a3, a4, a5)
     } catch (e) {
@@ -17342,7 +17361,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_vi(index, a1) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1)
     } catch (e) {
@@ -17352,7 +17371,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_v(index) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)()
     } catch (e) {
@@ -17362,7 +17381,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_iii(index, a1, a2) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2)
     } catch (e) {
@@ -17372,7 +17391,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_viii(index, a1, a2, a3) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2, a3)
     } catch (e) {
@@ -17382,7 +17401,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_iiii(index, a1, a2, a3) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3)
     } catch (e) {
@@ -17392,7 +17411,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_jii(index, a1, a2) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2)
     } catch (e) {
@@ -17403,7 +17422,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_iiiii(index, a1, a2, a3, a4) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3, a4)
     } catch (e) {
@@ -17413,7 +17432,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_i(index) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)()
     } catch (e) {
@@ -17423,7 +17442,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_ji(index, a1) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1)
     } catch (e) {
@@ -17434,7 +17453,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_jiiiiiiiii(index, a1, a2, a3, a4, a5, a6, a7, a8, a9) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7, a8, a9)
     } catch (e) {
@@ -17445,7 +17464,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_jiiiiii(index, a1, a2, a3, a4, a5, a6) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6)
     } catch (e) {
@@ -17456,7 +17475,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_viiii(index, a1, a2, a3, a4) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2, a3, a4)
     } catch (e) {
@@ -17481,7 +17500,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     a12,
     a13,
   ) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(
         a1,
@@ -17505,7 +17524,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_vji(index, a1, a2) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2)
     } catch (e) {
@@ -17515,7 +17534,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_viiji(index, a1, a2, a3, a4) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2, a3, a4)
     } catch (e) {
@@ -17525,7 +17544,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_iiiij(index, a1, a2, a3, a4) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3, a4)
     } catch (e) {
@@ -17535,7 +17554,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_vijiji(index, a1, a2, a3, a4, a5) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2, a3, a4, a5)
     } catch (e) {
@@ -17545,7 +17564,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_viji(index, a1, a2, a3) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2, a3)
     } catch (e) {
@@ -17555,7 +17574,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_iiiiii(index, a1, a2, a3, a4, a5) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3, a4, a5)
     } catch (e) {
@@ -17565,7 +17584,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_iiiiiiiii(index, a1, a2, a3, a4, a5, a6, a7, a8) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7, a8)
     } catch (e) {
@@ -17594,7 +17613,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     a16,
     a17,
   ) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(
         a1,
@@ -17622,7 +17641,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_iiiiiii(index, a1, a2, a3, a4, a5, a6) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6)
     } catch (e) {
@@ -17632,7 +17651,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_vj(index, a1) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1)
     } catch (e) {
@@ -17642,7 +17661,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_iiiiiiiiii(index, a1, a2, a3, a4, a5, a6, a7, a8, a9) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7, a8, a9)
     } catch (e) {
@@ -17652,7 +17671,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_viij(index, a1, a2, a3) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2, a3)
     } catch (e) {
@@ -17662,7 +17681,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_viiiiiiii(index, a1, a2, a3, a4, a5, a6, a7, a8) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7, a8)
     } catch (e) {
@@ -17672,7 +17691,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_viiiiiiiii(index, a1, a2, a3, a4, a5, a6, a7, a8, a9) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7, a8, a9)
     } catch (e) {
@@ -17682,7 +17701,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_vij(index, a1, a2) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2)
     } catch (e) {
@@ -17692,7 +17711,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_viiiiii(index, a1, a2, a3, a4, a5, a6) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6)
     } catch (e) {
@@ -17702,7 +17721,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_iiji(index, a1, a2, a3) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3)
     } catch (e) {
@@ -17712,7 +17731,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_ij(index, a1) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1)
     } catch (e) {
@@ -17722,7 +17741,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_viiiiiii(index, a1, a2, a3, a4, a5, a6, a7) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7)
     } catch (e) {
@@ -17732,7 +17751,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_viiiji(index, a1, a2, a3, a4, a5) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2, a3, a4, a5)
     } catch (e) {
@@ -17742,7 +17761,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_iiiiiiii(index, a1, a2, a3, a4, a5, a6, a7) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7)
     } catch (e) {
@@ -17752,7 +17771,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_iiij(index, a1, a2, a3) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3)
     } catch (e) {
@@ -17762,7 +17781,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_vid(index, a1, a2) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2)
     } catch (e) {
@@ -17772,7 +17791,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_j(index) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)()
     } catch (e) {
@@ -17783,7 +17802,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_ijji(index, a1, a2, a3) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3)
     } catch (e) {
@@ -17793,7 +17812,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_iijj(index, a1, a2, a3) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3)
     } catch (e) {
@@ -17803,7 +17822,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_jiii(index, a1, a2, a3) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3)
     } catch (e) {
@@ -17814,7 +17833,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_jij(index, a1, a2) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2)
     } catch (e) {
@@ -17825,7 +17844,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_ijiiiiii(index, a1, a2, a3, a4, a5, a6, a7) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7)
     } catch (e) {
@@ -17835,7 +17854,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_viijii(index, a1, a2, a3, a4, a5) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2, a3, a4, a5)
     } catch (e) {
@@ -17845,7 +17864,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_iiiiiji(index, a1, a2, a3, a4, a5, a6) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6)
     } catch (e) {
@@ -17855,7 +17874,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_viijiiii(index, a1, a2, a3, a4, a5, a6, a7) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7)
     } catch (e) {
@@ -17865,7 +17884,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_vijjii(index, a1, a2, a3, a4, a5) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2, a3, a4, a5)
     } catch (e) {
@@ -17875,7 +17894,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_vjii(index, a1, a2, a3) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(a1, a2, a3)
     } catch (e) {
@@ -17885,7 +17904,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_jiiii(index, a1, a2, a3, a4) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3, a4)
     } catch (e) {
@@ -17910,7 +17929,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     a11,
     a12,
   ) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       getWasmTableEntry(index)(
         a1,
@@ -17933,7 +17952,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_di(index, a1) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1)
     } catch (e) {
@@ -17943,7 +17962,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_id(index, a1) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1)
     } catch (e) {
@@ -17953,7 +17972,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_ijiiiii(index, a1, a2, a3, a4, a5, a6) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6)
     } catch (e) {
@@ -17963,7 +17982,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
     }
   }
   function invoke_iiiiiiiiiii(index, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) {
-    var sp = stackSave()
+    const sp = stackSave()
     try {
       return getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
     } catch (e) {
@@ -17992,25 +18011,25 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
   Module['FS_createLazyFile'] = FS_createLazyFile
   Module['MEMFS'] = MEMFS
   Module['PROXYFS'] = PROXYFS
-  var calledRun
+  let calledRun
   dependenciesFulfilled = function runCaller() {
     if (!calledRun) run()
     if (!calledRun) dependenciesFulfilled = runCaller
   }
   function callMain(args = []) {
-    var entryFunction = resolveGlobalSymbol('main').sym
+    const entryFunction = resolveGlobalSymbol('main').sym
     if (!entryFunction) return
     args.unshift(thisProgram)
-    var argc = args.length
-    var argv = stackAlloc((argc + 1) * 4)
-    var argv_ptr = argv
+    const argc = args.length
+    const argv = stackAlloc((argc + 1) * 4)
+    let argv_ptr = argv
     args.forEach((arg) => {
       HEAPU32[argv_ptr >> 2] = stringToUTF8OnStack(arg)
       argv_ptr += 4
     })
     HEAPU32[argv_ptr >> 2] = 0
     try {
-      var ret = entryFunction(argc, argv)
+      const ret = entryFunction(argc, argv)
       exitJS(ret, true)
       return ret
     } catch (e) {
@@ -18054,7 +18073,7 @@ const createPostgresModule = async (moduleArg: Partial<PostgresMod> = {}) => {
       Module['preInit'].pop()()
     }
   }
-  var shouldRunNow = false
+  let shouldRunNow = false
   if (Module['noInitialRun']) shouldRunNow = false
   run()
   moduleRtn = readyPromise
