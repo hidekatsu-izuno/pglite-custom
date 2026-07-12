@@ -1,6 +1,5 @@
 import InitdbModFactory, { InitdbMod } from './initdbModFactory'
 import parse from './argsParser'
-import { pglUtils } from '@electric-sql/pglite-utils'
 
 function assert(condition: unknown, message?: string): asserts condition {
   if (!condition) {
@@ -90,7 +89,7 @@ async function execInitdb({
     arguments: args,
     noExitRuntime: false,
     thisProgram: INITDB_EXE_PATH,
-    // Provide a stdin that returns EOF to avoid browser prompt
+    // Provide a stdin that returns EOF.
     stdin: () => null,
     print: (text) => {
       stdoutOutput += text
@@ -100,16 +99,7 @@ async function execInitdb({
       stderrOutput += text
       log(debug, 'initdberr', text)
     },
-    instantiateWasm: (imports, successCallback) => {
-      const moduleUrl = new URL('../release/initdb.wasm', import.meta.url)
-      pglUtils
-        .instantiateWasm(imports, moduleUrl, wasmModule)
-        .then(({ instance, module }) => {
-          // @ts-ignore wrong type in Emscripten typings
-          successCallback(instance, module)
-        })
-      return {}
-    },
+    wasmModule,
     preRun: [
       (mod: InitdbMod) => {
         mod.ENV.PGDATA = PGDATA
