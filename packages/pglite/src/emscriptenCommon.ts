@@ -29,6 +29,193 @@ export async function instantiateNodeWasm(
   }
 }
 
+export const assert = (
+  condition: unknown,
+  text: unknown,
+  abort: (what: unknown) => never,
+) => {
+  if (!condition) {
+    abort(text)
+  }
+}
+
+export const updateMemoryViews = (
+  wasmMemory: WebAssembly.Memory,
+  module: Record<string, unknown>,
+) => {
+  const buffer = wasmMemory.buffer
+  const HEAP8 = new Int8Array(buffer)
+  const HEAP16 = new Int16Array(buffer)
+  const HEAPU8 = new Uint8Array(buffer)
+  const HEAPU16 = new Uint16Array(buffer)
+  const HEAP32 = new Int32Array(buffer)
+  const HEAPU32 = new Uint32Array(buffer)
+  const HEAPF32 = new Float32Array(buffer)
+  const HEAPF64 = new Float64Array(buffer)
+  const HEAP64 = new BigInt64Array(buffer)
+  const HEAPU64 = new BigUint64Array(buffer)
+  Object.assign(module, {
+    HEAP8,
+    HEAP16,
+    HEAPU8,
+    HEAPU16,
+    HEAP32,
+    HEAPU32,
+    HEAPF32,
+    HEAPF64,
+    HEAP64,
+    HEAPU64,
+  })
+  return {
+    HEAP8,
+    HEAP16,
+    HEAPU8,
+    HEAPU16,
+    HEAP32,
+    HEAPU32,
+    HEAPF32,
+    HEAPF64,
+    HEAP64,
+    HEAPU64,
+  }
+}
+
+export const callRuntimeCallbacks = (
+  callbacks: Array<(module: unknown) => void>,
+  module: unknown,
+) => {
+  while (callbacks.length > 0) {
+    callbacks.shift()!(module)
+  }
+}
+
+export const addOnCallback = <T>(callbacks: T[], callback: T) => {
+  callbacks.unshift(callback)
+}
+
+export const getWasmImports = (
+  wasmImports: object,
+  GOTHandler: ProxyHandler<object>,
+) => ({
+  env: wasmImports,
+  wasi_snapshot_preview1: wasmImports,
+  'GOT.mem': new Proxy(wasmImports, GOTHandler),
+  'GOT.func': new Proxy(wasmImports, GOTHandler),
+})
+
+export const alignMemory = (size: number, alignment: number) =>
+  Math.ceil(size / alignment) * alignment
+
+export const uleb128Encode = (n: number, target: number[]) => {
+  if (n < 128) {
+    target.push(n)
+  } else {
+    target.push(n % 128 | 128, n >> 7)
+  }
+}
+
+export const sigToWasmTypes = (sig: string) => {
+  const typeNames: Record<string, string> = {
+    i: 'i32',
+    j: 'i64',
+    f: 'f32',
+    d: 'f64',
+    e: 'externref',
+    p: 'i32',
+  }
+  const type = {
+    parameters: [] as string[],
+    results: sig[0] === 'v' ? [] : [typeNames[sig[0]]],
+  }
+  for (let i = 1; i < sig.length; ++i) {
+    type.parameters.push(typeNames[sig[i]])
+  }
+  return type
+}
+
+export const generateFuncType = (sig: string, target: number[]) => {
+  const sigRet = sig.slice(0, 1)
+  const sigParam = sig.slice(1)
+  const typeCodes: Record<string, number> = {
+    i: 127,
+    p: 127,
+    j: 126,
+    f: 125,
+    d: 124,
+    e: 111,
+  }
+  target.push(96)
+  uleb128Encode(sigParam.length, target)
+  for (let i = 0; i < sigParam.length; ++i) {
+    target.push(typeCodes[sigParam[i]])
+  }
+  if (sigRet === 'v') {
+    target.push(0)
+  } else {
+    target.push(1, typeCodes[sigRet])
+  }
+}
+
+export const convertJsFunctionToWasm = (
+  func: CallableFunction,
+  sig: string,
+) => {
+  const WebAssemblyFunction = (
+    WebAssembly as typeof WebAssembly & {
+      Function?: new (
+        type: ReturnType<typeof sigToWasmTypes>,
+        func: CallableFunction,
+      ) => CallableFunction
+    }
+  ).Function
+  if (typeof WebAssemblyFunction === 'function') {
+    return new WebAssemblyFunction(sigToWasmTypes(sig), func)
+  }
+  const typeSectionBody = [1]
+  generateFuncType(sig, typeSectionBody)
+  const bytes = [0, 97, 115, 109, 1, 0, 0, 0, 1]
+  uleb128Encode(typeSectionBody.length, bytes)
+  bytes.push(...typeSectionBody)
+  bytes.push(2, 7, 1, 1, 101, 1, 102, 0, 0, 7, 5, 1, 1, 102, 0, 0)
+  const module = new WebAssembly.Module(new Uint8Array(bytes))
+  const instance = new WebAssembly.Instance(module, { e: { f: func } })
+  return instance.exports['f'] as CallableFunction
+}
+
+export const stringToUTF8 = (
+  str: string,
+  heap: Uint8Array | number[],
+  outPtr: number,
+  maxBytesToWrite: number,
+) => stringToUTF8Array(str, heap, outPtr, maxBytesToWrite)
+
+export const trimArray = (arr: string[]) => {
+  let start = 0
+  for (; start < arr.length; start++) {
+    if (arr[start] !== '') break
+  }
+  let end = arr.length - 1
+  for (; end >= 0; end--) {
+    if (arr[end] !== '') break
+  }
+  if (start > end) return []
+  return arr.slice(start, end - start + 1)
+}
+
+export const isLeapYear = (year: number) =>
+  year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)
+
+export const ydayFromDate = (
+  date: Date,
+  leapDays: number[],
+  regularDays: number[],
+) => {
+  const monthDaysCumulative = isLeapYear(date.getFullYear())
+    ? leapDays
+    : regularDays
+  return monthDaysCumulative[date.getMonth()] + date.getDate() - 1
+}
+
 export const PATH = {
   isAbs: (path: string) => path.charAt(0) === '/',
   splitPath: (filename: string) => {

@@ -4,7 +4,16 @@
 import * as fs from 'node:fs'
 import * as crypto from 'node:crypto'
 import {
+  addOnCallback,
+  alignMemory,
+  callRuntimeCallbacks,
+  convertJsFunctionToWasm,
+  getWasmImports,
   PATH,
+  stringToUTF8 as stringToUTF8Common,
+  trimArray,
+  updateMemoryViews as updateMemoryViewsCommon,
+  ydayFromDate as ydayFromDateCommon,
   UTF8ArrayToString,
   instantiateNodeWasm,
   intArrayFromString,
@@ -78,11 +87,6 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   let wasmMemory
   let ABORT = false
   let EXITSTATUS
-  function assert(condition, text) {
-    if (!condition) {
-      abort(text)
-    }
-  }
   let HEAP8,
     HEAPU8,
     HEAP16,
@@ -94,17 +98,17 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     HEAPU64,
     HEAPF64
   function updateMemoryViews() {
-    const b = wasmMemory.buffer
-    Module['HEAP8'] = HEAP8 = new Int8Array(b)
-    Module['HEAP16'] = HEAP16 = new Int16Array(b)
-    Module['HEAPU8'] = HEAPU8 = new Uint8Array(b)
-    Module['HEAPU16'] = HEAPU16 = new Uint16Array(b)
-    Module['HEAP32'] = HEAP32 = new Int32Array(b)
-    Module['HEAPU32'] = HEAPU32 = new Uint32Array(b)
-    Module['HEAPF32'] = HEAPF32 = new Float32Array(b)
-    Module['HEAPF64'] = HEAPF64 = new Float64Array(b)
-    Module['HEAP64'] = HEAP64 = new BigInt64Array(b)
-    Module['HEAPU64'] = HEAPU64 = new BigUint64Array(b)
+    const views = updateMemoryViewsCommon(wasmMemory, Module)
+    HEAP8 = views.HEAP8
+    HEAP16 = views.HEAP16
+    HEAPU8 = views.HEAPU8
+    HEAPU16 = views.HEAPU16
+    HEAP32 = views.HEAP32
+    HEAPU32 = views.HEAPU32
+    HEAPF32 = views.HEAPF32
+    HEAPF64 = views.HEAPF64
+    HEAP64 = views.HEAP64
+    HEAPU64 = views.HEAPU64
   }
   if (Module['wasmMemory']) {
     wasmMemory = Module['wasmMemory']
@@ -129,25 +133,25 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       if (typeof Module['preRun'] == 'function')
         Module['preRun'] = [Module['preRun']]
       while (Module['preRun'].length) {
-        addOnPreRun(Module['preRun'].shift())
+        addOnCallback(__ATPRERUN__, Module['preRun'].shift())
       }
     }
-    callRuntimeCallbacks(__ATPRERUN__)
+    callRuntimeCallbacks(__ATPRERUN__, Module)
   }
   function initRuntime() {
     runtimeInitialized = true
-    callRuntimeCallbacks(__RELOC_FUNCS__)
+    callRuntimeCallbacks(__RELOC_FUNCS__, Module)
     if (!Module['noFSInit'] && !FS.initialized) FS.init()
     FS.ignorePermissions = false
     TTY.init()
-    callRuntimeCallbacks(__ATINIT__)
+    callRuntimeCallbacks(__ATINIT__, Module)
   }
   function preMain() {
-    callRuntimeCallbacks(__ATMAIN__)
+    callRuntimeCallbacks(__ATMAIN__, Module)
   }
   function exitRuntime() {
     ___funcs_on_exit()
-    callRuntimeCallbacks(__ATEXIT__)
+    callRuntimeCallbacks(__ATEXIT__, Module)
     FS.quit()
     TTY.shutdown()
     runtimeExited = true
@@ -157,19 +161,10 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       if (typeof Module['postRun'] == 'function')
         Module['postRun'] = [Module['postRun']]
       while (Module['postRun'].length) {
-        addOnPostRun(Module['postRun'].shift())
+        addOnCallback(__ATPOSTRUN__, Module['postRun'].shift())
       }
     }
-    callRuntimeCallbacks(__ATPOSTRUN__)
-  }
-  function addOnPreRun(cb) {
-    __ATPRERUN__.unshift(cb)
-  }
-  function addOnInit(cb) {
-    __ATINIT__.unshift(cb)
-  }
-  function addOnPostRun(cb) {
-    __ATPOSTRUN__.unshift(cb)
+    callRuntimeCallbacks(__ATPOSTRUN__, Module)
   }
   let runDependencies = 0
   let dependenciesFulfilled = null
@@ -202,21 +197,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     throw e
   }
   const wasmBinaryFile = new URL('../release/initdb.wasm', import.meta.url)
-  function getWasmImports() {
-    return {
-      env: wasmImports,
-      wasi_snapshot_preview1: wasmImports,
-      'GOT.mem': new Proxy(wasmImports, GOTHandler),
-      'GOT.func': new Proxy(wasmImports, GOTHandler),
-    }
-  }
   async function createWasm() {
     function receiveInstance(instance, module) {
       wasmExports = instance.exports
       wasmExports = relocateExports(wasmExports, 1024)
       mergeLibSymbols(wasmExports, 'main')
       reportUndefinedSymbols()
-      addOnInit(wasmExports['__wasm_call_ctors'])
+      addOnCallback(__ATINIT__, wasmExports['__wasm_call_ctors'])
       __RELOC_FUNCS__.push(wasmExports['__wasm_apply_data_relocs'])
       removeRunDependency('wasm-instantiate')
       return wasmExports
@@ -225,7 +212,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     function receiveInstantiationResult(result) {
       receiveInstance(result['instance'], result['module'])
     }
-    const info = getWasmImports()
+    const info = getWasmImports(wasmImports, GOTHandler)
     try {
       const result = await instantiateNodeWasm(
         wasmBinary,
@@ -268,15 +255,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return rtn
     },
   }
-  let callRuntimeCallbacks = (callbacks) => {
-    while (callbacks.length > 0) {
-      callbacks.shift()(Module)
-    }
-  }
   currentModuleWeakSymbols = new Set()
   let ___heap_base = 205888
-  const alignMemory = (size, alignment) =>
-    Math.ceil(size / alignment) * alignment
   const getMemory = (size) => {
     if (runtimeInitialized) {
       return _calloc(size, 1)
@@ -304,61 +284,6 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       '__start_em_js',
       '__stop_em_js',
     ].includes(symName) || symName.startsWith('__em_js__')
-  const uleb128Encode = (n, target) => {
-    if (n < 128) {
-      target.push(n)
-    } else {
-      target.push(n % 128 | 128, n >> 7)
-    }
-  }
-  const sigToWasmTypes = (sig) => {
-    const typeNames = {
-      i: 'i32',
-      j: 'i64',
-      f: 'f32',
-      d: 'f64',
-      e: 'externref',
-      p: 'i32',
-    }
-    const type = {
-      parameters: [],
-      results: sig[0] == 'v' ? [] : [typeNames[sig[0]]],
-    }
-    for (let i = 1; i < sig.length; ++i) {
-      type.parameters.push(typeNames[sig[i]])
-    }
-    return type
-  }
-  const generateFuncType = (sig, target) => {
-    const sigRet = sig.slice(0, 1)
-    const sigParam = sig.slice(1)
-    const typeCodes = { i: 127, p: 127, j: 126, f: 125, d: 124, e: 111 }
-    target.push(96)
-    uleb128Encode(sigParam.length, target)
-    for (let i = 0; i < sigParam.length; ++i) {
-      target.push(typeCodes[sigParam[i]])
-    }
-    if (sigRet == 'v') {
-      target.push(0)
-    } else {
-      target.push(1, typeCodes[sigRet])
-    }
-  }
-  const convertJsFunctionToWasm = (func, sig) => {
-    if (typeof WebAssembly.Function == 'function') {
-      return new WebAssembly.Function(sigToWasmTypes(sig), func)
-    }
-    const typeSectionBody = [1]
-    generateFuncType(sig, typeSectionBody)
-    const bytes = [0, 97, 115, 109, 1, 0, 0, 0, 1]
-    uleb128Encode(typeSectionBody.length, bytes)
-    bytes.push(...typeSectionBody)
-    bytes.push(2, 7, 1, 1, 101, 1, 102, 0, 0, 7, 5, 1, 1, 102, 0, 0)
-    const module = new WebAssembly.Module(new Uint8Array(bytes))
-    const instance = new WebAssembly.Instance(module, { e: { f: func } })
-    const wrappedFunc = instance.exports['f']
-    return wrappedFunc
-  }
   const wasmTableMirror = []
   const wasmTable = new WebAssembly.Table({ initial: 144, element: 'anyfunc' })
   const getWasmTableEntry = (funcPtr) => {
@@ -585,20 +510,8 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     relative: (from, to) => {
       from = PATH_FS.resolve(from).substr(1)
       to = PATH_FS.resolve(to).substr(1)
-      function trim(arr) {
-        let start = 0
-        for (; start < arr.length; start++) {
-          if (arr[start] !== '') break
-        }
-        let end = arr.length - 1
-        for (; end >= 0; end--) {
-          if (arr[end] !== '') break
-        }
-        if (start > end) return []
-        return arr.slice(start, end - start + 1)
-      }
-      const fromParts = trim(from.split('/'))
-      const toParts = trim(to.split('/'))
+      const fromParts = trimArray(from.split('/'))
+      const toParts = trimArray(to.split('/'))
       const length = Math.min(fromParts.length, toParts.length)
       let samePartsLength = length
       for (let i = 0; i < length; i++) {
@@ -2989,15 +2902,13 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   ___syscall_fstat64.sig = 'iip'
-  const stringToUTF8 = (str, outPtr, maxBytesToWrite) =>
-    stringToUTF8Array(str, HEAPU8, outPtr, maxBytesToWrite)
   function ___syscall_getcwd(buf, size) {
     try {
       if (size === 0) return -28
       const cwd = FS.cwd()
       const cwdLengthInBytes = lengthBytesUTF8(cwd) + 1
       if (size < cwdLengthInBytes) return -68
-      stringToUTF8(cwd, buf, size)
+      stringToUTF8Common(cwd, HEAPU8, buf, size)
       return cwdLengthInBytes
     } catch (e) {
       if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
@@ -3052,7 +2963,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         HEAP64[(dirp + pos + 8) >> 3] = BigInt((idx + 1) * struct_size)
         HEAP16[(dirp + pos + 16) >> 1] = 280
         HEAP8[dirp + pos + 18] = type
-        stringToUTF8(name, dirp + pos + 19, 256)
+        stringToUTF8Common(name, HEAPU8, dirp + pos + 19, 256)
         pos += struct_size
       }
       FS.llseek(stream, idx * struct_size, 0)
@@ -3216,7 +3127,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       const ret = FS.readlink(path)
       const len = Math.min(bufsize, lengthBytesUTF8(ret))
       const endChar = HEAP8[buf + len]
-      stringToUTF8(ret, buf, bufsize + 1)
+      stringToUTF8Common(ret, HEAPU8, buf, bufsize + 1)
       HEAP8[buf + len] = endChar
       return len
     } catch (e) {
@@ -3293,22 +3204,12 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     throw Infinity
   }
   __emscripten_throw_longjmp.sig = 'v'
-  const isLeapYear = (year) =>
-    year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)
   const MONTH_DAYS_LEAP_CUMULATIVE = [
     0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335,
   ]
   const MONTH_DAYS_REGULAR_CUMULATIVE = [
     0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334,
   ]
-  const ydayFromDate = (date) => {
-    const leap = isLeapYear(date.getFullYear())
-    const monthDaysCumulative = leap
-      ? MONTH_DAYS_LEAP_CUMULATIVE
-      : MONTH_DAYS_REGULAR_CUMULATIVE
-    const yday = monthDaysCumulative[date.getMonth()] + date.getDate() - 1
-    return yday
-  }
   const INT53_MAX = 9007199254740992
   const INT53_MIN = -9007199254740992
   const bigintToI53Checked = (num) =>
@@ -3323,7 +3224,12 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     HEAP32[(tmPtr + 16) >> 2] = date.getMonth()
     HEAP32[(tmPtr + 20) >> 2] = date.getFullYear() - 1900
     HEAP32[(tmPtr + 24) >> 2] = date.getDay()
-    const yday = ydayFromDate(date) | 0
+    const yday =
+      ydayFromDateCommon(
+        date,
+        MONTH_DAYS_LEAP_CUMULATIVE,
+        MONTH_DAYS_REGULAR_CUMULATIVE,
+      ) | 0
     HEAP32[(tmPtr + 28) >> 2] = yday
     HEAP32[(tmPtr + 36) >> 2] = -(date.getTimezoneOffset() * 60)
     const start = new Date(date.getFullYear(), 0, 1)
@@ -3366,7 +3272,12 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
         date.setTime(date.getTime() + (trueOffset - guessedOffset) * 6e4)
       }
       HEAP32[(tmPtr + 24) >> 2] = date.getDay()
-      const yday = ydayFromDate(date) | 0
+      const yday =
+        ydayFromDateCommon(
+          date,
+          MONTH_DAYS_LEAP_CUMULATIVE,
+          MONTH_DAYS_REGULAR_CUMULATIVE,
+        ) | 0
       HEAP32[(tmPtr + 28) >> 2] = yday
       HEAP32[tmPtr >> 2] = date.getSeconds()
       HEAP32[(tmPtr + 4) >> 2] = date.getMinutes()
@@ -3496,11 +3407,11 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     const winterName = extractZone(winterOffset)
     const summerName = extractZone(summerOffset)
     if (summerOffset < winterOffset) {
-      stringToUTF8(winterName, std_name, 17)
-      stringToUTF8(summerName, dst_name, 17)
+      stringToUTF8Common(winterName, HEAPU8, std_name, 17)
+      stringToUTF8Common(summerName, HEAPU8, dst_name, 17)
     } else {
-      stringToUTF8(winterName, dst_name, 17)
-      stringToUTF8(summerName, std_name, 17)
+      stringToUTF8Common(winterName, HEAPU8, dst_name, 17)
+      stringToUTF8Common(summerName, HEAPU8, std_name, 17)
     }
   }
   __tzset_js.sig = 'vpppp'
@@ -3718,7 +3629,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   const stringToUTF8OnStack = (str) => {
     const size = lengthBytesUTF8(str) + 1
     const ret = stackAlloc(size)
-    stringToUTF8(str, ret, size)
+    stringToUTF8Common(str, HEAPU8, ret, size)
     return ret
   }
   const removeFunction = (index) => {
@@ -3729,7 +3640,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   const stringToNewUTF8 = (str) => {
     const size = lengthBytesUTF8(str) + 1
     const ret = _malloc(size)
-    if (ret) stringToUTF8(str, ret, size)
+    if (ret) stringToUTF8Common(str, HEAPU8, ret, size)
     return ret
   }
   const FS_createPath = FS.createPath
