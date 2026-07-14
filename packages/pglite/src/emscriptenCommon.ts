@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import * as crypto from 'node:crypto'
 
 const resolveNodeFile = (filename: string | URL) =>
   filename instanceof URL ? filename : new URL(filename, import.meta.url)
@@ -37,6 +38,61 @@ export const assert = (
   if (!condition) {
     abort(text)
   }
+}
+
+export class ExitStatus {
+  name = 'ExitStatus'
+
+  constructor(status: number) {
+    this.message = `Program terminated with exit(${status})`
+    this.status = status
+  }
+
+  message: string
+  status: number
+}
+
+export const bigintToI53Checked = (num: number | bigint) => {
+  const min = -9007199254740992
+  const max = 9007199254740992
+  if (typeof num === 'bigint') {
+    return num < BigInt(min) || num > BigInt(max) ? NaN : Number(num)
+  }
+  return num < min || num > max ? NaN : num
+}
+
+export const FS_modeStringToFlags = (str: string) => {
+  const flagModes: Record<string, number> = {
+    r: 0,
+    'r+': 2,
+    w: 512 | 64 | 1,
+    'w+': 512 | 64 | 2,
+    a: 1024 | 64 | 1,
+    'a+': 1024 | 64 | 2,
+  }
+  const flags = flagModes[str]
+  if (typeof flags === 'undefined') {
+    throw new Error(`Unknown file open mode: ${str}`)
+  }
+  return flags
+}
+
+export const FS_getMode = (canRead: boolean, canWrite: boolean) => {
+  let mode = 0
+  if (canRead) mode |= 292 | 73
+  if (canWrite) mode |= 146
+  return mode
+}
+
+export const randomFill = (view: Uint8Array) => crypto.getRandomValues(view)
+
+export const getHeapMax = () => 2147483648
+
+export const stringToAscii = (str: string, buffer: number, heap: Int8Array) => {
+  for (let i = 0; i < str.length; ++i) {
+    heap[buffer++] = str.charCodeAt(i)
+  }
+  heap[buffer] = 0
 }
 
 export const updateMemoryViews = (
@@ -93,6 +149,149 @@ export const addOnCallback = <T>(callbacks: T[], callback: T) => {
   callbacks.unshift(callback)
 }
 
+export const createRunDependencyManager = (module: {
+  monitorRunDependencies?: (count: number) => void
+}) => {
+  let count = 0
+  let dependenciesFulfilled: (() => void) | null = null
+
+  const addRunDependency = (_id: string) => {
+    count++
+    module.monitorRunDependencies?.(count)
+  }
+
+  const removeRunDependency = (_id: string) => {
+    count--
+    module.monitorRunDependencies?.(count)
+    if (count === 0 && dependenciesFulfilled) {
+      const callback = dependenciesFulfilled
+      dependenciesFulfilled = null
+      callback()
+    }
+  }
+
+  return {
+    addRunDependency,
+    removeRunDependency,
+    getUniqueRunDependency: (id: string) => id,
+    getRunDependencies: () => count,
+    setDependenciesFulfilled: (callback: (() => void) | null) => {
+      dependenciesFulfilled = callback
+    },
+  }
+}
+
+export const createRun = ({
+  module,
+  getRunDependencies,
+  preRun,
+  initRuntime,
+  preMain,
+  postRun,
+  isAborted,
+  isCalled,
+  markCalled,
+}: {
+  module: Record<string, any>
+  getRunDependencies: () => number
+  preRun: () => void
+  initRuntime: () => void
+  preMain: () => void
+  postRun: () => void
+  isAborted: () => boolean
+  isCalled: () => boolean
+  markCalled: () => void
+}) => {
+  const doRun = () => {
+    if (isCalled()) return
+    markCalled()
+    module['calledRun'] = true
+    if (isAborted()) return
+    initRuntime()
+    preMain()
+    module['onRuntimeInitialized']?.()
+    postRun()
+  }
+
+  return () => {
+    if (getRunDependencies() > 0) return
+    preRun()
+    if (getRunDependencies() > 0) return
+    if (module['setStatus']) {
+      module['setStatus']('Running...')
+      setTimeout(() => {
+        setTimeout(() => module['setStatus'](''), 1)
+        doRun()
+      }, 1)
+    } else {
+      doRun()
+    }
+  }
+}
+
+export const createInvoke = (
+  returnType: string,
+  getWasmTableEntry: (index: number) => (...args: any[]) => any,
+  stackSave: () => number,
+  stackRestore: (stack: number) => void,
+  getSetThrew: () => (value: number, flag: number) => void,
+) => {
+  const returnsValue = returnType !== 'v'
+  const returnsBigInt = returnType === 'j'
+
+  return (index: number, ...args: any[]) => {
+    const stack = stackSave()
+    try {
+      const result = getWasmTableEntry(index)(...args)
+      return returnsValue ? result : undefined
+    } catch (error) {
+      stackRestore(stack)
+      if (error !== (error as any) + 0) throw error
+      getSetThrew()(1, 0)
+      if (returnsBigInt) return 0n
+    }
+  }
+}
+
+export const createCallMain = ({
+  getEntryFunction,
+  getThisProgram,
+  stackAlloc,
+  getHeapU32,
+  stringToUTF8OnStack,
+  exitJS,
+  handleException,
+}: {
+  getEntryFunction: () => ((argc: number, argv: number) => unknown) | undefined
+  getThisProgram: () => string
+  stackAlloc: (size: number) => number
+  getHeapU32: () => Uint32Array
+  stringToUTF8OnStack: (value: string) => number
+  exitJS: (status: unknown, implicit: boolean) => unknown
+  handleException: (error: unknown) => unknown
+}) => {
+  return (args: string[] = []) => {
+    const entryFunction = getEntryFunction()
+    if (!entryFunction) return
+    args.unshift(getThisProgram())
+    const argc = args.length
+    const argv = stackAlloc((argc + 1) * 4)
+    let argvPtr = argv
+    args.forEach((arg) => {
+      getHeapU32()[argvPtr >> 2] = stringToUTF8OnStack(arg)
+      argvPtr += 4
+    })
+    getHeapU32()[argvPtr >> 2] = 0
+    try {
+      const result = entryFunction(argc, argv)
+      exitJS(result, true)
+      return result
+    } catch (error) {
+      return handleException(error)
+    }
+  }
+}
+
 export const getWasmImports = (
   wasmImports: object,
   GOTHandler: ProxyHandler<object>,
@@ -105,6 +304,48 @@ export const getWasmImports = (
 
 export const alignMemory = (size: number, alignment: number) =>
   Math.ceil(size / alignment) * alignment
+
+export const isInternalSym = (symName: string) =>
+  [
+    '__cpp_exception',
+    '__c_longjmp',
+    '__wasm_apply_data_relocs',
+    '__dso_handle',
+    '__tls_size',
+    '__tls_align',
+    '__set_stack_limits',
+    '_emscripten_tls_init',
+    '__wasm_init_tls',
+    '__wasm_call_ctors',
+    '__start_em_asm',
+    '__stop_em_asm',
+    '__start_em_js',
+    '__stop_em_js',
+  ].includes(symName) || symName.startsWith('__em_js__')
+
+export const zeroMemory = (heap: Uint8Array, address: number, size: number) => {
+  heap.fill(0, address, address + size)
+}
+
+export const createWasmTableHelpers = (
+  wasmTable: WebAssembly.Table,
+  wasmTableMirror: Array<CallableFunction | null | undefined>,
+) => ({
+  getWasmTableEntry(funcPtr: number) {
+    let func = wasmTableMirror[funcPtr]
+    if (!func) {
+      if (funcPtr >= wasmTableMirror.length) {
+        wasmTableMirror.length = funcPtr + 1
+      }
+      wasmTableMirror[funcPtr] = func = wasmTable.get(funcPtr)
+    }
+    return func
+  },
+  setWasmTableEntry(idx: number, func: CallableFunction | null) {
+    wasmTable.set(idx, func)
+    wasmTableMirror[idx] = wasmTable.get(idx)
+  },
+})
 
 export const uleb128Encode = (n: number, target: number[]) => {
   if (n < 128) {
@@ -188,6 +429,28 @@ export const stringToUTF8 = (
   outPtr: number,
   maxBytesToWrite: number,
 ) => stringToUTF8Array(str, heap, outPtr, maxBytesToWrite)
+
+export const stringToUTF8OnStack = (
+  str: string,
+  stackAlloc: (size: number) => number,
+  heap: Uint8Array,
+) => {
+  const size = lengthBytesUTF8(str) + 1
+  const ret = stackAlloc(size)
+  stringToUTF8(str, heap, ret, size)
+  return ret
+}
+
+export const stringToNewUTF8 = (
+  str: string,
+  malloc: (size: number) => number,
+  heap: Uint8Array,
+) => {
+  const size = lengthBytesUTF8(str) + 1
+  const ret = malloc(size)
+  if (ret) stringToUTF8(str, heap, ret, size)
+  return ret
+}
 
 export const trimArray = (arr: string[]) => {
   let start = 0
@@ -282,6 +545,50 @@ export const PATH = {
   },
   join: (...paths: string[]) => PATH.normalize(paths.join('/')),
   join2: (left: string, right: string) => PATH.normalize(left + '/' + right),
+}
+
+export const createPathFS = (getCwd: () => string) => {
+  const pathFS = {
+    resolve: (...args: string[]) => {
+      let resolvedPath = ''
+      let resolvedAbsolute = false
+      for (let i = args.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+        const path = i >= 0 ? args[i] : getCwd()
+        if (typeof path !== 'string') {
+          throw new TypeError('Arguments to path.resolve must be strings')
+        }
+        if (!path) return ''
+        resolvedPath = path + '/' + resolvedPath
+        resolvedAbsolute = PATH.isAbs(path)
+      }
+      resolvedPath = PATH.normalizeArray(
+        resolvedPath.split('/').filter((part) => !!part),
+        !resolvedAbsolute,
+      ).join('/')
+      return (resolvedAbsolute ? '/' : '') + resolvedPath || '.'
+    },
+    relative: (from: string, to: string) => {
+      from = pathFS.resolve(from).substr(1)
+      to = pathFS.resolve(to).substr(1)
+      const fromParts = trimArray(from.split('/'))
+      const toParts = trimArray(to.split('/'))
+      const length = Math.min(fromParts.length, toParts.length)
+      let samePartsLength = length
+      for (let i = 0; i < length; i++) {
+        if (fromParts[i] !== toParts[i]) {
+          samePartsLength = i
+          break
+        }
+      }
+      let outputParts: string[] = []
+      for (let i = samePartsLength; i < fromParts.length; i++) {
+        outputParts.push('..')
+      }
+      outputParts = outputParts.concat(toParts.slice(samePartsLength))
+      return outputParts.join('/')
+    },
+  }
+  return pathFS
 }
 
 const UTF8Decoder =

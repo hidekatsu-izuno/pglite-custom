@@ -2,24 +2,40 @@
 // @ts-nocheck
 
 import * as fs from 'node:fs'
-import * as crypto from 'node:crypto'
 import {
   addOnCallback,
   alignMemory,
+  bigintToI53Checked,
   callRuntimeCallbacks,
+  createCallMain,
+  createPathFS,
   convertJsFunctionToWasm,
+  createInvoke,
+  createRunDependencyManager,
+  createRun,
+  createWasmTableHelpers,
+  ExitStatus,
+  FS_getMode,
+  FS_modeStringToFlags,
+  getHeapMax,
   getWasmImports,
+  isInternalSym,
   PATH,
   stringToUTF8 as stringToUTF8Common,
+  stringToUTF8OnStack as stringToUTF8OnStackCommon,
+  stringToNewUTF8 as stringToNewUTF8Common,
   trimArray,
   updateMemoryViews as updateMemoryViewsCommon,
   ydayFromDate as ydayFromDateCommon,
+  zeroMemory as zeroMemoryCommon,
   UTF8ArrayToString,
   instantiateNodeWasm,
   intArrayFromString,
   lengthBytesUTF8,
+  randomFill,
   readAsync,
   readBinary,
+  stringToAscii,
   stringToUTF8Array,
 } from './emscriptenCommon.js'
 
@@ -54,33 +70,21 @@ export interface InitdbMod {
   printErr?: (text: string) => void
 }
 
-type InitdbFactory = (
-  moduleOverrides?: Partial<InitdbMod>,
-) => Promise<InitdbMod>
-
-const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
-  let moduleRtn
-  const Module = moduleArg
-  let readyPromiseResolve, readyPromiseReject
-  const readyPromise = new Promise((resolve, reject) => {
-    readyPromiseResolve = resolve
-    readyPromiseReject = reject
-  })
-  const ENVIRONMENT_IS_NODE = true
+export const createInitdbModule = async (
+  emscriptenOpts: Partial<InitdbMod> = {},
+) => {
+  const Module = emscriptenOpts
   let moduleOverrides = Object.assign({}, Module)
-  let arguments_ = []
   let thisProgram = './this.program'
   const quit_ = (status, toThrow) => {
     throw toThrow
   }
   Object.assign(Module, moduleOverrides)
   moduleOverrides = null
-  if (Module['arguments']) arguments_ = Module['arguments']
   if (Module['thisProgram']) thisProgram = Module['thisProgram']
   if (!Module['thisProgram'] && process.argv.length > 1) {
     thisProgram = process.argv[1].replace(/\\/g, '/')
   }
-  arguments_ = process.argv.slice(2)
   const out = Module['print'] || console.log.bind(console)
   const err = Module['printErr'] || console.error.bind(console)
   const wasmBinary = Module['wasmModule'] || Module['wasmBinary']
@@ -166,35 +170,20 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
     callRuntimeCallbacks(__ATPOSTRUN__, Module)
   }
-  let runDependencies = 0
-  let dependenciesFulfilled = null
-  function getUniqueRunDependency(id) {
-    return id
-  }
-  function addRunDependency(id) {
-    runDependencies++
-    Module['monitorRunDependencies']?.(runDependencies)
-  }
-  function removeRunDependency(id) {
-    runDependencies--
-    Module['monitorRunDependencies']?.(runDependencies)
-    if (runDependencies == 0) {
-      if (dependenciesFulfilled) {
-        const callback = dependenciesFulfilled
-        dependenciesFulfilled = null
-        callback()
-      }
-    }
-  }
+  const {
+    addRunDependency,
+    removeRunDependency,
+    getUniqueRunDependency,
+    getRunDependencies,
+    setDependenciesFulfilled,
+  } = createRunDependencyManager(Module)
   function abort(what) {
     Module['onAbort']?.(what)
     what = 'Aborted(' + what + ')'
     err(what)
     ABORT = true
     what += '. Build with -sASSERTIONS for more info.'
-    const e = new WebAssembly.RuntimeError(what)
-    readyPromiseReject(e)
-    throw e
+    throw new WebAssembly.RuntimeError(what)
   }
   const wasmBinaryFile = new URL('../release/initdb.wasm', import.meta.url)
   async function createWasm() {
@@ -213,30 +202,17 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       receiveInstance(result['instance'], result['module'])
     }
     const info = getWasmImports(wasmImports, GOTHandler)
-    try {
-      const result = await instantiateNodeWasm(
-        wasmBinary,
-        wasmBinaryFile,
-        info,
-        (reason) => {
-          err(`failed to prepare wasm: ${reason}`)
-          return abort(reason)
-        },
-      )
-      receiveInstantiationResult(result)
-      return result
-    } catch (e) {
-      readyPromiseReject(e)
-      return
-    }
-  }
-  const ASM_CONSTS = {}
-  class ExitStatus {
-    name = 'ExitStatus'
-    constructor(status) {
-      this.message = `Program terminated with exit(${status})`
-      this.status = status
-    }
+    const result = await instantiateNodeWasm(
+      wasmBinary,
+      wasmBinaryFile,
+      info,
+      (reason) => {
+        err(`failed to prepare wasm: ${reason}`)
+        return abort(reason)
+      },
+    )
+    receiveInstantiationResult(result)
+    return result
   }
   const GOT = {}
   let currentModuleWeakSymbols = new Set([])
@@ -257,44 +233,15 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   }
   currentModuleWeakSymbols = new Set()
   let ___heap_base = 205888
-  const getMemory = (size) => {
-    if (runtimeInitialized) {
-      return _calloc(size, 1)
-    }
-    const ret = ___heap_base
-    const end = ret + alignMemory(size, 16)
-    ___heap_base = end
-    GOT['__heap_base'].value = end
-    return ret
-  }
-  const isInternalSym = (symName) =>
-    [
-      '__cpp_exception',
-      '__c_longjmp',
-      '__wasm_apply_data_relocs',
-      '__dso_handle',
-      '__tls_size',
-      '__tls_align',
-      '__set_stack_limits',
-      '_emscripten_tls_init',
-      '__wasm_init_tls',
-      '__wasm_call_ctors',
-      '__start_em_asm',
-      '__stop_em_asm',
-      '__start_em_js',
-      '__stop_em_js',
-    ].includes(symName) || symName.startsWith('__em_js__')
   const wasmTableMirror = []
-  const wasmTable = new WebAssembly.Table({ initial: 144, element: 'anyfunc' })
-  const getWasmTableEntry = (funcPtr) => {
-    let func = wasmTableMirror[funcPtr]
-    if (!func) {
-      if (funcPtr >= wasmTableMirror.length)
-        wasmTableMirror.length = funcPtr + 1
-      wasmTableMirror[funcPtr] = func = wasmTable.get(funcPtr)
-    }
-    return func
-  }
+  const wasmTable = new WebAssembly.Table({
+    initial: 144,
+    element: 'anyfunc',
+  })
+  const { getWasmTableEntry, setWasmTableEntry } = createWasmTableHelpers(
+    wasmTable,
+    wasmTableMirror,
+  )
   const updateTableMap = (offset, count) => {
     if (functionsInTableMap) {
       for (let i = offset; i < offset + count; i++) {
@@ -327,10 +274,6 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       throw 'Unable to grow wasm table. Set ALLOW_TABLE_GROWTH.'
     }
     return wasmTable.length - 1
-  }
-  const setWasmTableEntry = (idx, func) => {
-    wasmTable.set(idx, func)
-    wasmTableMirror[idx] = wasmTable.get(idx)
   }
   const addFunction = (func, sig) => {
     const rtn = getFunctionAddress(func)
@@ -455,7 +398,6 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       }
     }
   }
-  const loadDylibs = () => reportUndefinedSymbols()
   let noExitRuntime = Module['noExitRuntime'] || false
   const ___call_sighandler = (fp, sig) => getWasmTableEntry(fp)(sig)
   ___call_sighandler.sig = 'vpi'
@@ -467,85 +409,467 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     { value: 'i32', mutable: true },
     205888,
   )
-  const initRandomFill = () => {
-    if (
-      typeof crypto == 'object' &&
-      typeof crypto['getRandomValues'] == 'function'
-    ) {
-      return (view) => crypto.getRandomValues(view)
-    } else if (ENVIRONMENT_IS_NODE) {
-      try {
-        const crypto_module = crypto
-        const randomFillSync = crypto_module['randomFillSync']
-        if (randomFillSync) {
-          return (view) => crypto_module['randomFillSync'](view)
-        }
-        const randomBytes = crypto_module['randomBytes']
-        return (view) => (view.set(randomBytes(view.byteLength)), view)
-      } catch (e) {}
+  const PATH_FS = createPathFS(() => FS.cwd())
+  const ___table_base = new WebAssembly.Global(
+    { value: 'i32', mutable: false },
+    1,
+  )
+  const __abort_js = () => abort('')
+  __abort_js.sig = 'v'
+  let runtimeKeepaliveCounter = 0
+  const __emscripten_runtime_keepalive_clear = () => {
+    noExitRuntime = false
+    runtimeKeepaliveCounter = 0
+  }
+  __emscripten_runtime_keepalive_clear.sig = 'v'
+  const __emscripten_throw_longjmp = () => {
+    throw Infinity
+  }
+  __emscripten_throw_longjmp.sig = 'v'
+  const MONTH_DAYS_LEAP_CUMULATIVE = [
+    0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335,
+  ]
+  const MONTH_DAYS_REGULAR_CUMULATIVE = [
+    0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334,
+  ]
+  function __localtime_js(time, tmPtr) {
+    time = bigintToI53Checked(time)
+    const date = new Date(time * 1e3)
+    HEAP32[tmPtr >> 2] = date.getSeconds()
+    HEAP32[(tmPtr + 4) >> 2] = date.getMinutes()
+    HEAP32[(tmPtr + 8) >> 2] = date.getHours()
+    HEAP32[(tmPtr + 12) >> 2] = date.getDate()
+    HEAP32[(tmPtr + 16) >> 2] = date.getMonth()
+    HEAP32[(tmPtr + 20) >> 2] = date.getFullYear() - 1900
+    HEAP32[(tmPtr + 24) >> 2] = date.getDay()
+    const yday =
+      ydayFromDateCommon(
+        date,
+        MONTH_DAYS_LEAP_CUMULATIVE,
+        MONTH_DAYS_REGULAR_CUMULATIVE,
+      ) | 0
+    HEAP32[(tmPtr + 28) >> 2] = yday
+    HEAP32[(tmPtr + 36) >> 2] = -(date.getTimezoneOffset() * 60)
+    const start = new Date(date.getFullYear(), 0, 1)
+    const summerOffset = new Date(date.getFullYear(), 6, 1).getTimezoneOffset()
+    const winterOffset = start.getTimezoneOffset()
+    const dst =
+      (summerOffset != winterOffset &&
+        date.getTimezoneOffset() == Math.min(winterOffset, summerOffset)) | 0
+    HEAP32[(tmPtr + 32) >> 2] = dst
+  }
+  __localtime_js.sig = 'vjp'
+  const __mktime_js = function (tmPtr) {
+    const ret = (() => {
+      const date = new Date(
+        HEAP32[(tmPtr + 20) >> 2] + 1900,
+        HEAP32[(tmPtr + 16) >> 2],
+        HEAP32[(tmPtr + 12) >> 2],
+        HEAP32[(tmPtr + 8) >> 2],
+        HEAP32[(tmPtr + 4) >> 2],
+        HEAP32[tmPtr >> 2],
+        0,
+      )
+      const dst = HEAP32[(tmPtr + 32) >> 2]
+      const guessedOffset = date.getTimezoneOffset()
+      const start = new Date(date.getFullYear(), 0, 1)
+      const summerOffset = new Date(
+        date.getFullYear(),
+        6,
+        1,
+      ).getTimezoneOffset()
+      const winterOffset = start.getTimezoneOffset()
+      const dstOffset = Math.min(winterOffset, summerOffset)
+      if (dst < 0) {
+        HEAP32[(tmPtr + 32) >> 2] = Number(
+          summerOffset != winterOffset && dstOffset == guessedOffset,
+        )
+      } else if (dst > 0 != (dstOffset == guessedOffset)) {
+        const nonDstOffset = Math.max(winterOffset, summerOffset)
+        const trueOffset = dst > 0 ? dstOffset : nonDstOffset
+        date.setTime(date.getTime() + (trueOffset - guessedOffset) * 6e4)
+      }
+      HEAP32[(tmPtr + 24) >> 2] = date.getDay()
+      const yday =
+        ydayFromDateCommon(
+          date,
+          MONTH_DAYS_LEAP_CUMULATIVE,
+          MONTH_DAYS_REGULAR_CUMULATIVE,
+        ) | 0
+      HEAP32[(tmPtr + 28) >> 2] = yday
+      HEAP32[tmPtr >> 2] = date.getSeconds()
+      HEAP32[(tmPtr + 4) >> 2] = date.getMinutes()
+      HEAP32[(tmPtr + 8) >> 2] = date.getHours()
+      HEAP32[(tmPtr + 12) >> 2] = date.getDate()
+      HEAP32[(tmPtr + 16) >> 2] = date.getMonth()
+      HEAP32[(tmPtr + 20) >> 2] = date.getYear()
+      const timeMs = date.getTime()
+      if (isNaN(timeMs)) {
+        return -1
+      }
+      return timeMs / 1e3
+    })()
+    return BigInt(ret)
+  }
+  __mktime_js.sig = 'jp'
+  function __mmap_js(len, prot, flags, fd, offset, allocated, addr) {
+    offset = bigintToI53Checked(offset)
+    try {
+      if (isNaN(offset)) return 61
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      const res = FS.mmap(stream, len, offset, prot, flags)
+      const ptr = res.ptr
+      HEAP32[allocated >> 2] = res.allocated
+      HEAPU32[addr >> 2] = ptr
+      return 0
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return -e.errno
     }
-    abort('initRandomDevice')
   }
-  let randomFill = (view) => (randomFill = initRandomFill())(view)
-  let PATH_FS = {
-    resolve: (...args) => {
-      let resolvedPath = '',
-        resolvedAbsolute = false
-      for (let i = args.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-        const path = i >= 0 ? args[i] : FS.cwd()
-        if (typeof path != 'string') {
-          throw new TypeError('Arguments to path.resolve must be strings')
-        } else if (!path) {
-          return ''
-        }
-        resolvedPath = path + '/' + resolvedPath
-        resolvedAbsolute = PATH.isAbs(path)
+  __mmap_js.sig = 'ipiiijpp'
+  function __munmap_js(addr, len, prot, flags, fd, offset) {
+    offset = bigintToI53Checked(offset)
+    try {
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      if (prot & 2) {
+        SYSCALLS.doMsync(addr, stream, len, flags, offset)
       }
-      resolvedPath = PATH.normalizeArray(
-        resolvedPath.split('/').filter((p) => !!p),
-        !resolvedAbsolute,
-      ).join('/')
-      return (resolvedAbsolute ? '/' : '') + resolvedPath || '.'
-    },
-    relative: (from, to) => {
-      from = PATH_FS.resolve(from).substr(1)
-      to = PATH_FS.resolve(to).substr(1)
-      const fromParts = trimArray(from.split('/'))
-      const toParts = trimArray(to.split('/'))
-      const length = Math.min(fromParts.length, toParts.length)
-      let samePartsLength = length
-      for (let i = 0; i < length; i++) {
-        if (fromParts[i] !== toParts[i]) {
-          samePartsLength = i
-          break
-        }
-      }
-      let outputParts = []
-      for (let i = samePartsLength; i < fromParts.length; i++) {
-        outputParts.push('..')
-      }
-      outputParts = outputParts.concat(toParts.slice(samePartsLength))
-      return outputParts.join('/')
-    },
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return -e.errno
+    }
   }
+  __munmap_js.sig = 'ippiiij'
+  const timers = {}
+  const handleException = (e) => {
+    if (e instanceof ExitStatus || e == 'unwind') {
+      return EXITSTATUS
+    }
+    quit_(1, e)
+  }
+  const keepRuntimeAlive = () => noExitRuntime || runtimeKeepaliveCounter > 0
+  const _proc_exit = (code) => {
+    EXITSTATUS = code
+    if (!keepRuntimeAlive()) {
+      Module['onExit']?.(code)
+      ABORT = true
+    }
+    quit_(code, new ExitStatus(code))
+  }
+  _proc_exit.sig = 'vi'
+  const exitJS = (status, implicit) => {
+    EXITSTATUS = status
+    if (!keepRuntimeAlive()) {
+      exitRuntime()
+    }
+    _proc_exit(status)
+  }
+  const _exit = exitJS
+  _exit.sig = 'vi'
+  const maybeExit = () => {
+    if (runtimeExited) {
+      return
+    }
+    if (!keepRuntimeAlive()) {
+      try {
+        _exit(EXITSTATUS)
+      } catch (e) {
+        handleException(e)
+      }
+    }
+  }
+  const callUserCallback = (func) => {
+    if (runtimeExited || ABORT) {
+      return
+    }
+    try {
+      func()
+      maybeExit()
+    } catch (e) {
+      handleException(e)
+    }
+  }
+  const _emscripten_get_now = () => performance.now()
+  _emscripten_get_now.sig = 'd'
+  const __setitimer_js = (which, timeout_ms) => {
+    if (timers[which]) {
+      clearTimeout(timers[which].id)
+      delete timers[which]
+    }
+    if (!timeout_ms) return 0
+    const id = setTimeout(() => {
+      delete timers[which]
+      callUserCallback(() => __emscripten_timeout(which, _emscripten_get_now()))
+    }, timeout_ms)
+    timers[which] = { id, timeout_ms }
+    return 0
+  }
+  __setitimer_js.sig = 'iid'
+  const __tzset_js = (timezone, daylight, std_name, dst_name) => {
+    const currentYear = new Date().getFullYear()
+    const winter = new Date(currentYear, 0, 1)
+    const summer = new Date(currentYear, 6, 1)
+    const winterOffset = winter.getTimezoneOffset()
+    const summerOffset = summer.getTimezoneOffset()
+    const stdTimezoneOffset = Math.max(winterOffset, summerOffset)
+    HEAPU32[timezone >> 2] = stdTimezoneOffset * 60
+    HEAP32[daylight >> 2] = Number(winterOffset != summerOffset)
+    const extractZone = (timezoneOffset) => {
+      const sign = timezoneOffset >= 0 ? '-' : '+'
+      const absOffset = Math.abs(timezoneOffset)
+      const hours = String(Math.floor(absOffset / 60)).padStart(2, '0')
+      const minutes = String(absOffset % 60).padStart(2, '0')
+      return `UTC${sign}${hours}${minutes}`
+    }
+    const winterName = extractZone(winterOffset)
+    const summerName = extractZone(summerOffset)
+    if (summerOffset < winterOffset) {
+      stringToUTF8Common(winterName, HEAPU8, std_name, 17)
+      stringToUTF8Common(summerName, HEAPU8, dst_name, 17)
+    } else {
+      stringToUTF8Common(winterName, HEAPU8, dst_name, 17)
+      stringToUTF8Common(summerName, HEAPU8, std_name, 17)
+    }
+  }
+  __tzset_js.sig = 'vpppp'
+  const _emscripten_date_now = () => Date.now()
+  _emscripten_date_now.sig = 'd'
+  const growMemory = (size) => {
+    const b = wasmMemory.buffer
+    const pages = ((size - b.byteLength + 65535) / 65536) | 0
+    try {
+      wasmMemory.grow(pages)
+      updateMemoryViews()
+      return 1
+    } catch (e) {}
+  }
+  const _emscripten_resize_heap = (requestedSize) => {
+    const oldSize = HEAPU8.length
+    requestedSize >>>= 0
+    const maxHeapSize = getHeapMax()
+    if (requestedSize > maxHeapSize) {
+      return false
+    }
+    for (let cutDown = 1; cutDown <= 4; cutDown *= 2) {
+      let overGrownHeapSize = oldSize * (1 + 0.2 / cutDown)
+      overGrownHeapSize = Math.min(overGrownHeapSize, requestedSize + 100663296)
+      const newSize = Math.min(
+        maxHeapSize,
+        alignMemory(Math.max(requestedSize, overGrownHeapSize), 65536),
+      )
+      const replacement = growMemory(newSize)
+      if (replacement) {
+        return true
+      }
+    }
+    return false
+  }
+  _emscripten_resize_heap.sig = 'ip'
+  const ENV = {}
+  const getExecutableName = () => thisProgram || './this.program'
+  const getEnvStrings = () => {
+    if (!getEnvStrings.strings) {
+      const lang = 'C'.replace('-', '_') + '.UTF-8'
+      const env = {
+        USER: 'web_user',
+        LOGNAME: 'web_user',
+        PATH: '/',
+        PWD: '/',
+        HOME: '/home/web_user',
+        LANG: lang,
+        _: getExecutableName(),
+      }
+      for (let x in ENV) {
+        if (ENV[x] === undefined) delete env[x]
+        else env[x] = ENV[x]
+      }
+      const strings = []
+      for (let x in env) {
+        strings.push(`${x}=${env[x]}`)
+      }
+      getEnvStrings.strings = strings
+    }
+    return getEnvStrings.strings
+  }
+  const _environ_get = (__environ, environ_buf) => {
+    let bufSize = 0
+    getEnvStrings().forEach((string, i) => {
+      const ptr = environ_buf + bufSize
+      HEAPU32[(__environ + i * 4) >> 2] = ptr
+      stringToAscii(string, ptr, HEAP8)
+      bufSize += string.length + 1
+    })
+    return 0
+  }
+  _environ_get.sig = 'ipp'
+  const _environ_sizes_get = (penviron_count, penviron_buf_size) => {
+    const strings = getEnvStrings()
+    HEAPU32[penviron_count >> 2] = strings.length
+    let bufSize = 0
+    strings.forEach((string) => (bufSize += string.length + 1))
+    HEAPU32[penviron_buf_size >> 2] = bufSize
+    return 0
+  }
+  _environ_sizes_get.sig = 'ipp'
+  function _fd_close(fd) {
+    try {
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      FS.close(stream)
+      return 0
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return e.errno
+    }
+  }
+  _fd_close.sig = 'ii'
+  function _fd_fdstat_get(fd, pbuf) {
+    try {
+      const rightsBase = 0
+      const rightsInheriting = 0
+      const flags = 0
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      const type = stream.tty
+        ? 2
+        : FS.isDir(stream.mode)
+          ? 3
+          : FS.isLink(stream.mode)
+            ? 7
+            : 4
+      HEAP8[pbuf] = type
+      HEAP16[(pbuf + 2) >> 1] = flags
+      HEAP64[(pbuf + 8) >> 3] = BigInt(rightsBase)
+      HEAP64[(pbuf + 16) >> 3] = BigInt(rightsInheriting)
+      return 0
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return e.errno
+    }
+  }
+  _fd_fdstat_get.sig = 'iip'
+  const doReadv = (stream, iov, iovcnt, offset) => {
+    let ret = 0
+    for (let i = 0; i < iovcnt; i++) {
+      const ptr = HEAPU32[iov >> 2]
+      const len = HEAPU32[(iov + 4) >> 2]
+      iov += 8
+      const curr = FS.read(stream, HEAP8, ptr, len, offset)
+      if (curr < 0) return -1
+      ret += curr
+      if (curr < len) break
+      if (typeof offset != 'undefined') {
+        offset += curr
+      }
+    }
+    return ret
+  }
+  function _fd_read(fd, iov, iovcnt, pnum) {
+    try {
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      const num = doReadv(stream, iov, iovcnt)
+      HEAPU32[pnum >> 2] = num
+      return 0
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return e.errno
+    }
+  }
+  _fd_read.sig = 'iippp'
+  function _fd_seek(fd, offset, whence, newOffset) {
+    offset = bigintToI53Checked(offset)
+    try {
+      if (isNaN(offset)) return 61
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      FS.llseek(stream, offset, whence)
+      HEAP64[newOffset >> 3] = BigInt(stream.position)
+      if (stream.getdents && offset === 0 && whence === 0)
+        stream.getdents = null
+      return 0
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return e.errno
+    }
+  }
+  _fd_seek.sig = 'iijip'
+  function _fd_sync(fd) {
+    try {
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      if (stream.stream_ops?.fsync) {
+        return stream.stream_ops.fsync(stream)
+      }
+      return 0
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return e.errno
+    }
+  }
+  _fd_sync.sig = 'ii'
+  const doWritev = (stream, iov, iovcnt, offset) => {
+    let ret = 0
+    for (let i = 0; i < iovcnt; i++) {
+      const ptr = HEAPU32[iov >> 2]
+      const len = HEAPU32[(iov + 4) >> 2]
+      iov += 8
+      const curr = FS.write(stream, HEAP8, ptr, len, offset)
+      if (curr < 0) return -1
+      ret += curr
+      if (curr < len) {
+        break
+      }
+      if (typeof offset != 'undefined') {
+        offset += curr
+      }
+    }
+    return ret
+  }
+  function _fd_write(fd, iov, iovcnt, pnum) {
+    try {
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      const num = doWritev(stream, iov, iovcnt)
+      HEAPU32[pnum >> 2] = num
+      return 0
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return e.errno
+    }
+  }
+  _fd_write.sig = 'iippp'
+  const _getaddrinfo = () => -2
+  _getaddrinfo.sig = 'ipppp'
+  const stackAlloc = (sz) => __emscripten_stack_alloc(sz)
+  const stringToUTF8OnStack = (str) => {
+    return stringToUTF8OnStackCommon(str, stackAlloc, HEAPU8)
+  }
+  const removeFunction = (index) => {
+    functionsInTableMap.delete(getWasmTableEntry(index))
+    setWasmTableEntry(index, null)
+    freeTableIndexes.push(index)
+  }
+  const stringToNewUTF8 = (str) => {
+    return stringToNewUTF8Common(str, _malloc, HEAPU8)
+  }
+  const FS_createPath = (...args) => FS.createPath(...args)
+
+  const FS_unlink = (path) => FS.unlink(path)
+  const FS_createLazyFile = (...args) => FS.createLazyFile(...args)
+  const FS_createDevice = (...args) => FS.createDevice(...args)
+  const preloadPlugins = []
   let FS_stdin_getChar_buffer = []
   const FS_stdin_getChar = () => {
     if (!FS_stdin_getChar_buffer.length) {
       let result = null
-      if (ENVIRONMENT_IS_NODE) {
-        const BUFSIZE = 256
-        const buf = Buffer.alloc(BUFSIZE)
-        let bytesRead = 0
-        const fd = process.stdin.fd
-        try {
-          bytesRead = fs.readSync(fd, buf, 0, BUFSIZE)
-        } catch (e) {
-          if (e.toString().includes('EOF')) bytesRead = 0
-          else throw e
-        }
-        if (bytesRead > 0) {
-          result = buf.slice(0, bytesRead).toString('utf-8')
-        }
+      const BUFSIZE = 256
+      const buf = Buffer.alloc(BUFSIZE)
+      let bytesRead = 0
+      const fd = process.stdin.fd
+      try {
+        bytesRead = fs.readSync(fd, buf, 0, BUFSIZE)
+      } catch (e) {
+        if (e.toString().includes('EOF')) bytesRead = 0
+        else throw e
+      }
+      if (bytesRead > 0) {
+        result = buf.slice(0, bytesRead).toString('utf-8')
       }
       if (!result) {
         return null
@@ -673,13 +997,10 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       },
     },
   }
-  const zeroMemory = (address, size) => {
-    HEAPU8.fill(0, address, address + size)
-  }
   const mmapAlloc = (size) => {
     size = alignMemory(size, 65536)
     const ptr = _emscripten_builtin_memalign(65536, size)
-    if (ptr) zeroMemory(ptr, size)
+    if (ptr) zeroMemoryCommon(HEAPU8, ptr, size)
     return ptr
   }
   let MEMFS = {
@@ -1004,7 +1325,16 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     FS.createDataFile(parent, name, fileData, canRead, canWrite, canOwn)
   }
   const FS_handledByPreloadPlugin = (byteArray, fullname, finish, onerror) => {
-    return false
+    if (typeof Browser != 'undefined') Browser.init()
+    let handled = false
+    preloadPlugins.forEach((plugin) => {
+      if (handled) return
+      if (plugin['canHandle'](fullname)) {
+        plugin['handle'](byteArray, fullname, finish, onerror)
+        handled = true
+      }
+    })
+    return handled
   }
   const FS_createPreloadedFile = (
     parent,
@@ -1045,27 +1375,6 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     } else {
       processData(url)
     }
-  }
-  const FS_modeStringToFlags = (str) => {
-    const flagModes = {
-      r: 0,
-      'r+': 2,
-      w: 512 | 64 | 1,
-      'w+': 512 | 64 | 2,
-      a: 1024 | 64 | 1,
-      'a+': 1024 | 64 | 2,
-    }
-    const flags = flagModes[str]
-    if (typeof flags == 'undefined') {
-      throw new Error(`Unknown file open mode: ${str}`)
-    }
-    return flags
-  }
-  const FS_getMode = (canRead, canWrite) => {
-    let mode = 0
-    if (canRead) mode |= 292 | 73
-    if (canWrite) mode |= 146
-    return mode
   }
   const ERRNO_CODES = {
     EPERM: 63,
@@ -1189,6 +1498,270 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     ENOTRECOVERABLE: 56,
     EOWNERDEAD: 62,
     ESTRPIPE: 135,
+  }
+  let NODEFS = {
+    isWindows: false,
+    staticInit() {
+      NODEFS.isWindows = !!process.platform.match(/^win/)
+      let flags = process.binding('constants')
+      if (flags['fs']) {
+        flags = flags['fs']
+      }
+      NODEFS.flagsForNodeMap = {
+        1024: flags['O_APPEND'],
+        64: flags['O_CREAT'],
+        128: flags['O_EXCL'],
+        256: flags['O_NOCTTY'],
+        0: flags['O_RDONLY'],
+        2: flags['O_RDWR'],
+        4096: flags['O_SYNC'],
+        512: flags['O_TRUNC'],
+        1: flags['O_WRONLY'],
+        131072: flags['O_NOFOLLOW'],
+      }
+    },
+    convertNodeCode(e) {
+      const code = e.code
+      return ERRNO_CODES[code]
+    },
+    tryFSOperation(f) {
+      try {
+        return f()
+      } catch (e) {
+        if (!e.code) throw e
+        if (e.code === 'UNKNOWN') throw new FS.ErrnoError(28)
+        throw new FS.ErrnoError(NODEFS.convertNodeCode(e))
+      }
+    },
+    mount(mount) {
+      return NODEFS.createNode(null, '/', NODEFS.getMode(mount.opts.root), 0)
+    },
+    createNode(parent, name, mode, dev) {
+      if (!FS.isDir(mode) && !FS.isFile(mode) && !FS.isLink(mode)) {
+        throw new FS.ErrnoError(28)
+      }
+      const node = FS.createNode(parent, name, mode)
+      node.node_ops = NODEFS.node_ops
+      node.stream_ops = NODEFS.stream_ops
+      return node
+    },
+    getMode(path) {
+      return NODEFS.tryFSOperation(() => {
+        let mode = fs.lstatSync(path).mode
+        if (NODEFS.isWindows) {
+          mode |= (mode & 292) >> 2
+        }
+        return mode
+      })
+    },
+    realPath(node) {
+      const parts = []
+      while (node.parent !== node) {
+        parts.push(node.name)
+        node = node.parent
+      }
+      parts.push(node.mount.opts.root)
+      parts.reverse()
+      return PATH.join(...parts)
+    },
+    flagsForNode(flags) {
+      flags &= ~2097152
+      flags &= ~2048
+      flags &= ~32768
+      flags &= ~524288
+      flags &= ~65536
+      let newFlags = 0
+      for (const k in NODEFS.flagsForNodeMap) {
+        if (flags & k) {
+          newFlags |= NODEFS.flagsForNodeMap[k]
+          flags ^= k
+        }
+      }
+      if (flags) {
+        throw new FS.ErrnoError(28)
+      }
+      return newFlags
+    },
+    node_ops: {
+      getattr(node) {
+        const path = NODEFS.realPath(node)
+        let stat
+        NODEFS.tryFSOperation(() => (stat = fs.lstatSync(path)))
+        if (NODEFS.isWindows) {
+          if (!stat.blksize) {
+            stat.blksize = 4096
+          }
+          if (!stat.blocks) {
+            stat.blocks = ((stat.size + stat.blksize - 1) / stat.blksize) | 0
+          }
+          stat.mode |= (stat.mode & 292) >> 2
+        }
+        return {
+          dev: stat.dev,
+          ino: stat.ino,
+          mode: stat.mode,
+          nlink: stat.nlink,
+          uid: stat.uid,
+          gid: stat.gid,
+          rdev: stat.rdev,
+          size: stat.size,
+          atime: stat.atime,
+          mtime: stat.mtime,
+          ctime: stat.ctime,
+          blksize: stat.blksize,
+          blocks: stat.blocks,
+        }
+      },
+      setattr(node, attr) {
+        const path = NODEFS.realPath(node)
+        NODEFS.tryFSOperation(() => {
+          if (attr.mode !== undefined) {
+            let mode = attr.mode
+            if (NODEFS.isWindows) {
+              mode &= 384
+            }
+            fs.chmodSync(path, mode)
+            node.mode = attr.mode
+          }
+          if (attr.atime || attr.mtime) {
+            const atime = attr.atime && new Date(attr.atime)
+            const mtime = attr.mtime && new Date(attr.mtime)
+            fs.utimesSync(path, atime, mtime)
+          }
+          if (attr.size !== undefined) {
+            fs.truncateSync(path, attr.size)
+          }
+        })
+      },
+      lookup(parent, name) {
+        const path = PATH.join2(NODEFS.realPath(parent), name)
+        const mode = NODEFS.getMode(path)
+        return NODEFS.createNode(parent, name, mode)
+      },
+      mknod(parent, name, mode, dev) {
+        const node = NODEFS.createNode(parent, name, mode, dev)
+        const path = NODEFS.realPath(node)
+        NODEFS.tryFSOperation(() => {
+          if (FS.isDir(node.mode)) {
+            fs.mkdirSync(path, node.mode)
+          } else {
+            fs.writeFileSync(path, '', { mode: node.mode })
+          }
+        })
+        return node
+      },
+      rename(oldNode, newDir, newName) {
+        const oldPath = NODEFS.realPath(oldNode)
+        const newPath = PATH.join2(NODEFS.realPath(newDir), newName)
+        try {
+          FS.unlink(newPath)
+        } catch (e) {}
+        NODEFS.tryFSOperation(() => fs.renameSync(oldPath, newPath))
+        oldNode.name = newName
+      },
+      unlink(parent, name) {
+        const path = PATH.join2(NODEFS.realPath(parent), name)
+        NODEFS.tryFSOperation(() => fs.unlinkSync(path))
+      },
+      rmdir(parent, name) {
+        const path = PATH.join2(NODEFS.realPath(parent), name)
+        NODEFS.tryFSOperation(() => fs.rmdirSync(path))
+      },
+      readdir(node) {
+        const path = NODEFS.realPath(node)
+        return NODEFS.tryFSOperation(() => fs.readdirSync(path))
+      },
+      symlink(parent, newName, oldPath) {
+        const newPath = PATH.join2(NODEFS.realPath(parent), newName)
+        NODEFS.tryFSOperation(() => fs.symlinkSync(oldPath, newPath))
+      },
+      readlink(node) {
+        const path = NODEFS.realPath(node)
+        return NODEFS.tryFSOperation(() => fs.readlinkSync(path))
+      },
+      statfs(path) {
+        const stats = NODEFS.tryFSOperation(() => fs.statfsSync(path))
+        stats.frsize = stats.bsize
+        return stats
+      },
+    },
+    stream_ops: {
+      open(stream) {
+        const path = NODEFS.realPath(stream.node)
+        NODEFS.tryFSOperation(() => {
+          if (FS.isFile(stream.node.mode)) {
+            stream.shared.refcount = 1
+            stream.nfd = fs.openSync(path, NODEFS.flagsForNode(stream.flags))
+          }
+        })
+      },
+      close(stream) {
+        NODEFS.tryFSOperation(() => {
+          if (
+            FS.isFile(stream.node.mode) &&
+            stream.nfd &&
+            --stream.shared.refcount === 0
+          ) {
+            fs.closeSync(stream.nfd)
+          }
+        })
+      },
+      dup(stream) {
+        stream.shared.refcount++
+      },
+      read(stream, buffer, offset, length, position) {
+        if (length === 0) return 0
+        return NODEFS.tryFSOperation(() =>
+          fs.readSync(
+            stream.nfd,
+            new Int8Array(buffer.buffer, offset, length),
+            0,
+            length,
+            position,
+          ),
+        )
+      },
+      write(stream, buffer, offset, length, position) {
+        return NODEFS.tryFSOperation(() =>
+          fs.writeSync(
+            stream.nfd,
+            new Int8Array(buffer.buffer, offset, length),
+            0,
+            length,
+            position,
+          ),
+        )
+      },
+      llseek(stream, offset, whence) {
+        let position = offset
+        if (whence === 1) {
+          position += stream.position
+        } else if (whence === 2) {
+          if (FS.isFile(stream.node.mode)) {
+            NODEFS.tryFSOperation(() => {
+              const stat = fs.fstatSync(stream.nfd)
+              position += stat.size
+            })
+          }
+        }
+        if (position < 0) {
+          throw new FS.ErrnoError(28)
+        }
+        return position
+      },
+      mmap(stream, length, position, prot, flags) {
+        if (!FS.isFile(stream.node.mode)) {
+          throw new FS.ErrnoError(43)
+        }
+        const ptr = mmapAlloc(length)
+        NODEFS.stream_ops.read(stream, HEAP8, ptr, length, position)
+        return { ptr, allocated: true }
+      },
+      msync(stream, buffer, offset, length, mmapFlags) {
+        NODEFS.stream_ops.write(stream, buffer, 0, length, offset, false)
+        return 0
+      },
+    },
   }
   let PROXYFS = {
     mount(mount) {
@@ -2521,9 +3094,9 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       } else {
         FS.symlink('/dev/tty1', '/dev/stderr')
       }
-      const stdin = FS.open('/dev/stdin', 0)
-      const stdout = FS.open('/dev/stdout', 1)
-      const stderr = FS.open('/dev/stderr', 1)
+      FS.open('/dev/stdin', 0)
+      FS.open('/dev/stdout', 1)
+      FS.open('/dev/stderr', 1)
     },
     staticInit() {
       FS.nameTable = new Array(4096)
@@ -2531,7 +3104,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       FS.createDefaultDirectories()
       FS.createDefaultDevices()
       FS.createSpecialDirectories()
-      FS.filesystems = { MEMFS, PROXYFS }
+      FS.filesystems = false ? { MEMFS, NODEFS, PROXYFS } : { MEMFS, PROXYFS }
     },
     init(input, output, error) {
       FS.initialized = true
@@ -2789,6 +3362,109 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       return ret
     },
   }
+  const ___syscall__newselect = function (
+    nfds,
+    readfds,
+    writefds,
+    exceptfds,
+    timeout,
+  ) {
+    try {
+      let total = 0
+      const srcReadLow = readfds ? HEAP32[readfds >> 2] : 0,
+        srcReadHigh = readfds ? HEAP32[(readfds + 4) >> 2] : 0
+      const srcWriteLow = writefds ? HEAP32[writefds >> 2] : 0,
+        srcWriteHigh = writefds ? HEAP32[(writefds + 4) >> 2] : 0
+      const srcExceptLow = exceptfds ? HEAP32[exceptfds >> 2] : 0,
+        srcExceptHigh = exceptfds ? HEAP32[(exceptfds + 4) >> 2] : 0
+      let dstReadLow = 0,
+        dstReadHigh = 0
+      let dstWriteLow = 0,
+        dstWriteHigh = 0
+      let dstExceptLow = 0,
+        dstExceptHigh = 0
+      const allLow =
+        (readfds ? HEAP32[readfds >> 2] : 0) |
+        (writefds ? HEAP32[writefds >> 2] : 0) |
+        (exceptfds ? HEAP32[exceptfds >> 2] : 0)
+      const allHigh =
+        (readfds ? HEAP32[(readfds + 4) >> 2] : 0) |
+        (writefds ? HEAP32[(writefds + 4) >> 2] : 0) |
+        (exceptfds ? HEAP32[(exceptfds + 4) >> 2] : 0)
+      const check = (fd, low, high, val) => (fd < 32 ? low & val : high & val)
+      for (let fd = 0; fd < nfds; fd++) {
+        const mask = 1 << fd % 32
+        if (!check(fd, allLow, allHigh, mask)) {
+          continue
+        }
+        const stream = SYSCALLS.getStreamFromFD(fd)
+        let flags = SYSCALLS.DEFAULT_POLLMASK
+        if (stream.stream_ops.poll) {
+          let timeoutInMillis = -1
+          if (timeout) {
+            const tv_sec = readfds ? HEAP32[timeout >> 2] : 0,
+              tv_usec = readfds ? HEAP32[(timeout + 4) >> 2] : 0
+            timeoutInMillis = (tv_sec + tv_usec / 1e6) * 1e3
+          }
+          flags = stream.stream_ops.poll(stream, timeoutInMillis)
+        }
+        if (flags & 1 && check(fd, srcReadLow, srcReadHigh, mask)) {
+          fd < 32
+            ? (dstReadLow = dstReadLow | mask)
+            : (dstReadHigh = dstReadHigh | mask)
+          total++
+        }
+        if (flags & 4 && check(fd, srcWriteLow, srcWriteHigh, mask)) {
+          fd < 32
+            ? (dstWriteLow = dstWriteLow | mask)
+            : (dstWriteHigh = dstWriteHigh | mask)
+          total++
+        }
+        if (flags & 2 && check(fd, srcExceptLow, srcExceptHigh, mask)) {
+          fd < 32
+            ? (dstExceptLow = dstExceptLow | mask)
+            : (dstExceptHigh = dstExceptHigh | mask)
+          total++
+        }
+      }
+      if (readfds) {
+        HEAP32[readfds >> 2] = dstReadLow
+        HEAP32[(readfds + 4) >> 2] = dstReadHigh
+      }
+      if (writefds) {
+        HEAP32[writefds >> 2] = dstWriteLow
+        HEAP32[(writefds + 4) >> 2] = dstWriteHigh
+      }
+      if (exceptfds) {
+        HEAP32[exceptfds >> 2] = dstExceptLow
+        HEAP32[(exceptfds + 4) >> 2] = dstExceptHigh
+      }
+      return total
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return -e.errno
+    }
+  }
+  ___syscall__newselect.sig = 'iipppp'
+  function ___syscall_accept4(fd, addr, addrlen, flags, d1, d2) {
+    return -138
+  }
+  ___syscall_accept4.sig = 'iippiii'
+  function ___syscall_bind(fd, addr, addrlen, d1, d2, d3) {
+    return -138
+  }
+  ___syscall_bind.sig = 'iippiii'
+  function ___syscall_chdir(path) {
+    try {
+      path = SYSCALLS.getStr(path)
+      FS.chdir(path)
+      return 0
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return -e.errno
+    }
+  }
+  ___syscall_chdir.sig = 'ip'
   function ___syscall_chmod(path, mode) {
     try {
       path = SYSCALLS.getStr(path)
@@ -2800,6 +3476,20 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   ___syscall_chmod.sig = 'ipi'
+  function ___syscall_connect(fd, addr, addrlen, d1, d2, d3) {
+    return -138
+  }
+  ___syscall_connect.sig = 'iippiii'
+  function ___syscall_dup(fd) {
+    try {
+      const old = SYSCALLS.getStreamFromFD(fd)
+      return FS.dupStream(old).fd
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return -e.errno
+    }
+  }
+  ___syscall_dup.sig = 'ii'
   function ___syscall_dup3(fd, newfd, flags) {
     try {
       const old = SYSCALLS.getStreamFromFD(fd)
@@ -2842,6 +3532,67 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   ___syscall_faccessat.sig = 'iipii'
   const ___syscall_fadvise64 = (fd, offset, len, advice) => 0
   ___syscall_fadvise64.sig = 'iijji'
+  function ___syscall_fallocate(fd, mode, offset, len) {
+    offset = bigintToI53Checked(offset)
+    len = bigintToI53Checked(len)
+    try {
+      if (isNaN(offset)) return 61
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      FS.allocate(stream, offset, len)
+      return 0
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return -e.errno
+    }
+  }
+  ___syscall_fallocate.sig = 'iiijj'
+  function ___syscall_fchmod(fd, mode) {
+    try {
+      FS.fchmod(fd, mode)
+      return 0
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return -e.errno
+    }
+  }
+  ___syscall_fchmod.sig = 'iii'
+  function ___syscall_fchmodat2(dirfd, path, mode, flags) {
+    try {
+      const nofollow = flags & 256
+      path = SYSCALLS.getStr(path)
+      path = SYSCALLS.calculateAt(dirfd, path)
+      FS.chmod(path, mode, nofollow)
+      return 0
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return -e.errno
+    }
+  }
+  ___syscall_fchmodat2.sig = 'iipii'
+  function ___syscall_fchown32(fd, owner, group) {
+    try {
+      FS.fchown(fd, owner, group)
+      return 0
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return -e.errno
+    }
+  }
+  ___syscall_fchown32.sig = 'iiii'
+  function ___syscall_fchownat(dirfd, path, owner, group, flags) {
+    try {
+      path = SYSCALLS.getStr(path)
+      const nofollow = flags & 256
+      flags = flags & ~256
+      path = SYSCALLS.calculateAt(dirfd, path)
+      ;(nofollow ? FS.lchown : FS.chown)(path, owner, group)
+      return 0
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return -e.errno
+    }
+  }
+  ___syscall_fchownat.sig = 'iipiii'
   const syscallGetVarargI = () => {
     const ret = HEAP32[+SYSCALLS.varargs >> 2]
     SYSCALLS.varargs += 4
@@ -2892,6 +3643,16 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   ___syscall_fcntl64.sig = 'iiip'
+  function ___syscall_fdatasync(fd) {
+    try {
+      const stream = SYSCALLS.getStreamFromFD(fd)
+      return 0
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return -e.errno
+    }
+  }
+  ___syscall_fdatasync.sig = 'ii'
   function ___syscall_fstat64(fd, buf) {
     try {
       const stream = SYSCALLS.getStreamFromFD(fd)
@@ -2902,6 +3663,18 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   ___syscall_fstat64.sig = 'iip'
+  function ___syscall_ftruncate64(fd, length) {
+    length = bigintToI53Checked(length)
+    try {
+      if (isNaN(length)) return 61
+      FS.ftruncate(fd, length)
+      return 0
+    } catch (e) {
+      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
+      return -e.errno
+    }
+  }
+  ___syscall_ftruncate64.sig = 'iij'
   function ___syscall_getcwd(buf, size) {
     try {
       if (size === 0) return -28
@@ -3070,6 +3843,10 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   ___syscall_ioctl.sig = 'iiip'
+  function ___syscall_listen(fd, backlog) {
+    return -138
+  }
+  ___syscall_listen.sig = 'iiiiiii'
   function ___syscall_lstat64(path, buf) {
     try {
       path = SYSCALLS.getStr(path)
@@ -3119,6 +3896,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   ___syscall_openat.sig = 'iipip'
+
   function ___syscall_readlinkat(dirfd, path, buf, bufsize) {
     try {
       path = SYSCALLS.getStr(path)
@@ -3136,6 +3914,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   ___syscall_readlinkat.sig = 'iippp'
+
   function ___syscall_rmdir(path) {
     try {
       path = SYSCALLS.getStr(path)
@@ -3147,6 +3926,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   ___syscall_rmdir.sig = 'ip'
+
   function ___syscall_stat64(path, buf) {
     try {
       path = SYSCALLS.getStr(path)
@@ -3157,6 +3937,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   ___syscall_stat64.sig = 'ipp'
+
   function ___syscall_symlinkat(target, dirfd, linkpath) {
     try {
       target = SYSCALLS.getStr(target)
@@ -3170,6 +3951,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   ___syscall_symlinkat.sig = 'ipip'
+
   function ___syscall_unlinkat(dirfd, path, flags) {
     try {
       path = SYSCALLS.getStr(path)
@@ -3188,465 +3970,6 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     }
   }
   ___syscall_unlinkat.sig = 'iipi'
-  const ___table_base = new WebAssembly.Global(
-    { value: 'i32', mutable: false },
-    1,
-  )
-  const __abort_js = () => abort('')
-  __abort_js.sig = 'v'
-  let runtimeKeepaliveCounter = 0
-  const __emscripten_runtime_keepalive_clear = () => {
-    noExitRuntime = false
-    runtimeKeepaliveCounter = 0
-  }
-  __emscripten_runtime_keepalive_clear.sig = 'v'
-  const __emscripten_throw_longjmp = () => {
-    throw Infinity
-  }
-  __emscripten_throw_longjmp.sig = 'v'
-  const MONTH_DAYS_LEAP_CUMULATIVE = [
-    0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335,
-  ]
-  const MONTH_DAYS_REGULAR_CUMULATIVE = [
-    0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334,
-  ]
-  const INT53_MAX = 9007199254740992
-  const INT53_MIN = -9007199254740992
-  const bigintToI53Checked = (num) =>
-    num < INT53_MIN || num > INT53_MAX ? NaN : Number(num)
-  function __localtime_js(time, tmPtr) {
-    time = bigintToI53Checked(time)
-    const date = new Date(time * 1e3)
-    HEAP32[tmPtr >> 2] = date.getSeconds()
-    HEAP32[(tmPtr + 4) >> 2] = date.getMinutes()
-    HEAP32[(tmPtr + 8) >> 2] = date.getHours()
-    HEAP32[(tmPtr + 12) >> 2] = date.getDate()
-    HEAP32[(tmPtr + 16) >> 2] = date.getMonth()
-    HEAP32[(tmPtr + 20) >> 2] = date.getFullYear() - 1900
-    HEAP32[(tmPtr + 24) >> 2] = date.getDay()
-    const yday =
-      ydayFromDateCommon(
-        date,
-        MONTH_DAYS_LEAP_CUMULATIVE,
-        MONTH_DAYS_REGULAR_CUMULATIVE,
-      ) | 0
-    HEAP32[(tmPtr + 28) >> 2] = yday
-    HEAP32[(tmPtr + 36) >> 2] = -(date.getTimezoneOffset() * 60)
-    const start = new Date(date.getFullYear(), 0, 1)
-    const summerOffset = new Date(date.getFullYear(), 6, 1).getTimezoneOffset()
-    const winterOffset = start.getTimezoneOffset()
-    const dst =
-      (summerOffset != winterOffset &&
-        date.getTimezoneOffset() == Math.min(winterOffset, summerOffset)) | 0
-    HEAP32[(tmPtr + 32) >> 2] = dst
-  }
-  __localtime_js.sig = 'vjp'
-  const __mktime_js = function (tmPtr) {
-    const ret = (() => {
-      const date = new Date(
-        HEAP32[(tmPtr + 20) >> 2] + 1900,
-        HEAP32[(tmPtr + 16) >> 2],
-        HEAP32[(tmPtr + 12) >> 2],
-        HEAP32[(tmPtr + 8) >> 2],
-        HEAP32[(tmPtr + 4) >> 2],
-        HEAP32[tmPtr >> 2],
-        0,
-      )
-      const dst = HEAP32[(tmPtr + 32) >> 2]
-      const guessedOffset = date.getTimezoneOffset()
-      const start = new Date(date.getFullYear(), 0, 1)
-      const summerOffset = new Date(
-        date.getFullYear(),
-        6,
-        1,
-      ).getTimezoneOffset()
-      const winterOffset = start.getTimezoneOffset()
-      const dstOffset = Math.min(winterOffset, summerOffset)
-      if (dst < 0) {
-        HEAP32[(tmPtr + 32) >> 2] = Number(
-          summerOffset != winterOffset && dstOffset == guessedOffset,
-        )
-      } else if (dst > 0 != (dstOffset == guessedOffset)) {
-        const nonDstOffset = Math.max(winterOffset, summerOffset)
-        const trueOffset = dst > 0 ? dstOffset : nonDstOffset
-        date.setTime(date.getTime() + (trueOffset - guessedOffset) * 6e4)
-      }
-      HEAP32[(tmPtr + 24) >> 2] = date.getDay()
-      const yday =
-        ydayFromDateCommon(
-          date,
-          MONTH_DAYS_LEAP_CUMULATIVE,
-          MONTH_DAYS_REGULAR_CUMULATIVE,
-        ) | 0
-      HEAP32[(tmPtr + 28) >> 2] = yday
-      HEAP32[tmPtr >> 2] = date.getSeconds()
-      HEAP32[(tmPtr + 4) >> 2] = date.getMinutes()
-      HEAP32[(tmPtr + 8) >> 2] = date.getHours()
-      HEAP32[(tmPtr + 12) >> 2] = date.getDate()
-      HEAP32[(tmPtr + 16) >> 2] = date.getMonth()
-      HEAP32[(tmPtr + 20) >> 2] = date.getYear()
-      const timeMs = date.getTime()
-      if (isNaN(timeMs)) {
-        return -1
-      }
-      return timeMs / 1e3
-    })()
-    return BigInt(ret)
-  }
-  __mktime_js.sig = 'jp'
-  function __mmap_js(len, prot, flags, fd, offset, allocated, addr) {
-    offset = bigintToI53Checked(offset)
-    try {
-      if (isNaN(offset)) return 61
-      const stream = SYSCALLS.getStreamFromFD(fd)
-      const res = FS.mmap(stream, len, offset, prot, flags)
-      const ptr = res.ptr
-      HEAP32[allocated >> 2] = res.allocated
-      HEAPU32[addr >> 2] = ptr
-      return 0
-    } catch (e) {
-      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
-      return -e.errno
-    }
-  }
-  __mmap_js.sig = 'ipiiijpp'
-  function __munmap_js(addr, len, prot, flags, fd, offset) {
-    offset = bigintToI53Checked(offset)
-    try {
-      const stream = SYSCALLS.getStreamFromFD(fd)
-      if (prot & 2) {
-        SYSCALLS.doMsync(addr, stream, len, flags, offset)
-      }
-    } catch (e) {
-      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
-      return -e.errno
-    }
-  }
-  __munmap_js.sig = 'ippiiij'
-  const timers = {}
-  const handleException = (e) => {
-    if (e instanceof ExitStatus || e == 'unwind') {
-      return EXITSTATUS
-    }
-    quit_(1, e)
-  }
-  const keepRuntimeAlive = () => noExitRuntime || runtimeKeepaliveCounter > 0
-  const _proc_exit = (code) => {
-    EXITSTATUS = code
-    if (!keepRuntimeAlive()) {
-      Module['onExit']?.(code)
-      ABORT = true
-    }
-    quit_(code, new ExitStatus(code))
-  }
-  _proc_exit.sig = 'vi'
-  const exitJS = (status, implicit) => {
-    EXITSTATUS = status
-    if (!keepRuntimeAlive()) {
-      exitRuntime()
-    }
-    _proc_exit(status)
-  }
-  const _exit = exitJS
-  _exit.sig = 'vi'
-  const maybeExit = () => {
-    if (runtimeExited) {
-      return
-    }
-    if (!keepRuntimeAlive()) {
-      try {
-        _exit(EXITSTATUS)
-      } catch (e) {
-        handleException(e)
-      }
-    }
-  }
-  const callUserCallback = (func) => {
-    if (runtimeExited || ABORT) {
-      return
-    }
-    try {
-      func()
-      maybeExit()
-    } catch (e) {
-      handleException(e)
-    }
-  }
-  const _emscripten_get_now = () => performance.now()
-  _emscripten_get_now.sig = 'd'
-  const __setitimer_js = (which, timeout_ms) => {
-    if (timers[which]) {
-      clearTimeout(timers[which].id)
-      delete timers[which]
-    }
-    if (!timeout_ms) return 0
-    const id = setTimeout(() => {
-      delete timers[which]
-      callUserCallback(() => __emscripten_timeout(which, _emscripten_get_now()))
-    }, timeout_ms)
-    timers[which] = { id, timeout_ms }
-    return 0
-  }
-  __setitimer_js.sig = 'iid'
-  const __tzset_js = (timezone, daylight, std_name, dst_name) => {
-    const currentYear = new Date().getFullYear()
-    const winter = new Date(currentYear, 0, 1)
-    const summer = new Date(currentYear, 6, 1)
-    const winterOffset = winter.getTimezoneOffset()
-    const summerOffset = summer.getTimezoneOffset()
-    const stdTimezoneOffset = Math.max(winterOffset, summerOffset)
-    HEAPU32[timezone >> 2] = stdTimezoneOffset * 60
-    HEAP32[daylight >> 2] = Number(winterOffset != summerOffset)
-    const extractZone = (timezoneOffset) => {
-      const sign = timezoneOffset >= 0 ? '-' : '+'
-      const absOffset = Math.abs(timezoneOffset)
-      const hours = String(Math.floor(absOffset / 60)).padStart(2, '0')
-      const minutes = String(absOffset % 60).padStart(2, '0')
-      return `UTC${sign}${hours}${minutes}`
-    }
-    const winterName = extractZone(winterOffset)
-    const summerName = extractZone(summerOffset)
-    if (summerOffset < winterOffset) {
-      stringToUTF8Common(winterName, HEAPU8, std_name, 17)
-      stringToUTF8Common(summerName, HEAPU8, dst_name, 17)
-    } else {
-      stringToUTF8Common(winterName, HEAPU8, dst_name, 17)
-      stringToUTF8Common(summerName, HEAPU8, std_name, 17)
-    }
-  }
-  __tzset_js.sig = 'vpppp'
-  const _emscripten_date_now = () => Date.now()
-  _emscripten_date_now.sig = 'd'
-  const getHeapMax = () => 2147483648
-  const growMemory = (size) => {
-    const b = wasmMemory.buffer
-    const pages = ((size - b.byteLength + 65535) / 65536) | 0
-    try {
-      wasmMemory.grow(pages)
-      updateMemoryViews()
-      return 1
-    } catch (e) {}
-  }
-  const _emscripten_resize_heap = (requestedSize) => {
-    const oldSize = HEAPU8.length
-    requestedSize >>>= 0
-    const maxHeapSize = getHeapMax()
-    if (requestedSize > maxHeapSize) {
-      return false
-    }
-    for (let cutDown = 1; cutDown <= 4; cutDown *= 2) {
-      let overGrownHeapSize = oldSize * (1 + 0.2 / cutDown)
-      overGrownHeapSize = Math.min(overGrownHeapSize, requestedSize + 100663296)
-      const newSize = Math.min(
-        maxHeapSize,
-        alignMemory(Math.max(requestedSize, overGrownHeapSize), 65536),
-      )
-      const replacement = growMemory(newSize)
-      if (replacement) {
-        return true
-      }
-    }
-    return false
-  }
-  _emscripten_resize_heap.sig = 'ip'
-  const ENV = {}
-  const getExecutableName = () => thisProgram || './this.program'
-  const getEnvStrings = () => {
-    if (!getEnvStrings.strings) {
-      const lang = 'C'.replace('-', '_') + '.UTF-8'
-      const env = {
-        USER: 'web_user',
-        LOGNAME: 'web_user',
-        PATH: '/',
-        PWD: '/',
-        HOME: '/home/web_user',
-        LANG: lang,
-        _: getExecutableName(),
-      }
-      for (let x in ENV) {
-        if (ENV[x] === undefined) delete env[x]
-        else env[x] = ENV[x]
-      }
-      const strings = []
-      for (let x in env) {
-        strings.push(`${x}=${env[x]}`)
-      }
-      getEnvStrings.strings = strings
-    }
-    return getEnvStrings.strings
-  }
-  const stringToAscii = (str, buffer) => {
-    for (let i = 0; i < str.length; ++i) {
-      HEAP8[buffer++] = str.charCodeAt(i)
-    }
-    HEAP8[buffer] = 0
-  }
-  const _environ_get = (__environ, environ_buf) => {
-    let bufSize = 0
-    getEnvStrings().forEach((string, i) => {
-      const ptr = environ_buf + bufSize
-      HEAPU32[(__environ + i * 4) >> 2] = ptr
-      stringToAscii(string, ptr)
-      bufSize += string.length + 1
-    })
-    return 0
-  }
-  _environ_get.sig = 'ipp'
-  const _environ_sizes_get = (penviron_count, penviron_buf_size) => {
-    const strings = getEnvStrings()
-    HEAPU32[penviron_count >> 2] = strings.length
-    let bufSize = 0
-    strings.forEach((string) => (bufSize += string.length + 1))
-    HEAPU32[penviron_buf_size >> 2] = bufSize
-    return 0
-  }
-  _environ_sizes_get.sig = 'ipp'
-  function _fd_close(fd) {
-    try {
-      const stream = SYSCALLS.getStreamFromFD(fd)
-      FS.close(stream)
-      return 0
-    } catch (e) {
-      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
-      return e.errno
-    }
-  }
-  _fd_close.sig = 'ii'
-  function _fd_fdstat_get(fd, pbuf) {
-    try {
-      const rightsBase = 0
-      const rightsInheriting = 0
-      const flags = 0
-      const stream = SYSCALLS.getStreamFromFD(fd)
-      const type = stream.tty
-        ? 2
-        : FS.isDir(stream.mode)
-          ? 3
-          : FS.isLink(stream.mode)
-            ? 7
-            : 4
-      HEAP8[pbuf] = type
-      HEAP16[(pbuf + 2) >> 1] = flags
-      HEAP64[(pbuf + 8) >> 3] = BigInt(rightsBase)
-      HEAP64[(pbuf + 16) >> 3] = BigInt(rightsInheriting)
-      return 0
-    } catch (e) {
-      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
-      return e.errno
-    }
-  }
-  _fd_fdstat_get.sig = 'iip'
-  const doReadv = (stream, iov, iovcnt, offset) => {
-    let ret = 0
-    for (let i = 0; i < iovcnt; i++) {
-      const ptr = HEAPU32[iov >> 2]
-      const len = HEAPU32[(iov + 4) >> 2]
-      iov += 8
-      const curr = FS.read(stream, HEAP8, ptr, len, offset)
-      if (curr < 0) return -1
-      ret += curr
-      if (curr < len) break
-      if (typeof offset != 'undefined') {
-        offset += curr
-      }
-    }
-    return ret
-  }
-  function _fd_read(fd, iov, iovcnt, pnum) {
-    try {
-      const stream = SYSCALLS.getStreamFromFD(fd)
-      const num = doReadv(stream, iov, iovcnt)
-      HEAPU32[pnum >> 2] = num
-      return 0
-    } catch (e) {
-      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
-      return e.errno
-    }
-  }
-  _fd_read.sig = 'iippp'
-  function _fd_seek(fd, offset, whence, newOffset) {
-    offset = bigintToI53Checked(offset)
-    try {
-      if (isNaN(offset)) return 61
-      const stream = SYSCALLS.getStreamFromFD(fd)
-      FS.llseek(stream, offset, whence)
-      HEAP64[newOffset >> 3] = BigInt(stream.position)
-      if (stream.getdents && offset === 0 && whence === 0)
-        stream.getdents = null
-      return 0
-    } catch (e) {
-      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
-      return e.errno
-    }
-  }
-  _fd_seek.sig = 'iijip'
-  function _fd_sync(fd) {
-    try {
-      const stream = SYSCALLS.getStreamFromFD(fd)
-      if (stream.stream_ops?.fsync) {
-        return stream.stream_ops.fsync(stream)
-      }
-      return 0
-    } catch (e) {
-      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
-      return e.errno
-    }
-  }
-  _fd_sync.sig = 'ii'
-  const doWritev = (stream, iov, iovcnt, offset) => {
-    let ret = 0
-    for (let i = 0; i < iovcnt; i++) {
-      const ptr = HEAPU32[iov >> 2]
-      const len = HEAPU32[(iov + 4) >> 2]
-      iov += 8
-      const curr = FS.write(stream, HEAP8, ptr, len, offset)
-      if (curr < 0) return -1
-      ret += curr
-      if (curr < len) {
-        break
-      }
-      if (typeof offset != 'undefined') {
-        offset += curr
-      }
-    }
-    return ret
-  }
-  function _fd_write(fd, iov, iovcnt, pnum) {
-    try {
-      const stream = SYSCALLS.getStreamFromFD(fd)
-      const num = doWritev(stream, iov, iovcnt)
-      HEAPU32[pnum >> 2] = num
-      return 0
-    } catch (e) {
-      if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
-      return e.errno
-    }
-  }
-  _fd_write.sig = 'iippp'
-  const _getaddrinfo = () => -2
-  _getaddrinfo.sig = 'ipppp'
-  const stackAlloc = (sz) => __emscripten_stack_alloc(sz)
-  const stringToUTF8OnStack = (str) => {
-    const size = lengthBytesUTF8(str) + 1
-    const ret = stackAlloc(size)
-    stringToUTF8Common(str, HEAPU8, ret, size)
-    return ret
-  }
-  const removeFunction = (index) => {
-    functionsInTableMap.delete(getWasmTableEntry(index))
-    setWasmTableEntry(index, null)
-    freeTableIndexes.push(index)
-  }
-  const stringToNewUTF8 = (str) => {
-    const size = lengthBytesUTF8(str) + 1
-    const ret = _malloc(size)
-    if (ret) stringToUTF8Common(str, HEAPU8, ret, size)
-    return ret
-  }
-  const FS_createPath = FS.createPath
-  const FS_unlink = (path) => FS.unlink(path)
-  const FS_createLazyFile = FS.createLazyFile
-  const FS_createDevice = FS.createDevice
   FS.createPreloadedFile = FS_createPreloadedFile
   FS.staticInit()
   Module['FS_createPath'] = FS.createPath
@@ -3657,6 +3980,27 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   Module['FS_createDevice'] = FS.createDevice
   MEMFS.doesNotExistError = new FS.ErrnoError(44)
   MEMFS.doesNotExistError.stack = '<generic error, no stack>'
+  const invoke_iiii = createInvoke(
+    'i',
+    getWasmTableEntry,
+    stackSave,
+    stackRestore,
+    () => _setThrew,
+  )
+  const invoke_ii = createInvoke(
+    'i',
+    getWasmTableEntry,
+    stackSave,
+    stackRestore,
+    () => _setThrew,
+  )
+  const invoke_vii = createInvoke(
+    'v',
+    getWasmTableEntry,
+    stackSave,
+    stackRestore,
+    () => _setThrew,
+  )
   let wasmImports = {
     __call_sighandler: ___call_sighandler,
     __heap_base: ___heap_base,
@@ -3711,7 +4055,7 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
     proc_exit: _proc_exit,
   }
   let wasmExports
-  createWasm()
+  const wasmInitialization = createWasm()
   let ___wasm_call_ctors = () =>
     (___wasm_call_ctors = wasmExports['__wasm_call_ctors'])()
   let _pgl_exit = (Module['_pgl_exit'] = (a0) =>
@@ -3848,36 +4192,15 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       wasmExports['emscripten_stack_get_current'])()
   let ___wasm_apply_data_relocs = () =>
     (___wasm_apply_data_relocs = wasmExports['__wasm_apply_data_relocs'])()
-  function invoke_iiii(index, a1, a2, a3) {
-    const sp = stackSave()
-    try {
-      return getWasmTableEntry(index)(a1, a2, a3)
-    } catch (e) {
-      stackRestore(sp)
-      if (e !== e + 0) throw e
-      _setThrew(1, 0)
-    }
-  }
-  function invoke_ii(index, a1) {
-    const sp = stackSave()
-    try {
-      return getWasmTableEntry(index)(a1)
-    } catch (e) {
-      stackRestore(sp)
-      if (e !== e + 0) throw e
-      _setThrew(1, 0)
-    }
-  }
-  function invoke_vii(index, a1, a2) {
-    const sp = stackSave()
-    try {
-      getWasmTableEntry(index)(a1, a2)
-    } catch (e) {
-      stackRestore(sp)
-      if (e !== e + 0) throw e
-      _setThrew(1, 0)
-    }
-  }
+  const callMain = createCallMain({
+    getEntryFunction: () => resolveGlobalSymbol('main').sym,
+    getThisProgram: () => thisProgram,
+    stackAlloc,
+    getHeapU32: () => HEAPU32,
+    stringToUTF8OnStack,
+    exitJS,
+    handleException,
+  })
   Module['addRunDependency'] = addRunDependency
   Module['removeRunDependency'] = removeRunDependency
   Module['callMain'] = callMain
@@ -3897,60 +4220,24 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
   Module['MEMFS'] = MEMFS
   Module['PROXYFS'] = PROXYFS
   let calledRun
-  dependenciesFulfilled = function runCaller() {
-    if (!calledRun) run()
-    if (!calledRun) dependenciesFulfilled = runCaller
-  }
-  function callMain(args = []) {
-    const entryFunction = resolveGlobalSymbol('main').sym
-    if (!entryFunction) return
-    args.unshift(thisProgram)
-    const argc = args.length
-    const argv = stackAlloc((argc + 1) * 4)
-    let argv_ptr = argv
-    args.forEach((arg) => {
-      HEAPU32[argv_ptr >> 2] = stringToUTF8OnStack(arg)
-      argv_ptr += 4
-    })
-    HEAPU32[argv_ptr >> 2] = 0
-    try {
-      const ret = entryFunction(argc, argv)
-      exitJS(ret, true)
-      return ret
-    } catch (e) {
-      return handleException(e)
-    }
-  }
-  function run(args = arguments_) {
-    if (runDependencies > 0) {
-      return
-    }
-    preRun()
-    if (runDependencies > 0) {
-      return
-    }
-    function doRun() {
-      if (calledRun) return
+  const run = createRun({
+    module: Module,
+    getRunDependencies,
+    preRun,
+    initRuntime,
+    preMain,
+    postRun,
+    isAborted: () => ABORT,
+    isCalled: () => calledRun,
+    markCalled: () => {
       calledRun = true
-      Module['calledRun'] = true
-      if (ABORT) return
-      initRuntime()
-      preMain()
-      readyPromiseResolve(Module)
-      Module['onRuntimeInitialized']?.()
-      if (shouldRunNow) callMain(args)
-      postRun()
-    }
-    if (Module['setStatus']) {
-      Module['setStatus']('Running...')
-      setTimeout(() => {
-        setTimeout(() => Module['setStatus'](''), 1)
-        doRun()
-      }, 1)
-    } else {
-      doRun()
-    }
+    },
+  })
+  const runCaller = function runCaller() {
+    if (!calledRun) run()
+    if (!calledRun) setDependenciesFulfilled(runCaller)
   }
+  setDependenciesFulfilled(runCaller)
   if (Module['preInit']) {
     if (typeof Module['preInit'] == 'function')
       Module['preInit'] = [Module['preInit']]
@@ -3958,15 +4245,11 @@ const createInitdbModule = async (moduleArg: Partial<InitdbMod> = {}) => {
       Module['preInit'].pop()()
     }
   }
-  let shouldRunNow = false
-  if (Module['noInitialRun']) shouldRunNow = false
+  await wasmInitialization
   run()
-  moduleRtn = readyPromise
-
-  return moduleRtn
+  return Module as InitdbMod
 }
 
-const InitdbModFactory: InitdbFactory = (moduleOverrides) =>
-  createInitdbModule(moduleOverrides)
+const InitdbModFactory = createInitdbModule
 
 export default InitdbModFactory
