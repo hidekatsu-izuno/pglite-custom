@@ -1,5 +1,3 @@
-import { UTF8ArrayToString } from './emscriptenCommon.js'
-
 export type DylinkMetadata = {
   neededDynlibs: string[]
   tlsExports: Set<string>
@@ -39,7 +37,9 @@ class DylinkMetadataReader {
     const length = this.readLEB()
     const start = this.offset
     this.offset += length
-    return UTF8ArrayToString(this.binary as Uint8Array, start, length)
+    return new TextDecoder().decode(
+      (this.binary as Uint8Array).subarray(start, start + length),
+    )
   }
 
   private failIf(condition: boolean, message?: string) {

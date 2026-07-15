@@ -18,7 +18,7 @@ import type {
   PGliteOptions,
   Transaction,
 } from './interface.js'
-import PostgresModFactory, { type PostgresMod } from './postgresMod.js'
+import { PostgresModFactory, type PostgresMod } from './postgresMod.js'
 
 // Importing the source as the built version is not ESM compatible
 import { Parser as ProtocolParser, serialize } from '@electric-sql/pg-protocol'
@@ -838,7 +838,7 @@ export class PGlite
     if (!this.#queryWriteChunks) {
       return undefined
     }
-    const blob = new Blob(this.#queryWriteChunks)
+    const blob = new Blob(this.#queryWriteChunks as BlobPart[])
     this.#queryWriteChunks = undefined
     return blob
   }

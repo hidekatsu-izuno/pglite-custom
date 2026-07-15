@@ -1,4 +1,4 @@
-import InitdbModFactory, { InitdbMod } from './initdbModFactory'
+import { InitdbModFactory, InitdbMod } from './initdbModFactory'
 import parse from './argsParser'
 
 function assert(condition: unknown, message?: string): asserts condition {
