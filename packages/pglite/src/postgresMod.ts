@@ -87,4 +87,3 @@ export const PostgresModFactory = async (
     emscriptenOpts,
     postgresRuntimeOptions,
   )) as PostgresMod
-

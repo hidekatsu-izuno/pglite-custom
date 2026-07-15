@@ -53,4 +53,3 @@ export const InitdbModFactory = async (
     emscriptenOpts,
     initdbRuntimeOptions,
   )) as InitdbMod
-
