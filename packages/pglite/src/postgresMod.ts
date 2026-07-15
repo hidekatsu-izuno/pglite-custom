@@ -88,4 +88,3 @@ export const PostgresModFactory = async (
     postgresRuntimeOptions,
   )) as PostgresMod
 
-export default PostgresModFactory

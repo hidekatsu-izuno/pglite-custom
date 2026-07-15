@@ -54,4 +54,3 @@ export const InitdbModFactory = async (
     initdbRuntimeOptions,
   )) as InitdbMod
 
-export default InitdbModFactory
