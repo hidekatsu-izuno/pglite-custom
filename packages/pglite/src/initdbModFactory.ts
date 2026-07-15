@@ -3,38 +3,30 @@
 
 import * as fs from 'node:fs'
 import {
-  addOnCallback,
-  alignMemory,
   bigintToI53Checked,
   callRuntimeCallbacks,
   createCallMain,
+  createMemoryViews,
   createPathFS,
   convertJsFunctionToWasm,
   createInvoke,
-  createLazyWasmFunction,
   createRunDependencyManager,
   createRun,
   createWasmTableHelpers,
   ExitStatus,
   FS_getMode,
   FS_modeStringToFlags,
-  getHeapMax,
+  HEAP_MAX,
   getWasmImports,
   isInternalSym,
   PATH,
-  stringToUTF8 as stringToUTF8Common,
   stringToUTF8OnStack as stringToUTF8OnStackCommon,
   trimArray,
-  updateMemoryViews as updateMemoryViewsCommon,
   ydayFromDate as ydayFromDateCommon,
-  zeroMemory as zeroMemoryCommon,
   UTF8ArrayToString,
   instantiateNodeWasm,
   intArrayFromString,
   lengthBytesUTF8,
-  randomFill,
-  readAsync,
-  readBinary,
   stringToAscii,
   stringToUTF8Array,
 } from './emscriptenCommon.js'
@@ -76,48 +68,42 @@ export const createInitdbModule = async (
     (process.argv.length > 1
       ? process.argv[1].replace(/\\/g, '/')
       : './this.program')
-  const quit_ = (status, toThrow) => {
-    throw toThrow
-  }
   const out = Module['print'] || console.log.bind(console)
   const err = Module['printErr'] || console.error.bind(console)
   const wasmBinary = Module['wasmModule'] || Module['wasmBinary']
-  let wasmMemory
+  const wasmMemory =
+    Module['wasmMemory'] ||
+    new WebAssembly.Memory({
+      initial: (Module['INITIAL_MEMORY'] || 67108864) / 65536,
+      maximum: 32768,
+    })
   let ABORT = false
   let EXITSTATUS
-  let HEAP8,
+  let {
+    HEAP8,
     HEAPU8,
     HEAP16,
     HEAPU16,
     HEAP32,
     HEAPU32,
-    HEAPF32,
     HEAP64,
     HEAPU64,
-    HEAPF64
-  function updateMemoryViews() {
-    const views = updateMemoryViewsCommon(wasmMemory)
+    HEAPF32,
+    HEAPF64,
+  } = createMemoryViews(wasmMemory)
+  const refreshMemoryViews = () => {
+    const views = createMemoryViews(wasmMemory)
     HEAP8 = views.HEAP8
-    HEAP16 = views.HEAP16
     HEAPU8 = views.HEAPU8
+    HEAP16 = views.HEAP16
     HEAPU16 = views.HEAPU16
     HEAP32 = views.HEAP32
     HEAPU32 = views.HEAPU32
-    HEAPF32 = views.HEAPF32
-    HEAPF64 = views.HEAPF64
     HEAP64 = views.HEAP64
     HEAPU64 = views.HEAPU64
+    HEAPF32 = views.HEAPF32
+    HEAPF64 = views.HEAPF64
   }
-  if (Module['wasmMemory']) {
-    wasmMemory = Module['wasmMemory']
-  } else {
-    const INITIAL_MEMORY = Module['INITIAL_MEMORY'] || 67108864
-    wasmMemory = new WebAssembly.Memory({
-      initial: INITIAL_MEMORY / 65536,
-      maximum: 32768,
-    })
-  }
-  updateMemoryViews()
   const __ATPRERUN__ = []
   const __ATINIT__ = []
   const __ATMAIN__ = []
@@ -131,7 +117,7 @@ export const createInitdbModule = async (
       if (typeof Module['preRun'] == 'function')
         Module['preRun'] = [Module['preRun']]
       while (Module['preRun'].length) {
-        addOnCallback(__ATPRERUN__, Module['preRun'].shift())
+        __ATPRERUN__.unshift(Module['preRun'].shift())
       }
     }
     callRuntimeCallbacks(__ATPRERUN__, Module)
@@ -147,6 +133,7 @@ export const createInitdbModule = async (
   function preMain() {
     callRuntimeCallbacks(__ATMAIN__, Module)
   }
+  const ___funcs_on_exit = lazyWasmFunction('__funcs_on_exit')
   function exitRuntime() {
     ___funcs_on_exit()
     callRuntimeCallbacks(__ATEXIT__, Module)
@@ -159,7 +146,7 @@ export const createInitdbModule = async (
       if (typeof Module['postRun'] == 'function')
         Module['postRun'] = [Module['postRun']]
       while (Module['postRun'].length) {
-        addOnCallback(__ATPOSTRUN__, Module['postRun'].shift())
+        __ATPOSTRUN__.unshift(Module['postRun'].shift())
       }
     }
     callRuntimeCallbacks(__ATPOSTRUN__, Module)
@@ -186,7 +173,7 @@ export const createInitdbModule = async (
       wasmExports = relocateExports(wasmExports, 1024)
       mergeLibSymbols(wasmExports, 'main')
       reportUndefinedSymbols()
-      addOnCallback(__ATINIT__, wasmExports['__wasm_call_ctors'])
+      __ATINIT__.unshift(wasmExports['__wasm_call_ctors'])
       __RELOC_FUNCS__.push(wasmExports['__wasm_apply_data_relocs'])
       removeRunDependency('wasm-instantiate')
       return wasmExports
@@ -370,7 +357,10 @@ export const createInitdbModule = async (
       }
     }
   }
-  const asyncLoad = async (url) => new Uint8Array(await readAsync(url))
+  const asyncLoad = async (url) =>
+    new Uint8Array(
+      fs.readFileSync(url instanceof URL ? url : new URL(url, import.meta.url)),
+    )
   let reportUndefinedSymbols = () => {
     for (const [symName, entry] of Object.entries(GOT)) {
       if (entry.value == 0) {
@@ -536,7 +526,7 @@ export const createInitdbModule = async (
     if (e instanceof ExitStatus || e == 'unwind') {
       return EXITSTATUS
     }
-    quit_(1, e)
+    throw e
   }
   const keepRuntimeAlive = () => noExitRuntime || runtimeKeepaliveCounter > 0
   const _proc_exit = (code) => {
@@ -545,7 +535,7 @@ export const createInitdbModule = async (
       Module['onExit']?.(code)
       ABORT = true
     }
-    quit_(code, new ExitStatus(code))
+    throw new ExitStatus(code)
   }
   _proc_exit.sig = 'vi'
   const exitJS = (status, implicit) => {
@@ -615,11 +605,11 @@ export const createInitdbModule = async (
     const winterName = extractZone(winterOffset)
     const summerName = extractZone(summerOffset)
     if (summerOffset < winterOffset) {
-      stringToUTF8Common(winterName, HEAPU8, std_name, 17)
-      stringToUTF8Common(summerName, HEAPU8, dst_name, 17)
+      stringToUTF8Array(winterName, HEAPU8, std_name, 17)
+      stringToUTF8Array(summerName, HEAPU8, dst_name, 17)
     } else {
-      stringToUTF8Common(winterName, HEAPU8, dst_name, 17)
-      stringToUTF8Common(summerName, HEAPU8, std_name, 17)
+      stringToUTF8Array(winterName, HEAPU8, dst_name, 17)
+      stringToUTF8Array(summerName, HEAPU8, std_name, 17)
     }
   }
   __tzset_js.sig = 'vpppp'
@@ -630,14 +620,14 @@ export const createInitdbModule = async (
     const pages = ((size - b.byteLength + 65535) / 65536) | 0
     try {
       wasmMemory.grow(pages)
-      updateMemoryViews()
+      refreshMemoryViews()
       return 1
     } catch (e) {}
   }
   const _emscripten_resize_heap = (requestedSize) => {
     const oldSize = HEAPU8.length
     requestedSize >>>= 0
-    const maxHeapSize = getHeapMax()
+    const maxHeapSize = HEAP_MAX
     if (requestedSize > maxHeapSize) {
       return false
     }
@@ -646,7 +636,7 @@ export const createInitdbModule = async (
       overGrownHeapSize = Math.min(overGrownHeapSize, requestedSize + 100663296)
       const newSize = Math.min(
         maxHeapSize,
-        alignMemory(Math.max(requestedSize, overGrownHeapSize), 65536),
+        Math.ceil(Math.max(requestedSize, overGrownHeapSize) / 65536) * 65536,
       )
       const replacement = growMemory(newSize)
       if (replacement) {
@@ -975,9 +965,9 @@ export const createInitdbModule = async (
     },
   }
   const mmapAlloc = (size) => {
-    size = alignMemory(size, 65536)
+    size = Math.ceil(size / 65536) * 65536
     const ptr = _emscripten_builtin_memalign(65536, size)
-    if (ptr) zeroMemoryCommon(HEAPU8, ptr, size)
+    if (ptr) HEAPU8.fill(0, ptr, ptr + size)
     return ptr
   }
   let MEMFS = {
@@ -3011,7 +3001,7 @@ export const createInitdbModule = async (
         randomLeft = 0
       const randomByte = () => {
         if (randomLeft === 0) {
-          randomLeft = randomFill(randomBuffer).byteLength
+          randomLeft = crypto.getRandomValues(randomBuffer).byteLength
         }
         return randomBuffer[--randomLeft]
       }
@@ -3244,7 +3234,13 @@ export const createInitdbModule = async (
     forceLoadFile(obj) {
       if (obj.isDevice || obj.isFolder || obj.link || obj.contents) return true
       try {
-        obj.contents = readBinary(obj.url)
+        obj.contents = new Uint8Array(
+          fs.readFileSync(
+            obj.url instanceof URL
+              ? obj.url
+              : new URL(obj.url, import.meta.url),
+          ),
+        )
         obj.usedBytes = obj.contents.length
       } catch (e) {
         throw new FS.ErrnoError(29)
@@ -3658,7 +3654,7 @@ export const createInitdbModule = async (
       const cwd = FS.cwd()
       const cwdLengthInBytes = lengthBytesUTF8(cwd) + 1
       if (size < cwdLengthInBytes) return -68
-      stringToUTF8Common(cwd, HEAPU8, buf, size)
+      stringToUTF8Array(cwd, HEAPU8, buf, size)
       return cwdLengthInBytes
     } catch (e) {
       if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
@@ -3713,7 +3709,7 @@ export const createInitdbModule = async (
         HEAP64[(dirp + pos + 8) >> 3] = BigInt((idx + 1) * struct_size)
         HEAP16[(dirp + pos + 16) >> 1] = 280
         HEAP8[dirp + pos + 18] = type
-        stringToUTF8Common(name, HEAPU8, dirp + pos + 19, 256)
+        stringToUTF8Array(name, HEAPU8, dirp + pos + 19, 256)
         pos += struct_size
       }
       FS.llseek(stream, idx * struct_size, 0)
@@ -3882,7 +3878,7 @@ export const createInitdbModule = async (
       const ret = FS.readlink(path)
       const len = Math.min(bufsize, lengthBytesUTF8(ret))
       const endChar = HEAP8[buf + len]
-      stringToUTF8Common(ret, HEAPU8, buf, bufsize + 1)
+      stringToUTF8Array(ret, HEAPU8, buf, bufsize + 1)
       HEAP8[buf + len] = endChar
       return len
     } catch (e) {
@@ -4027,15 +4023,13 @@ export const createInitdbModule = async (
   }
   let wasmExports
   const wasmInitialization = createWasm()
-  const lazyWasmFunction = (wasmName) =>
-    createLazyWasmFunction(() => wasmExports, wasmName)
-  const _fflush = lazyWasmFunction('fflush')
-  const _fopen = lazyWasmFunction('fopen')
-  const _pgl_set_system_fn = lazyWasmFunction('pgl_set_system_fn')
-  const _pgl_set_popen_fn = lazyWasmFunction('pgl_set_popen_fn')
-  const _pgl_set_pclose_fn = lazyWasmFunction('pgl_set_pclose_fn')
-  const _pclose = lazyWasmFunction('pclose')
-  const ___funcs_on_exit = lazyWasmFunction('__funcs_on_exit')
+  const lazyWasmFunction = (wasmName) => {
+    let implementation
+    return (...args) => {
+      implementation ??= wasmExports[wasmName]
+      return implementation(...args)
+    }
+  }
   const _emscripten_builtin_memalign = lazyWasmFunction(
     'emscripten_builtin_memalign',
   )
@@ -4065,11 +4059,11 @@ export const createInitdbModule = async (
     stringToUTF8OnStack,
     FS,
     PROXYFS,
-    _fopen,
-    _pclose,
-    _pgl_set_system_fn,
-    _pgl_set_popen_fn,
-    _pgl_set_pclose_fn,
+    _fopen: lazyWasmFunction('fopen'),
+    _pclose: lazyWasmFunction('pclose'),
+    _pgl_set_system_fn: lazyWasmFunction('pgl_set_system_fn'),
+    _pgl_set_popen_fn: lazyWasmFunction('pgl_set_popen_fn'),
+    _pgl_set_pclose_fn: lazyWasmFunction('pgl_set_pclose_fn'),
   })
   let calledRun
   const run = createRun({

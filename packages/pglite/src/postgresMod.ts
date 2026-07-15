@@ -5,12 +5,10 @@ import * as fs from 'node:fs'
 import { getDylinkMetadata } from './postgresDylink.js'
 import { preparePostgresPackage } from './postgresPackage.js'
 import {
-  addOnCallback,
-  alignMemory,
   bigintToI53Checked,
-  assert,
   callRuntimeCallbacks,
   createCallMain,
+  createMemoryViews,
   createPathFS,
   convertJsFunctionToWasm,
   createInvoke,
@@ -20,23 +18,17 @@ import {
   ExitStatus,
   FS_getMode,
   FS_modeStringToFlags,
-  getHeapMax,
+  HEAP_MAX,
   getWasmImports,
   isInternalSym,
   PATH,
-  stringToUTF8 as stringToUTF8Common,
   stringToUTF8OnStack as stringToUTF8OnStackCommon,
   trimArray,
-  updateMemoryViews as updateMemoryViewsCommon,
   ydayFromDate as ydayFromDateCommon,
-  zeroMemory as zeroMemoryCommon,
   UTF8ArrayToString,
   instantiateNodeWasm,
   intArrayFromString,
   lengthBytesUTF8,
-  randomFill,
-  readAsync,
-  readBinary,
   stringToAscii,
   stringToUTF8Array,
 } from './emscriptenCommon.js'
@@ -103,15 +95,7 @@ export interface PostgresMod
   _pq_buffer_remaining_data: () => number
 }
 
-const createLazyWasmFunction = (getWasmExports, wasmName) => {
-  let implementation
-  return (...args) => {
-    implementation ??= getWasmExports()[wasmName]
-    return implementation(...args)
-  }
-}
-
-export const createPostgresModule = async (
+export const PostgresModFactory = async (
   emscriptenOpts: Partial<PostgresMod> = {},
 ) => {
   const Module = emscriptenOpts
@@ -123,51 +107,45 @@ export const createPostgresModule = async (
     (process.argv.length > 1
       ? process.argv[1].replace(/\\/g, '/')
       : './this.program')
-  const quit_ = (status, toThrow) => {
-    throw toThrow
-  }
   const out = Module['print'] || console.log.bind(console)
   const err = Module['printErr'] || console.error.bind(console)
   let dynamicLibraries = Module['dynamicLibraries'] || []
   const wasmBinary = Module['wasmBinary']
-  let wasmMemory
+  const wasmMemory =
+    Module['wasmMemory'] ||
+    new WebAssembly.Memory({
+      initial: (Module['INITIAL_MEMORY'] || 134217728) / 65536,
+      maximum: 32768,
+    })
   let ABORT = false
   let EXITSTATUS
-  let HEAP8,
+  let {
+    HEAP8,
     HEAPU8,
     HEAP16,
     HEAPU16,
     HEAP32,
     HEAPU32,
-    HEAPF32,
     HEAP64,
     HEAPU64,
-    HEAPF64
-  function updateMemoryViews() {
-    const views = updateMemoryViewsCommon(wasmMemory)
+    HEAPF32,
+    HEAPF64,
+  } = createMemoryViews(wasmMemory)
+  Object.assign(Module, { HEAP8, HEAPU8 })
+  const refreshMemoryViews = () => {
+    const views = createMemoryViews(wasmMemory)
     HEAP8 = views.HEAP8
-    HEAP16 = views.HEAP16
     HEAPU8 = views.HEAPU8
+    HEAP16 = views.HEAP16
     HEAPU16 = views.HEAPU16
     HEAP32 = views.HEAP32
     HEAPU32 = views.HEAPU32
-    HEAPF32 = views.HEAPF32
-    HEAPF64 = views.HEAPF64
     HEAP64 = views.HEAP64
     HEAPU64 = views.HEAPU64
-    Module['HEAP8'] = HEAP8
-    Module['HEAPU8'] = HEAPU8
+    HEAPF32 = views.HEAPF32
+    HEAPF64 = views.HEAPF64
+    Object.assign(Module, { HEAP8, HEAPU8 })
   }
-  if (Module['wasmMemory']) {
-    wasmMemory = Module['wasmMemory']
-  } else {
-    const INITIAL_MEMORY = Module['INITIAL_MEMORY'] || 134217728
-    wasmMemory = new WebAssembly.Memory({
-      initial: INITIAL_MEMORY / 65536,
-      maximum: 32768,
-    })
-  }
-  updateMemoryViews()
   const __ATPRERUN__ = []
   const __ATINIT__ = []
   const __ATMAIN__ = []
@@ -181,7 +159,7 @@ export const createPostgresModule = async (
       if (typeof Module['preRun'] == 'function')
         Module['preRun'] = [Module['preRun']]
       while (Module['preRun'].length) {
-        addOnCallback(__ATPRERUN__, Module['preRun'].shift())
+        __ATPRERUN__.unshift(Module['preRun'].shift())
       }
     }
     callRuntimeCallbacks(__ATPRERUN__, Module)
@@ -210,7 +188,7 @@ export const createPostgresModule = async (
       if (typeof Module['postRun'] == 'function')
         Module['postRun'] = [Module['postRun']]
       while (Module['postRun'].length) {
-        addOnCallback(__ATPOSTRUN__, Module['postRun'].shift())
+        __ATPOSTRUN__.unshift(Module['postRun'].shift())
       }
     }
     callRuntimeCallbacks(__ATPOSTRUN__, Module)
@@ -250,7 +228,7 @@ export const createPostgresModule = async (
     mergeLibSymbols(wasmExports)
     LDSO.init()
     await loadDylibs()
-    addOnCallback(__ATINIT__, wasmExports['__wasm_call_ctors'])
+    __ATINIT__.unshift(wasmExports['__wasm_call_ctors'])
     __RELOC_FUNCS__.push(wasmExports['__wasm_apply_data_relocs'])
     removeRunDependency('wasm-instantiate')
 
@@ -295,7 +273,7 @@ export const createPostgresModule = async (
       return _calloc(size, 1)
     }
     const ret = ___heap_base
-    const end = ret + alignMemory(size, 16)
+    const end = ret + Math.ceil(size / 16) * 16
     ___heap_base = end
     GOT['__heap_base'].value = end
     return ret
@@ -446,7 +424,8 @@ export const createPostgresModule = async (
       if (firstLoad) {
         const memAlign = Math.pow(2, metadata.memoryAlign)
         memoryBase = metadata.memorySize
-          ? alignMemory(getMemory(metadata.memorySize + memAlign), memAlign)
+          ? Math.ceil(getMemory(metadata.memorySize + memAlign) / memAlign) *
+            memAlign
           : 0
         tableBase = metadata.tableSize ? wasmTable.length : 0
         if (handle) {
@@ -620,10 +599,10 @@ export const createPostgresModule = async (
       }
     }
   }
-  const asyncLoad = async (url) => {
-    const arrayBuffer = await readAsync(url)
-    return new Uint8Array(arrayBuffer)
-  }
+  const asyncLoad = async (url) =>
+    new Uint8Array(
+      fs.readFileSync(url instanceof URL ? url : new URL(url, import.meta.url)),
+    )
   const preloadPlugins = Module['preloadPlugins'] || []
   const registerWasmPlugin = () => {
     const wasmPlugin = {
@@ -695,12 +674,11 @@ export const createPostgresModule = async (
       if (flags.loadAsync) {
         return asyncLoad(libFile)
       }
-      if (!readBinary) {
-        throw new Error(
-          `${libFile}: file not found, and synchronous loading of external files is not available`,
-        )
-      }
-      return readBinary(libFile)
+      return new Uint8Array(
+        fs.readFileSync(
+          libFile instanceof URL ? libFile : new URL(libFile, import.meta.url),
+        ),
+      )
     }
     function getExports() {
       const preloaded = preloadedWasm[libName]
@@ -924,7 +902,9 @@ export const createPostgresModule = async (
         } else {
           currBucket = pipe.buckets[pipe.buckets.length - 1]
         }
-        assert(currBucket.offset <= PIPEFS.BUCKET_BUFFER_SIZE, undefined, abort)
+        if (currBucket.offset <= PIPEFS.BUCKET_BUFFER_SIZE) {
+          abort()
+        }
         const freeBytesInCurrBuffer =
           PIPEFS.BUCKET_BUFFER_SIZE - currBucket.offset
         if (freeBytesInCurrBuffer >= dataLen) {
@@ -1000,7 +980,7 @@ export const createPostgresModule = async (
       const ret = FS.readlink(path)
       const len = Math.min(bufsize, lengthBytesUTF8(ret))
       const endChar = HEAP8[buf + len]
-      stringToUTF8Common(ret, HEAPU8, buf, bufsize + 1)
+      stringToUTF8Array(ret, HEAPU8, buf, bufsize + 1)
       HEAP8[buf + len] = endChar
       return len
     } catch (e) {
@@ -1320,7 +1300,7 @@ export const createPostgresModule = async (
     if (e instanceof ExitStatus || e == 'unwind') {
       return EXITSTATUS
     }
-    quit_(1, e)
+    throw e
   }
   const keepRuntimeAlive = () => noExitRuntime || runtimeKeepaliveCounter > 0
   const _proc_exit = (code) => {
@@ -1329,7 +1309,7 @@ export const createPostgresModule = async (
       Module['onExit']?.(code)
       ABORT = true
     }
-    quit_(code, new ExitStatus(code))
+    throw new ExitStatus(code)
   }
   _proc_exit.sig = 'vi'
   const exitJS = (status, implicit) => {
@@ -1399,11 +1379,11 @@ export const createPostgresModule = async (
     const winterName = extractZone(winterOffset)
     const summerName = extractZone(summerOffset)
     if (summerOffset < winterOffset) {
-      stringToUTF8Common(winterName, HEAPU8, std_name, 17)
-      stringToUTF8Common(summerName, HEAPU8, dst_name, 17)
+      stringToUTF8Array(winterName, HEAPU8, std_name, 17)
+      stringToUTF8Array(summerName, HEAPU8, dst_name, 17)
     } else {
-      stringToUTF8Common(winterName, HEAPU8, dst_name, 17)
-      stringToUTF8Common(summerName, HEAPU8, std_name, 17)
+      stringToUTF8Array(winterName, HEAPU8, dst_name, 17)
+      stringToUTF8Array(summerName, HEAPU8, std_name, 17)
     }
   }
   __tzset_js.sig = 'vpppp'
@@ -1429,30 +1409,29 @@ export const createPostgresModule = async (
     return 0
   }
   _clock_time_get.sig = 'iijp'
-  const _emscripten_get_heap_max = () => getHeapMax()
+  const _emscripten_get_heap_max = () => HEAP_MAX
   _emscripten_get_heap_max.sig = 'p'
   const growMemory = (size) => {
     const b = wasmMemory.buffer
     const pages = ((size - b.byteLength + 65535) / 65536) | 0
     try {
       wasmMemory.grow(pages)
-      updateMemoryViews()
+      refreshMemoryViews()
       return 1
     } catch (e) {}
   }
   const _emscripten_resize_heap = (requestedSize) => {
     const oldSize = HEAPU8.length
     requestedSize >>>= 0
-    const maxHeapSize = getHeapMax()
-    if (requestedSize > maxHeapSize) {
+    if (requestedSize > HEAP_MAX) {
       return false
     }
     for (let cutDown = 1; cutDown <= 4; cutDown *= 2) {
       let overGrownHeapSize = oldSize * (1 + 0.2 / cutDown)
       overGrownHeapSize = Math.min(overGrownHeapSize, requestedSize + 100663296)
       const newSize = Math.min(
-        maxHeapSize,
-        alignMemory(Math.max(requestedSize, overGrownHeapSize), 65536),
+        HEAP_MAX,
+        Math.ceil(Math.max(requestedSize, overGrownHeapSize) / 65536) * 65536,
       )
       const replacement = growMemory(newSize)
       if (replacement) {
@@ -1716,7 +1695,7 @@ export const createPostgresModule = async (
   _getnameinfo.sig = 'ipipipii'
   function _random_get(buffer, size) {
     try {
-      randomFill(HEAPU8.subarray(buffer, buffer + size))
+      crypto.getRandomValues(HEAPU8.subarray(buffer, buffer + size))
       return 0
     } catch (e) {
       if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
@@ -1724,11 +1703,6 @@ export const createPostgresModule = async (
     }
   }
   _random_get.sig = 'ipp'
-  const removeFunction = (index) => {
-    functionsInTableMap.delete(getWasmTableEntry(index))
-    setWasmTableEntry(index, null)
-    freeTableIndexes.push(index)
-  }
   const setTempRet0 = (val) => __emscripten_tempret_set(val)
   const _setTempRet0 = setTempRet0
   const getTempRet0 = (val) => __emscripten_tempret_get()
@@ -2029,9 +2003,9 @@ export const createPostgresModule = async (
     },
   }
   const mmapAlloc = (size) => {
-    size = alignMemory(size, 65536)
+    size = Math.ceil(size / 65536) * 65536
     const ptr = _emscripten_builtin_memalign(65536, size)
-    if (ptr) zeroMemoryCommon(HEAPU8, ptr, size)
+    if (ptr) HEAPU8.fill(0, ptr, ptr + size)
     return ptr
   }
   const MEMFS = {
@@ -4065,7 +4039,7 @@ export const createPostgresModule = async (
         randomLeft = 0
       const randomByte = () => {
         if (randomLeft === 0) {
-          randomLeft = randomFill(randomBuffer).byteLength
+          randomLeft = crypto.getRandomValues(randomBuffer).byteLength
         }
         return randomBuffer[--randomLeft]
       }
@@ -4298,7 +4272,13 @@ export const createPostgresModule = async (
     forceLoadFile(obj) {
       if (obj.isDevice || obj.isFolder || obj.link || obj.contents) return true
       try {
-        obj.contents = readBinary(obj.url)
+        obj.contents = new Uint8Array(
+          fs.readFileSync(
+            obj.url instanceof URL
+              ? obj.url
+              : new URL(obj.url, import.meta.url),
+          ),
+        )
         obj.usedBytes = obj.contents.length
       } catch (e) {
         throw new FS.ErrnoError(29)
@@ -4712,7 +4692,7 @@ export const createPostgresModule = async (
       const cwd = FS.cwd()
       const cwdLengthInBytes = lengthBytesUTF8(cwd) + 1
       if (size < cwdLengthInBytes) return -68
-      stringToUTF8Common(cwd, HEAPU8, buf, size)
+      stringToUTF8Array(cwd, HEAPU8, buf, size)
       return cwdLengthInBytes
     } catch (e) {
       if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e
@@ -4767,7 +4747,7 @@ export const createPostgresModule = async (
         HEAP64[(dirp + pos + 8) >> 3] = BigInt((idx + 1) * struct_size)
         HEAP16[(dirp + pos + 16) >> 1] = 280
         HEAP8[dirp + pos + 18] = type
-        stringToUTF8Common(name, HEAPU8, dirp + pos + 19, 256)
+        stringToUTF8Array(name, HEAPU8, dirp + pos + 19, 256)
         pos += struct_size
       }
       FS.llseek(stream, idx * struct_size, 0)
@@ -5108,8 +5088,13 @@ export const createPostgresModule = async (
   }
   let wasmExports
   const wasmInitialization = createWasm()
-  const lazyWasmFunction = (wasmName) =>
-    createLazyWasmFunction(() => wasmExports, wasmName)
+  const lazyWasmFunction = (wasmName) => {
+    let implementation
+    return (...args) => {
+      implementation ??= wasmExports[wasmName]
+      return implementation(...args)
+    }
+  }
   let ___wasm_call_ctors = () =>
     (___wasm_call_ctors = wasmExports['__wasm_call_ctors'])()
 
@@ -5205,7 +5190,11 @@ export const createPostgresModule = async (
     callMain,
     ENV,
     addFunction,
-    removeFunction,
+    removeFunction: (index) => {
+      functionsInTableMap.delete(getWasmTableEntry(index))
+      setWasmTableEntry(index, null)
+      freeTableIndexes.push(index)
+    },
     UTF8ToString,
     stringToUTF8OnStack,
     FS,
@@ -5250,8 +5239,9 @@ export const createPostgresModule = async (
   }
   setDependenciesFulfilled(runCaller)
   if (Module['preInit']) {
-    if (typeof Module['preInit'] == 'function')
+    if (typeof Module['preInit'] == 'function') {
       Module['preInit'] = [Module['preInit']]
+    }
     while (Module['preInit'].length > 0) {
       Module['preInit'].pop()()
     }
@@ -5260,7 +5250,5 @@ export const createPostgresModule = async (
   run()
   return Module as PostgresMod
 }
-
-const PostgresModFactory = createPostgresModule
 
 export default PostgresModFactory

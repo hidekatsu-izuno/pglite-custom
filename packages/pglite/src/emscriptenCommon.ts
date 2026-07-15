@@ -1,17 +1,4 @@
 import { readFileSync } from 'node:fs'
-import * as crypto from 'node:crypto'
-
-const resolveNodeFile = (filename: string | URL) =>
-  filename instanceof URL ? filename : new URL(filename, import.meta.url)
-
-export const readBinary = (filename: string | URL) =>
-  new Uint8Array(readFileSync(resolveNodeFile(filename)))
-
-export const readAsync = async (
-  filename: string | URL,
-  binary = true,
-): Promise<Uint8Array | string> =>
-  readFileSync(resolveNodeFile(filename), binary ? undefined : 'utf8')
 
 export async function instantiateNodeWasm(
   wasmBinary: WebAssembly.Module | BufferSource | undefined,
@@ -20,23 +7,13 @@ export async function instantiateNodeWasm(
   onError: (reason: unknown) => never,
 ) {
   try {
-    const binary = wasmBinary ?? readBinary(wasmBinaryFile)
+    const binary = wasmBinary ?? new Uint8Array(readFileSync(wasmBinaryFile))
     const result = await WebAssembly.instantiate(binary, imports)
     return result instanceof WebAssembly.Instance
       ? { instance: result, module: binary as WebAssembly.Module }
       : result
   } catch (reason) {
     return onError(reason)
-  }
-}
-
-export const assert = (
-  condition: unknown,
-  text: unknown,
-  abort: (what: unknown) => never,
-) => {
-  if (!condition) {
-    abort(text)
   }
 }
 
@@ -52,14 +29,10 @@ export class ExitStatus {
   status: number
 }
 
-export const bigintToI53Checked = (num: number | bigint) => {
-  const min = -9007199254740992
-  const max = 9007199254740992
-  if (typeof num === 'bigint') {
-    return num < BigInt(min) || num > BigInt(max) ? NaN : Number(num)
-  }
-  return num < min || num > max ? NaN : num
-}
+const I53_LIMIT = 1n << 53n
+
+export const bigintToI53Checked = (num: bigint) =>
+  num < -I53_LIMIT || num > I53_LIMIT ? NaN : Number(num)
 
 export const FS_modeStringToFlags = (str: string) => {
   const flagModes: Record<string, number> = {
@@ -84,9 +57,7 @@ export const FS_getMode = (canRead: boolean, canWrite: boolean) => {
   return mode
 }
 
-export const randomFill = (view: Uint8Array) => crypto.getRandomValues(view)
-
-export const getHeapMax = () => 2147483648
+export const HEAP_MAX = 2147483648
 
 export const stringToAscii = (str: string, buffer: number, heap: Int8Array) => {
   for (let i = 0; i < str.length; ++i) {
@@ -95,46 +66,19 @@ export const stringToAscii = (str: string, buffer: number, heap: Int8Array) => {
   heap[buffer] = 0
 }
 
-export const updateMemoryViews = (
-  wasmMemory: WebAssembly.Memory,
-  module?: Record<string, unknown>,
-) => {
+export const createMemoryViews = (wasmMemory: WebAssembly.Memory) => {
   const buffer = wasmMemory.buffer
-  const HEAP8 = new Int8Array(buffer)
-  const HEAP16 = new Int16Array(buffer)
-  const HEAPU8 = new Uint8Array(buffer)
-  const HEAPU16 = new Uint16Array(buffer)
-  const HEAP32 = new Int32Array(buffer)
-  const HEAPU32 = new Uint32Array(buffer)
-  const HEAPF32 = new Float32Array(buffer)
-  const HEAPF64 = new Float64Array(buffer)
-  const HEAP64 = new BigInt64Array(buffer)
-  const HEAPU64 = new BigUint64Array(buffer)
-  if (module) {
-    Object.assign(module, {
-      HEAP8,
-      HEAP16,
-      HEAPU8,
-      HEAPU16,
-      HEAP32,
-      HEAPU32,
-      HEAPF32,
-      HEAPF64,
-      HEAP64,
-      HEAPU64,
-    })
-  }
   return {
-    HEAP8,
-    HEAP16,
-    HEAPU8,
-    HEAPU16,
-    HEAP32,
-    HEAPU32,
-    HEAPF32,
-    HEAPF64,
-    HEAP64,
-    HEAPU64,
+    HEAP8: new Int8Array(buffer),
+    HEAPU8: new Uint8Array(buffer),
+    HEAP16: new Int16Array(buffer),
+    HEAPU16: new Uint16Array(buffer),
+    HEAP32: new Int32Array(buffer),
+    HEAPU32: new Uint32Array(buffer),
+    HEAP64: new BigInt64Array(buffer),
+    HEAPU64: new BigUint64Array(buffer),
+    HEAPF32: new Float32Array(buffer),
+    HEAPF64: new Float64Array(buffer),
   }
 }
 
@@ -145,10 +89,6 @@ export const callRuntimeCallbacks = (
   while (callbacks.length > 0) {
     callbacks.shift()!(module)
   }
-}
-
-export const addOnCallback = <T>(callbacks: T[], callback: T) => {
-  callbacks.unshift(callback)
 }
 
 export const createRunDependencyManager = (module: {
@@ -303,9 +243,6 @@ export const getWasmImports = (
   'GOT.func': new Proxy(wasmImports, GOTHandler),
 })
 
-export const alignMemory = (size: number, alignment: number) =>
-  Math.ceil(size / alignment) * alignment
-
 export const isInternalSym = (symName: string) =>
   [
     '__cpp_exception',
@@ -323,10 +260,6 @@ export const isInternalSym = (symName: string) =>
     '__start_em_js',
     '__stop_em_js',
   ].includes(symName) || symName.startsWith('__em_js__')
-
-export const zeroMemory = (heap: Uint8Array, address: number, size: number) => {
-  heap.fill(0, address, address + size)
-}
 
 export const createWasmTableHelpers = (
   wasmTable: WebAssembly.Table,
@@ -347,17 +280,6 @@ export const createWasmTableHelpers = (
     wasmTableMirror[idx] = wasmTable.get(idx)
   },
 })
-
-export const createLazyWasmFunction = (
-  getWasmExports: () => Record<string, any>,
-  wasmName: string,
-) => {
-  let implementation: ((...args: any[]) => any) | undefined
-  return (...args: any[]) => {
-    const wasmFunction = (implementation ??= getWasmExports()[wasmName])
-    return wasmFunction(...args)
-  }
-}
 
 export const uleb128Encode = (n: number, target: number[]) => {
   if (n < 128) {
@@ -435,13 +357,6 @@ export const convertJsFunctionToWasm = (
   return instance.exports['f'] as CallableFunction
 }
 
-export const stringToUTF8 = (
-  str: string,
-  heap: Uint8Array | number[],
-  outPtr: number,
-  maxBytesToWrite: number,
-) => stringToUTF8Array(str, heap, outPtr, maxBytesToWrite)
-
 export const stringToUTF8OnStack = (
   str: string,
   stackAlloc: (size: number) => number,
@@ -449,7 +364,7 @@ export const stringToUTF8OnStack = (
 ) => {
   const size = lengthBytesUTF8(str) + 1
   const ret = stackAlloc(size)
-  stringToUTF8(str, heap, ret, size)
+  stringToUTF8Array(str, heap, ret, size)
   return ret
 }
 
@@ -460,7 +375,7 @@ export const stringToNewUTF8 = (
 ) => {
   const size = lengthBytesUTF8(str) + 1
   const ret = malloc(size)
-  if (ret) stringToUTF8(str, heap, ret, size)
+  if (ret) stringToUTF8Array(str, heap, ret, size)
   return ret
 }
 
