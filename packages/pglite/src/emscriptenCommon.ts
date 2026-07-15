@@ -97,7 +97,7 @@ export const stringToAscii = (str: string, buffer: number, heap: Int8Array) => {
 
 export const updateMemoryViews = (
   wasmMemory: WebAssembly.Memory,
-  module: Record<string, unknown>,
+  module?: Record<string, unknown>,
 ) => {
   const buffer = wasmMemory.buffer
   const HEAP8 = new Int8Array(buffer)
@@ -110,18 +110,20 @@ export const updateMemoryViews = (
   const HEAPF64 = new Float64Array(buffer)
   const HEAP64 = new BigInt64Array(buffer)
   const HEAPU64 = new BigUint64Array(buffer)
-  Object.assign(module, {
-    HEAP8,
-    HEAP16,
-    HEAPU8,
-    HEAPU16,
-    HEAP32,
-    HEAPU32,
-    HEAPF32,
-    HEAPF64,
-    HEAP64,
-    HEAPU64,
-  })
+  if (module) {
+    Object.assign(module, {
+      HEAP8,
+      HEAP16,
+      HEAPU8,
+      HEAPU16,
+      HEAP32,
+      HEAPU32,
+      HEAPF32,
+      HEAPF64,
+      HEAP64,
+      HEAPU64,
+    })
+  }
   return {
     HEAP8,
     HEAP16,
@@ -205,7 +207,6 @@ export const createRun = ({
   const doRun = () => {
     if (isCalled()) return
     markCalled()
-    module['calledRun'] = true
     if (isAborted()) return
     initRuntime()
     preMain()
@@ -346,6 +347,17 @@ export const createWasmTableHelpers = (
     wasmTableMirror[idx] = wasmTable.get(idx)
   },
 })
+
+export const createLazyWasmFunction = (
+  getWasmExports: () => Record<string, any>,
+  wasmName: string,
+) => {
+  let implementation: ((...args: any[]) => any) | undefined
+  return (...args: any[]) => {
+    const wasmFunction = (implementation ??= getWasmExports()[wasmName])
+    return wasmFunction(...args)
+  }
+}
 
 export const uleb128Encode = (n: number, target: number[]) => {
   if (n < 128) {
@@ -531,7 +543,7 @@ export const PATH = {
       return '.'
     }
     if (dir) {
-      dir = dir.substr(0, dir.length - 1)
+      dir = dir.substring(0, dir.length - 1)
     }
     return root + dir
   },
@@ -541,7 +553,7 @@ export const PATH = {
     path = path.replace(/\/$/, '')
     const lastSlash = path.lastIndexOf('/')
     if (lastSlash === -1) return path
-    return path.substr(lastSlash + 1)
+    return path.substring(lastSlash + 1)
   },
   join: (...paths: string[]) => PATH.normalize(paths.join('/')),
   join2: (left: string, right: string) => PATH.normalize(left + '/' + right),
@@ -568,8 +580,8 @@ export const createPathFS = (getCwd: () => string) => {
       return (resolvedAbsolute ? '/' : '') + resolvedPath || '.'
     },
     relative: (from: string, to: string) => {
-      from = pathFS.resolve(from).substr(1)
-      to = pathFS.resolve(to).substr(1)
+      from = pathFS.resolve(from).substring(1)
+      to = pathFS.resolve(to).substring(1)
       const fromParts = trimArray(from.split('/'))
       const toParts = trimArray(to.split('/'))
       const length = Math.min(fromParts.length, toParts.length)
@@ -591,9 +603,6 @@ export const createPathFS = (getCwd: () => string) => {
   return pathFS
 }
 
-const UTF8Decoder =
-  typeof TextDecoder !== 'undefined' ? new TextDecoder() : undefined
-
 export const UTF8ArrayToString = (
   heapOrArray: Uint8Array,
   idx = 0,
@@ -602,8 +611,12 @@ export const UTF8ArrayToString = (
   const endIdx = idx + maxBytesToRead
   let endPtr = idx
   while (heapOrArray[endPtr] && !(endPtr >= endIdx)) ++endPtr
-  if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
-    return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr))
+  if (
+    endPtr - idx > 16 &&
+    heapOrArray.buffer &&
+    typeof TextDecoder !== 'undefined'
+  ) {
+    return new TextDecoder().decode(heapOrArray.subarray(idx, endPtr))
   }
   let str = ''
   while (idx < endPtr) {

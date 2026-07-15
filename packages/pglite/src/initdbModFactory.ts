@@ -11,6 +11,7 @@ import {
   createPathFS,
   convertJsFunctionToWasm,
   createInvoke,
+  createLazyWasmFunction,
   createRunDependencyManager,
   createRun,
   createWasmTableHelpers,
@@ -23,7 +24,6 @@ import {
   PATH,
   stringToUTF8 as stringToUTF8Common,
   stringToUTF8OnStack as stringToUTF8OnStackCommon,
-  stringToNewUTF8 as stringToNewUTF8Common,
   trimArray,
   updateMemoryViews as updateMemoryViewsCommon,
   ydayFromDate as ydayFromDateCommon,
@@ -53,7 +53,6 @@ export interface InitdbMod {
   ENV: Record<string, string>
   FS: any
   PROXYFS: any
-  HEAPU8: Uint8Array
   UTF8ToString: (ptr: number, maxBytesToRead?: number) => string
   stringToUTF8OnStack: (s: string) => number
   _pgl_set_system_fn: (fn: number) => void
@@ -61,8 +60,6 @@ export interface InitdbMod {
   _pgl_set_pclose_fn: (fn: number) => void
   _pclose: (stream: number) => number
   _fopen: (path: number, mode: number) => number
-  _fclose: (stream: number) => number
-  _fflush: (stream: number) => number
   addFunction: (fn: CallableFunction, signature: string) => number
   callMain: (args?: string[]) => number
   onRuntimeInitialized?: () => void
@@ -74,16 +71,13 @@ export const createInitdbModule = async (
   emscriptenOpts: Partial<InitdbMod> = {},
 ) => {
   const Module = emscriptenOpts
-  let moduleOverrides = Object.assign({}, Module)
-  let thisProgram = './this.program'
+  const thisProgram =
+    Module['thisProgram'] ||
+    (process.argv.length > 1
+      ? process.argv[1].replace(/\\/g, '/')
+      : './this.program')
   const quit_ = (status, toThrow) => {
     throw toThrow
-  }
-  Object.assign(Module, moduleOverrides)
-  moduleOverrides = null
-  if (Module['thisProgram']) thisProgram = Module['thisProgram']
-  if (!Module['thisProgram'] && process.argv.length > 1) {
-    thisProgram = process.argv[1].replace(/\\/g, '/')
   }
   const out = Module['print'] || console.log.bind(console)
   const err = Module['printErr'] || console.error.bind(console)
@@ -102,7 +96,7 @@ export const createInitdbModule = async (
     HEAPU64,
     HEAPF64
   function updateMemoryViews() {
-    const views = updateMemoryViewsCommon(wasmMemory, Module)
+    const views = updateMemoryViewsCommon(wasmMemory)
     HEAP8 = views.HEAP8
     HEAP16 = views.HEAP16
     HEAPU8 = views.HEAPU8
@@ -260,11 +254,7 @@ export const createInitdbModule = async (
     }
     return functionsInTableMap.get(func) || 0
   }
-  const freeTableIndexes = []
   const getEmptyTableSlot = () => {
-    if (freeTableIndexes.length) {
-      return freeTableIndexes.pop()
-    }
     try {
       wasmTable.grow(1)
     } catch (err) {
@@ -840,19 +830,6 @@ export const createInitdbModule = async (
   const stringToUTF8OnStack = (str) => {
     return stringToUTF8OnStackCommon(str, stackAlloc, HEAPU8)
   }
-  const removeFunction = (index) => {
-    functionsInTableMap.delete(getWasmTableEntry(index))
-    setWasmTableEntry(index, null)
-    freeTableIndexes.push(index)
-  }
-  const stringToNewUTF8 = (str) => {
-    return stringToNewUTF8Common(str, _malloc, HEAPU8)
-  }
-  const FS_createPath = (...args) => FS.createPath(...args)
-
-  const FS_unlink = (path) => FS.unlink(path)
-  const FS_createLazyFile = (...args) => FS.createLazyFile(...args)
-  const FS_createDevice = (...args) => FS.createDevice(...args)
   const preloadPlugins = []
   let FS_stdin_getChar_buffer = []
   const FS_stdin_getChar = () => {
@@ -3972,12 +3949,6 @@ export const createInitdbModule = async (
   ___syscall_unlinkat.sig = 'iipi'
   FS.createPreloadedFile = FS_createPreloadedFile
   FS.staticInit()
-  Module['FS_createPath'] = FS.createPath
-  Module['FS_createDataFile'] = FS.createDataFile
-  Module['FS_createPreloadedFile'] = FS.createPreloadedFile
-  Module['FS_unlink'] = FS.unlink
-  Module['FS_createLazyFile'] = FS.createLazyFile
-  Module['FS_createDevice'] = FS.createDevice
   MEMFS.doesNotExistError = new FS.ErrnoError(44)
   MEMFS.doesNotExistError.stack = '<generic error, no stack>'
   const invoke_iiii = createInvoke(
@@ -4056,142 +4027,27 @@ export const createInitdbModule = async (
   }
   let wasmExports
   const wasmInitialization = createWasm()
-  let ___wasm_call_ctors = () =>
-    (___wasm_call_ctors = wasmExports['__wasm_call_ctors'])()
-  let _pgl_exit = (Module['_pgl_exit'] = (a0) =>
-    (_pgl_exit = Module['_pgl_exit'] = wasmExports['pgl_exit'])(a0))
-  let ___errno_location = (Module['___errno_location'] = () =>
-    (___errno_location = Module['___errno_location'] =
-      wasmExports['__errno_location'])())
-  let _fflush = (Module['_fflush'] = (a0) =>
-    (_fflush = Module['_fflush'] = wasmExports['fflush'])(a0))
-  let _fopen = (Module['_fopen'] = (a0, a1) =>
-    (_fopen = Module['_fopen'] = wasmExports['fopen'])(a0, a1))
-  let _fclose = (Module['_fclose'] = (a0) =>
-    (_fclose = Module['_fclose'] = wasmExports['fclose'])(a0))
-  let _pgl_popen = (Module['_pgl_popen'] = (a0, a1) =>
-    (_pgl_popen = Module['_pgl_popen'] = wasmExports['pgl_popen'])(a0, a1))
-  let _fputs = (Module['_fputs'] = (a0, a1) =>
-    (_fputs = Module['_fputs'] = wasmExports['fputs'])(a0, a1))
-  let _main = (Module['_main'] = (a0, a1) =>
-    (_main = Module['_main'] = wasmExports['__main_argc_argv'])(a0, a1))
-  let _pgl_atexit = (Module['_pgl_atexit'] = (a0) =>
-    (_pgl_atexit = Module['_pgl_atexit'] = wasmExports['pgl_atexit'])(a0))
-  let _pgl_geteuid = (Module['_pgl_geteuid'] = () =>
-    (_pgl_geteuid = Module['_pgl_geteuid'] = wasmExports['pgl_geteuid'])())
-  let _pgl_system = (Module['_pgl_system'] = (a0) =>
-    (_pgl_system = Module['_pgl_system'] = wasmExports['pgl_system'])(a0))
-  let _malloc = (a0) => (_malloc = wasmExports['malloc'])(a0)
-  let _calloc = (a0, a1) => (_calloc = wasmExports['calloc'])(a0, a1)
-  let _pgl_setsockopt = (Module['_pgl_setsockopt'] = (a0, a1, a2, a3, a4) =>
-    (_pgl_setsockopt = Module['_pgl_setsockopt'] =
-      wasmExports['pgl_setsockopt'])(a0, a1, a2, a3, a4))
-  let _pgl_connect = (Module['_pgl_connect'] = (a0, a1, a2) =>
-    (_pgl_connect = Module['_pgl_connect'] = wasmExports['pgl_connect'])(
-      a0,
-      a1,
-      a2,
-    ))
-  let _pgl_send = (Module['_pgl_send'] = (a0, a1, a2, a3) =>
-    (_pgl_send = Module['_pgl_send'] = wasmExports['pgl_send'])(a0, a1, a2, a3))
-  let _pgl_recv = (Module['_pgl_recv'] = (a0, a1, a2, a3) =>
-    (_pgl_recv = Module['_pgl_recv'] = wasmExports['pgl_recv'])(a0, a1, a2, a3))
-  let _fgets = (Module['_fgets'] = (a0, a1, a2) =>
-    (_fgets = Module['_fgets'] = wasmExports['fgets'])(a0, a1, a2))
-  let _pgl_getsockopt = (Module['_pgl_getsockopt'] = (a0, a1, a2, a3, a4) =>
-    (_pgl_getsockopt = Module['_pgl_getsockopt'] =
-      wasmExports['pgl_getsockopt'])(a0, a1, a2, a3, a4))
-  let _pgl_getsockname = (Module['_pgl_getsockname'] = (a0, a1, a2) =>
-    (_pgl_getsockname = Module['_pgl_getsockname'] =
-      wasmExports['pgl_getsockname'])(a0, a1, a2))
-  let _pgl_poll = (Module['_pgl_poll'] = (a0, a1, a2) =>
-    (_pgl_poll = Module['_pgl_poll'] = wasmExports['pgl_poll'])(a0, a1, a2))
-  let _clear_setitimer = (Module['_clear_setitimer'] = () =>
-    (_clear_setitimer = Module['_clear_setitimer'] =
-      wasmExports['clear_setitimer'])())
-  let _pgl_longjmp = (Module['_pgl_longjmp'] = (a0, a1) =>
-    (_pgl_longjmp = Module['_pgl_longjmp'] = wasmExports['pgl_longjmp'])(
-      a0,
-      a1,
-    ))
-  let _pgl_siglongjmp = (Module['_pgl_siglongjmp'] = (a0, a1) =>
-    (_pgl_siglongjmp = Module['_pgl_siglongjmp'] =
-      wasmExports['pgl_siglongjmp'])(a0, a1))
-  let _pgl_set_system_fn = (Module['_pgl_set_system_fn'] = (a0) =>
-    (_pgl_set_system_fn = Module['_pgl_set_system_fn'] =
-      wasmExports['pgl_set_system_fn'])(a0))
-  let _pgl_set_popen_fn = (Module['_pgl_set_popen_fn'] = (a0) =>
-    (_pgl_set_popen_fn = Module['_pgl_set_popen_fn'] =
-      wasmExports['pgl_set_popen_fn'])(a0))
-  let _pgl_set_pclose_fn = (Module['_pgl_set_pclose_fn'] = (a0) =>
-    (_pgl_set_pclose_fn = Module['_pgl_set_pclose_fn'] =
-      wasmExports['pgl_set_pclose_fn'])(a0))
-  let _pgl_pclose = (Module['_pgl_pclose'] = (a0) =>
-    (_pgl_pclose = Module['_pgl_pclose'] = wasmExports['pgl_pclose'])(a0))
-  let _pclose = (Module['_pclose'] = (a0) =>
-    (_pclose = Module['_pclose'] = wasmExports['pclose'])(a0))
-  let _pgl_getuid = (Module['_pgl_getuid'] = () =>
-    (_pgl_getuid = Module['_pgl_getuid'] = wasmExports['pgl_getuid'])())
-  let _pgl_getpwuid = (Module['_pgl_getpwuid'] = (a0) =>
-    (_pgl_getpwuid = Module['_pgl_getpwuid'] = wasmExports['pgl_getpwuid'])(a0))
-  let _pgl_run_atexit_funcs = (Module['_pgl_run_atexit_funcs'] = () =>
-    (_pgl_run_atexit_funcs = Module['_pgl_run_atexit_funcs'] =
-      wasmExports['pgl_run_atexit_funcs'])())
-  let _pgl_freopen = (Module['_pgl_freopen'] = (a0, a1, a2) =>
-    (_pgl_freopen = Module['_pgl_freopen'] = wasmExports['pgl_freopen'])(
-      a0,
-      a1,
-      a2,
-    ))
-  let _pgl_shmget = (Module['_pgl_shmget'] = (a0, a1, a2) =>
-    (_pgl_shmget = Module['_pgl_shmget'] = wasmExports['pgl_shmget'])(
-      a0,
-      a1,
-      a2,
-    ))
-  let _pgl_shmat = (Module['_pgl_shmat'] = (a0, a1, a2) =>
-    (_pgl_shmat = Module['_pgl_shmat'] = wasmExports['pgl_shmat'])(a0, a1, a2))
-  let _pgl_shmdt = (Module['_pgl_shmdt'] = (a0) =>
-    (_pgl_shmdt = Module['_pgl_shmdt'] = wasmExports['pgl_shmdt'])(a0))
-  let _pgl_shmctl = (Module['_pgl_shmctl'] = (a0, a1, a2) =>
-    (_pgl_shmctl = Module['_pgl_shmctl'] = wasmExports['pgl_shmctl'])(
-      a0,
-      a1,
-      a2,
-    ))
-  let _pgl_munmap = (Module['_pgl_munmap'] = (a0, a1) =>
-    (_pgl_munmap = Module['_pgl_munmap'] = wasmExports['pgl_munmap'])(a0, a1))
-  let _pgl_set_rw_cbs = (Module['_pgl_set_rw_cbs'] = (a0, a1) =>
-    (_pgl_set_rw_cbs = Module['_pgl_set_rw_cbs'] =
-      wasmExports['pgl_set_rw_cbs'])(a0, a1))
-  let _pgl_fcntl = (Module['_pgl_fcntl'] = (a0, a1, a2) =>
-    (_pgl_fcntl = Module['_pgl_fcntl'] = wasmExports['pgl_fcntl'])(a0, a1, a2))
-  let _strerror = (Module['_strerror'] = (a0) =>
-    (_strerror = Module['_strerror'] = wasmExports['strerror'])(a0))
-  let ___funcs_on_exit = () =>
-    (___funcs_on_exit = wasmExports['__funcs_on_exit'])()
-  let ___dl_seterr = (a0, a1) =>
-    (___dl_seterr = wasmExports['__dl_seterr'])(a0, a1)
-  let _htonl = (a0) => (_htonl = wasmExports['htonl'])(a0)
-  let _htons = (a0) => (_htons = wasmExports['htons'])(a0)
-  let _emscripten_builtin_memalign = (a0, a1) =>
-    (_emscripten_builtin_memalign = wasmExports['emscripten_builtin_memalign'])(
-      a0,
-      a1,
-    )
-  let _ntohs = (a0) => (_ntohs = wasmExports['ntohs'])(a0)
-  let __emscripten_timeout = (a0, a1) =>
-    (__emscripten_timeout = wasmExports['_emscripten_timeout'])(a0, a1)
-  let _setThrew = (a0, a1) => (_setThrew = wasmExports['setThrew'])(a0, a1)
-  let __emscripten_stack_restore = (a0) =>
-    (__emscripten_stack_restore = wasmExports['_emscripten_stack_restore'])(a0)
-  let __emscripten_stack_alloc = (a0) =>
-    (__emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'])(a0)
-  let _emscripten_stack_get_current = () =>
-    (_emscripten_stack_get_current =
-      wasmExports['emscripten_stack_get_current'])()
-  let ___wasm_apply_data_relocs = () =>
-    (___wasm_apply_data_relocs = wasmExports['__wasm_apply_data_relocs'])()
+  const lazyWasmFunction = (wasmName) =>
+    createLazyWasmFunction(() => wasmExports, wasmName)
+  const _fflush = lazyWasmFunction('fflush')
+  const _fopen = lazyWasmFunction('fopen')
+  const _pgl_set_system_fn = lazyWasmFunction('pgl_set_system_fn')
+  const _pgl_set_popen_fn = lazyWasmFunction('pgl_set_popen_fn')
+  const _pgl_set_pclose_fn = lazyWasmFunction('pgl_set_pclose_fn')
+  const _pclose = lazyWasmFunction('pclose')
+  const ___funcs_on_exit = lazyWasmFunction('__funcs_on_exit')
+  const _emscripten_builtin_memalign = lazyWasmFunction(
+    'emscripten_builtin_memalign',
+  )
+  const __emscripten_timeout = lazyWasmFunction('_emscripten_timeout')
+  const _setThrew = lazyWasmFunction('setThrew')
+  const __emscripten_stack_restore = lazyWasmFunction(
+    '_emscripten_stack_restore',
+  )
+  const __emscripten_stack_alloc = lazyWasmFunction('_emscripten_stack_alloc')
+  const _emscripten_stack_get_current = lazyWasmFunction(
+    'emscripten_stack_get_current',
+  )
   const callMain = createCallMain({
     getEntryFunction: () => resolveGlobalSymbol('main').sym,
     getThisProgram: () => thisProgram,
@@ -4201,24 +4057,20 @@ export const createInitdbModule = async (
     exitJS,
     handleException,
   })
-  Module['addRunDependency'] = addRunDependency
-  Module['removeRunDependency'] = removeRunDependency
-  Module['callMain'] = callMain
-  Module['ENV'] = ENV
-  Module['addFunction'] = addFunction
-  Module['removeFunction'] = removeFunction
-  Module['UTF8ToString'] = UTF8ToString
-  Module['stringToNewUTF8'] = stringToNewUTF8
-  Module['stringToUTF8OnStack'] = stringToUTF8OnStack
-  Module['FS_createPreloadedFile'] = FS_createPreloadedFile
-  Module['FS_unlink'] = FS_unlink
-  Module['FS_createPath'] = FS_createPath
-  Module['FS_createDevice'] = FS_createDevice
-  Module['FS'] = FS
-  Module['FS_createDataFile'] = FS_createDataFile
-  Module['FS_createLazyFile'] = FS_createLazyFile
-  Module['MEMFS'] = MEMFS
-  Module['PROXYFS'] = PROXYFS
+  Object.assign(Module, {
+    callMain,
+    ENV,
+    addFunction,
+    UTF8ToString,
+    stringToUTF8OnStack,
+    FS,
+    PROXYFS,
+    _fopen,
+    _pclose,
+    _pgl_set_system_fn,
+    _pgl_set_popen_fn,
+    _pgl_set_pclose_fn,
+  })
   let calledRun
   const run = createRun({
     module: Module,
